@@ -223,10 +223,10 @@ Les contributions sont les bienvenues ! N'hésitez pas à :
 
 ## 📚 Ressources
 
-- [Documentation data.inclusion](https://data.inclusion.beta.gouv.fr/api/v0/docs)
+- [Documentation data.inclusion](https://gip-inclusion.github.io/data-inclusion-schema/latest/)
 - [Spécification MCP](https://modelcontextprotocol.io/)
 - [Documentation FastMCP](https://github.com/jlowin/fastmcp)
-- [Claude Desktop](https://claude.ai/desktop)
+- [Claude Desktop](https://claude.ai/download)
 
 ## ❓ Support
 
