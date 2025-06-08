@@ -44,8 +44,20 @@ def create_api_client(base_url: str) -> httpx.AsyncClient:
     
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
-        print("Using DATA_INCLUSION_API_KEY from environment variable.")
+        print(f"✅ Using DATA_INCLUSION_API_KEY from environment variable (key: ***{api_key[-4:]})")
     else:
-        print("Warning: DATA_INCLUSION_API_KEY environment variable not set. API calls may fail.")
+        print("⚠️  Warning: DATA_INCLUSION_API_KEY environment variable not set.")
+        print("   Some API endpoints may be publicly accessible, but authenticated endpoints will fail.")
+        print("   Please set DATA_INCLUSION_API_KEY in your .env file if you have an API key.")
     
-    return httpx.AsyncClient(base_url=base_url, headers=headers)
+    # Ajout d'headers par défaut
+    headers.update({
+        "User-Agent": "DataInclusion-MCP-Server/1.0",
+        "Accept": "application/json"
+    })
+    
+    return httpx.AsyncClient(
+        base_url=base_url, 
+        headers=headers,
+        timeout=30.0  # Timeout de 30 secondes
+    )
