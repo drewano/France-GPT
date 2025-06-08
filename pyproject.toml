@@ -1,0 +1,22 @@
+[project]
+name = "datainclusion-mcp-server"
+version = "0.1.0"
+description = "A FastMCP server for the data.inclusion.beta.gouv.fr API."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Votre Nom", email = "votre@email.com" },
+]
+dependencies = [
+    "fastmcp",
+    "httpx",
+    "python-dotenv"
+]
+
+[project.urls]
+Homepage = "https://github.com/votre-user/datainclusion-mcp-server"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
