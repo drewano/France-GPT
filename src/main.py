@@ -8,6 +8,7 @@ Il transforme automatiquement les endpoints OpenAPI en outils MCP.
 import asyncio
 import json
 import os
+import httpx
 from fastmcp import FastMCP
 from dotenv import load_dotenv
 from fastmcp.server.openapi import RouteMap, MCPType
@@ -17,11 +18,44 @@ from .utils import inspect_mcp_components, create_api_client
 load_dotenv()
 
 # Configuration depuis les variables d'environnement avec valeurs par défaut
-OPENAPI_FILE = os.getenv("OPENAPI_FILE", "openapi.json")
+OPENAPI_URL = os.getenv("OPENAPI_URL", "https://api.data.inclusion.beta.gouv.fr/api/openapi.json")
 MCP_SERVER_NAME = os.getenv("MCP_SERVER_NAME", "DataInclusionAPI")
 MCP_HOST = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT = int(os.getenv("MCP_PORT", "8000"))
 MCP_SSE_PATH = os.getenv("MCP_SSE_PATH", "/sse")
+
+def limit_page_size_in_spec(spec: dict, max_size: int = 25) -> dict:
+    """
+    Modifie la spécification OpenAPI pour limiter la taille des pages.
+
+    Cette fonction parcourt les points de terminaison pertinents et ajuste le paramètre
+    'size' pour qu'il ait une valeur maximale et par défaut de `max_size`.
+
+    Args:
+        spec: Le dictionnaire de la spécification OpenAPI.
+        max_size: La taille maximale à définir pour les résultats.
+
+    Returns:
+        Le dictionnaire de la spécification modifié.
+    """
+    paths_to_modify = [
+        "/api/v0/structures",
+        "/api/v0/services",
+        "/api/v0/search/services",
+    ]
+
+    print(f"🔩 Applying page size limit (max_size={max_size}) to spec...")
+
+    for path in paths_to_modify:
+        if path in spec["paths"] and "get" in spec["paths"][path]:
+            params = spec["paths"][path]["get"].get("parameters", [])
+            for param in params:
+                if param.get("name") == "size":
+                    param["schema"]["maximum"] = max_size
+                    param["schema"]["default"] = max_size
+                    print(f"  - Limited 'size' parameter for endpoint: GET {path}")
+    
+    return spec
 
 
 async def main():
@@ -38,23 +72,33 @@ async def main():
     api_client = None
     
     try:
-        # === 1. CHARGEMENT DE LA SPÉCIFICATION OPENAPI ===
-        print(f"Loading OpenAPI specification from '{OPENAPI_FILE}'...")
+        # === 1. CHARGEMENT DE LA SPÉCIFICATION OPENAPI VIA HTTP ===
+        print(f"Loading OpenAPI specification from URL: '{OPENAPI_URL}'...")
         
         try:
-            with open(OPENAPI_FILE, "r", encoding="utf-8") as f:
-                openapi_spec = json.load(f)
+            # On a besoin d'importer httpx si ce n'est pas déjà fait en haut du fichier
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.get(OPENAPI_URL)
+                response.raise_for_status()  # Lève une exception si le statut n'est pas 2xx
+                openapi_spec = response.json()
             
             api_title = openapi_spec.get("info", {}).get("title", "Unknown API")
             print(f"✅ Successfully loaded OpenAPI spec: '{api_title}'")
             
-        except FileNotFoundError:
-            print(f"❌ Error: OpenAPI specification file '{OPENAPI_FILE}' not found.")
-            print("Please ensure the file exists in the project root directory.")
+            # === MODIFICATION DES LIMITES DE PAGINATION ===
+            # Limite la taille des pages pour les outils de listing à 25 éléments maximum
+            # Cela s'applique aux outils: list_all_structures, list_all_services, search_services
+            print("📄 Applying pagination limits to data-listing endpoints...")
+            openapi_spec = limit_page_size_in_spec(openapi_spec, max_size=25)
+            
+        except httpx.RequestError as e:
+            print(f"❌ Error: Failed to fetch OpenAPI specification from '{OPENAPI_URL}'.")
+            print(f"Details: {e}")
             return
             
         except json.JSONDecodeError as e:
-            print(f"❌ Error: Invalid JSON in OpenAPI specification file '{OPENAPI_FILE}'.")
+            print(f"❌ Error: Invalid JSON in the response from '{OPENAPI_URL}'.")
             print(f"Details: {e}")
             return
 
@@ -89,16 +133,16 @@ async def main():
             "retrieve_service_endpoint_api_v0_services__source___id__get": "get_service_details",
             "search_services_endpoint_api_v0_search_services_get": "search_services",
 
-            # Endpoints de Documentation (référentiels)
-            "list_labels_nationaux_endpoint_api_v0_doc_labels_nationaux_get": "doc_list_labels_nationaux",
-            "list_thematiques_endpoint_api_v0_doc_thematiques_get": "doc_list_thematiques",
-            "list_typologies_services_endpoint_api_v0_doc_typologies_services_get": "doc_list_typologies_services",
-            "list_frais_endpoint_api_v0_doc_frais_get": "doc_list_frais",
-            "list_profils_endpoint_api_v0_doc_profils_get": "doc_list_profils_publics",
-            "list_typologies_structures_endpoint_api_v0_doc_typologies_structures_get": "doc_list_typologies_structures",
-            "list_modes_accueil_endpoint_api_v0_doc_modes_accueil_get": "doc_list_modes_accueil",
-            "list_modes_orientation_accompagnateur_endpoint_api_v0_doc_modes_orientation_accompagnateur_get": "doc_list_modes_orientation_accompagnateur",
-            "list_modes_orientation_beneficiaire_endpoint_api_v0_doc_modes_orientation_beneficiaire_get": "doc_list_modes_orientation_beneficiaire"
+            # Endpoints de Documentation (ceux-ci fonctionnent maintenant)
+            "as_dict_list_api_v0_doc_labels_nationaux_get": "doc_list_labels_nationaux",
+            "as_dict_list_api_v0_doc_thematiques_get": "doc_list_thematiques",
+            "as_dict_list_api_v0_doc_typologies_services_get": "doc_list_typologies_services",
+            "as_dict_list_api_v0_doc_frais_get": "doc_list_frais",
+            "as_dict_list_api_v0_doc_profils_get": "doc_list_profils_publics",
+            "as_dict_list_api_v0_doc_typologies_structures_get": "doc_list_typologies_structures",
+            "as_dict_list_api_v0_doc_modes_accueil_get": "doc_list_modes_accueil",
+            "as_dict_list_api_v0_doc_modes_orientation_accompagnateur_get": "doc_list_modes_orientation_accompagnateur",
+            "as_dict_list_api_v0_doc_modes_orientation_beneficiaire_get": "doc_list_modes_orientation_beneficiaire"
         }
 
         # === 5. CONFIGURATION DES ROUTES MCP ===
