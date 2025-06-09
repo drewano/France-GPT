@@ -190,7 +190,6 @@ datainclusion-mcp-server/
 ├── pyproject.toml          # Configuration et dépendances
 ├── README.md               # Cette documentation
 ├── LICENSE                 # Licence MIT
-└── openapi.json            # Spécification API data.inclusion
 ```
 
 ### Logs et debugging
