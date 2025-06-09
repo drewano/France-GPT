@@ -99,11 +99,9 @@ DATA_INCLUSION_API_KEY=votre_cle_api_ici
 | `MCP_HOST` | Adresse IP d'écoute | `127.0.0.1` | Non |
 | `MCP_PORT` | Port d'écoute | `8000` | Non |
 | `MCP_SSE_PATH` | Chemin endpoint SSE | `/sse` | Non |
-| `OPENAPI_FILE` | Fichier spécification OpenAPI | `openapi.json` | Non |
+| `OPENAPI_URL` | Lien du Fichier spécification OpenAPI | `https://api.data.inclusion.beta.gouv.fr/api/openapi.json` | Oui |
 | `MCP_SERVER_NAME` | Nom du serveur MCP | `DataInclusionAPI` | Non |
-| `DATA_INCLUSION_API_KEY` | Clé API data.inclusion | - | Non* |
-
-*\* La clé API n'est pas obligatoire pour la plupart des endpoints publics, mais peut être requise pour certaines fonctionnalités avancées.*
+| `DATA_INCLUSION_API_KEY` | Clé API data.inclusion | - | Oui |
 
 ## 🚀 Lancement du serveur
 
