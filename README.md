@@ -2,152 +2,72 @@
 
 Un serveur MCP (Model Context Protocol) qui expose l'API [data.inclusion.beta.gouv.fr](https://data.inclusion.beta.gouv.fr) pour faciliter l'accès aux données d'inclusion en France via des assistants IA compatibles MCP.
 
+[![Licence: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python Version](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+
 ## 📋 Description
 
-Ce projet transforme automatiquement l'API REST de data.inclusion en outils MCP, permettant aux assistants IA (comme Claude Desktop) d'interroger facilement les données sur les structures, services et ressources d'inclusion sociale en France.
+Ce projet transforme automatiquement l'API REST de `data.inclusion` en outils MCP, permettant aux assistants IA (comme Claude Desktop) d'interroger facilement les données sur les structures, services et ressources d'inclusion sociale en France. Il charge la spécification OpenAPI de l'API à la volée pour générer les outils.
 
-### Fonctionnalités
+### ✨ Fonctionnalités
 
-- 🔄 **Conversion automatique** : Transforme les endpoints OpenAPI en outils MCP
-- 🔧 **Outils personnalisés** : Noms d'outils conviviaux pour une meilleure utilisation
-- 🔑 **Authentification** : Support pour les clés API Bearer Token
-- 🌐 **Transport SSE** : Compatible avec les clients MCP modernes
-- ⚙️ **Configuration flexible** : Variables d'environnement pour tous les paramètres
+-   **🔄 Conversion Automatique** : Transforme les endpoints de l'API en outils MCP à la volée.
+-   **🔧 Outils Conviviaux** : Noms d'outils renommés pour une meilleure compréhension par les IA.
+-   **🐳 Support Docker** : Prêt à l'emploi avec une configuration Docker simple.
+-   **🔑 Authentification Sécurisée** : Gère l'authentification par `Bearer Token` via les variables d'environnement.
+-   **⚙️ Pagination Intelligente** : Limite automatiquement le nombre de résultats pour des réponses plus rapides et ciblées.
 
-### Outils disponibles
+### 🛠️ Outils Disponibles
 
-- `list_all_structures` - Liste toutes les structures d'inclusion
-- `get_structure_details` - Obtient les détails d'une structure
-- `list_all_services` - Liste tous les services disponibles
-- `search_services` - Recherche des services selon des critères
-- `doc_list_*` - Accès aux référentiels de documentation
+Le serveur expose plus d'une dizaine d'outils, dont les principaux :
 
-## 🔧 Prérequis
+-   `list_all_structures` : Liste les structures d'inclusion.
+-   `get_structure_details` : Obtient les détails d'une structure spécifique.
+-   `search_services` : Recherche des services selon des critères (code postal, thématique, etc.).
+-   `list_all_services` : Liste l'ensemble des services disponibles.
+-   `doc_list_*` : Accède aux différents référentiels (thématiques, types de frais, etc.).
 
-- **Python 3.12+** (requis par le projet)
-- **Git** pour cloner le repository
-- **Accès internet** pour les requêtes vers l'API data.inclusion
+## 🚀 Démarrage Rapide avec Docker (Recommandé)
 
-## 📦 Installation
+Le moyen le plus simple de lancer le serveur est d'utiliser Docker.
 
-### 1. Cloner le repository
+### Prérequis
 
-```bash
-git clone https://github.com/votre-user/datainclusion-mcp-server.git
-cd datainclusion-mcp-server
-```
+-   **Docker**
+-   **Git**
 
-### 2. Installer les dépendances
+### Étapes
 
-Avec pip (recommandé) :
-```bash
-pip install -e .
-```
+1.  **Cloner le repository :**
+    ```bash
+    git clone https://github.com/votre-user/datainclusion-mcp-server.git
+    cd datainclusion-mcp-server
+    ```
 
-Ou avec uv (plus rapide) :
-```bash
-uv pip install -e .
-```
+2.  **Configurer l'environnement :**
+    -   Copiez le fichier d'exemple : `cp env.example .env`
+    -   Ouvrez le fichier `.env` et ajoutez votre clé API : `DATA_INCLUSION_API_KEY=votre_cle_api_ici`
+    -   **Important :** Laissez `MCP_HOST=0.0.0.0` pour que le conteneur soit accessible depuis votre machine.
 
-### 3. Vérifier l'installation
+3.  **Construire l'image Docker :**
+    ```bash
+    docker build -t datainclusion-mcp .
+    ```
 
-```bash
-python -c "import fastmcp, httpx; print('✅ Installation réussie')"
-```
+4.  **Lancer le conteneur :**
+    ```bash
+    docker run -d --rm -p 8000:8000 --env-file .env --name mcp-server datainclusion-mcp
+    ```
 
-## ⚙️ Configuration
+5.  **Vérifier les logs :**
+    ```bash
+    docker logs mcp-server
+    ```
+    Vous devriez voir `Uvicorn running on http://0.0.0.0:8000`. Votre serveur est prêt !
 
-### 1. Créer le fichier de configuration
+## 🔌 Intégration Client MCP (Claude Desktop, etc.)
 
-```bash
-cp env.example .env
-```
-
-### 2. Éditer le fichier `.env`
-
-Ouvrez le fichier `.env` et configurez les variables selon vos besoins :
-
-```bash
-# --- Configuration du serveur ---
-# Transport utilisé par le serveur MCP ('sse' pour serveur web, 'stdio' pour local)
-TRANSPORT=sse
-
-# Adresse IP d'écoute du serveur
-MCP_HOST=127.0.0.1
-
-# Port d'écoute du serveur
-MCP_PORT=8000
-
-# Chemin de l'endpoint SSE
-MCP_SSE_PATH=/sse
-
-# --- Configuration de l'API ---
-# Nom du fichier de spécification OpenAPI
-OPENAPI_FILE=openapi.json
-
-# Nom du serveur MCP (affiché dans les clients)
-MCP_SERVER_NAME=DataInclusionAPI
-
-# Clé API pour l'API data.inclusion (optionnelle)
-DATA_INCLUSION_API_KEY=votre_cle_api_ici
-```
-
-### 📋 Description des variables
-
-| Variable | Description | Valeur par défaut | Obligatoire |
-|----------|-------------|-------------------|-------------|
-| `MCP_HOST` | Adresse IP d'écoute | `127.0.0.1` | Non |
-| `MCP_PORT` | Port d'écoute | `8000` | Non |
-| `MCP_SSE_PATH` | Chemin endpoint SSE | `/sse` | Non |
-| `OPENAPI_FILE` | Fichier spécification OpenAPI | `openapi.json` | Non |
-| `MCP_SERVER_NAME` | Nom du serveur MCP | `DataInclusionAPI` | Non |
-| `DATA_INCLUSION_API_KEY` | Clé API data.inclusion | - | Non* |
-
-*\* La clé API n'est pas obligatoire pour la plupart des endpoints publics, mais peut être requise pour certaines fonctionnalités avancées.*
-
-## 🚀 Lancement du serveur
-
-### Démarrage simple
-
-```bash
-python src/main.py
-```
-
-### Avec variables d'environnement inline
-
-```bash
-MCP_PORT=8001 python src/main.py
-```
-
-### Vérification du fonctionnement
-
-Si le serveur démarre correctement, vous devriez voir :
-
-```
-Loading OpenAPI specification from 'openapi.json'...
-✅ Successfully loaded OpenAPI spec: 'data.inclusion API'
-🔑 Configuring HTTP client with authentication...
-🛠️  Configuring custom tool names...
-🗺️  Configuring route mappings...
-🚀 Creating FastMCP server 'DataInclusionAPI'...
-✅ FastMCP server 'DataInclusionAPI' created successfully!
-🔍 Inspecting MCP components...
-🌐 Starting MCP server on http://127.0.0.1:8000/sse
-Press Ctrl+C to stop the server
-```
-
-## 🔌 Intégration Client MCP
-
-### Claude Desktop
-
-Pour utiliser ce serveur avec Claude Desktop, ajoutez la configuration suivante à votre fichier `claude_desktop_config.json` :
-
-**Localisation du fichier :**
-- **macOS** : `~/Library/Application\ Support/Claude/claude_desktop_config.json`
-- **Windows** : `%APPDATA%\Claude\claude_desktop_config.json`
-- **Linux** : `~/.config/Claude/claude_desktop_config.json`
-
-**Configuration :**
+Une fois le serveur lancé (localement ou via Docker), ajoutez cette configuration à votre client MCP :
 
 ```json
 {
@@ -160,83 +80,76 @@ Pour utiliser ce serveur avec Claude Desktop, ajoutez la configuration suivante 
 }
 ```
 
-### Autres clients MCP
+> **Localisation du fichier de config Claude :**
+> - **Windows** : `%APPDATA%\Claude\claude_desktop_config.json`
+> - **macOS** : `~/Library/Application Support/Claude/claude_desktop_config.json`
+> - **Linux** : `~/.config/Claude/claude_desktop_config.json`
 
-Pour d'autres clients compatibles MCP, utilisez :
-- **URL du serveur** : `http://127.0.0.1:8000/sse`
-- **Transport** : `sse` (Server-Sent Events)
-- **Authentification** : Aucune (sauf si clé API configurée)
+## ⚙️ Installation et Lancement Manuels
 
-### Test de la connexion
+Si vous ne souhaitez pas utiliser Docker.
 
-Une fois configuré, vous pouvez tester dans Claude Desktop :
+### Prérequis
 
-```
-Peux-tu lister quelques structures d'inclusion disponibles ?
-```
+-   **Python 3.12+**
 
-Claude devrait utiliser l'outil `list_all_structures` pour répondre à votre demande.
+### Étapes
 
-## 🛠️ Développement
+1.  **Cloner le repository et naviguer dans le dossier.**
+2.  **Installer les dépendances :**
+    ```bash
+    # Avec uv (recommandé)
+    uv pip install -e .
+    
+    # Ou avec pip
+    pip install -e .
+    ```
+3.  **Configurer l'environnement :**
+    -   `cp env.example .env`
+    -   Ouvrez `.env` et ajoutez votre clé API.
+    -   Pour un lancement local, `MCP_HOST=127.0.0.1` est suffisant.
+4.  **Lancer le serveur :**
+    ```bash
+    python src/main.py
+    ```
 
-### Structure du projet
+## 🛠️ Configuration des Variables d'Environnement
+
+Configurez ces variables dans votre fichier `.env` :
+
+| Variable                 | Description                                                               | Défaut                                                    |
+| ------------------------ | ------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `MCP_HOST`               | Adresse IP d'écoute. **Utiliser `0.0.0.0` pour Docker.**                   | `127.0.0.1`                                               |
+| `MCP_PORT`               | Port d'écoute du serveur.                                                 | `8000`                                                    |
+| `MCP_SSE_PATH`           | Chemin de l'endpoint SSE.                                                 | `/sse`                                                    |
+| `OPENAPI_URL`            | URL de la spécification OpenAPI à charger.                                | `https://api.data.inclusion.beta.gouv.fr/api/openapi.json` |
+| `MCP_SERVER_NAME`        | Nom du serveur affiché dans les clients.                                  | `DataInclusionAPI`                                        |
+| `DATA_INCLUSION_API_KEY` | **(Requis)** Votre clé API pour l'API `data.inclusion`.                   | `None`                                                    |
+
+## 🏗️ Structure du Projet
 
 ```
 datainclusion-mcp-server/
 ├── src/
-│   ├── __init__.py          # Package Python
-│   ├── main.py              # Point d'entrée principal
-│   └── utils.py             # Fonctions utilitaires
-├── .env.example             # Template de configuration
-├── .gitignore              # Fichiers ignorés par Git
-├── pyproject.toml          # Configuration et dépendances
-├── README.md               # Cette documentation
-├── LICENSE                 # Licence MIT
-└── openapi.json            # Spécification API data.inclusion
+│   ├── main.py              # Point d'entrée principal du serveur
+│   └── utils.py             # Fonctions utilitaires (client HTTP, inspection)
+├── .env.example             # Template de configuration d'environnement
+├── .gitignore               # Fichiers ignorés par Git
+├── Dockerfile               # Instructions pour construire l'image Docker
+├── pyproject.toml           # Dépendances et métadonnées du projet
+└── README.md                # Cette documentation
 ```
 
-### Logs et debugging
+## 🤝 Contribution
 
-Pour activer les logs détaillés :
+Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une *Pull Request* ou une *Issue*.
 
-```bash
-DEBUG=true python src/main.py
-```
-
-### Modification de la configuration
-
-Après modification du fichier `.env`, redémarrez le serveur pour appliquer les changements.
+1.  Forker le projet.
+2.  Créer une branche pour votre fonctionnalité (`git checkout -b feature/ma-super-feature`).
+3.  Commiter vos changements (`git commit -m 'Ajout de ma-super-feature'`).
+4.  Pousser vers la branche (`git push origin feature/ma-super-feature`).
+5.  Ouvrir une Pull Request.
 
 ## 📝 Licence
 
 Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! N'hésitez pas à :
-
-1. Fork le projet
-2. Créer une branche pour votre fonctionnalité
-3. Commiter vos changements
-4. Pousser vers la branche
-5. Ouvrir une Pull Request
-
-## 📚 Ressources
-
-- [Documentation data.inclusion](https://data.inclusion.beta.gouv.fr/api/v0/docs)
-- [Spécification MCP](https://modelcontextprotocol.io/)
-- [Documentation FastMCP](https://github.com/jlowin/fastmcp)
-- [Claude Desktop](https://claude.ai/desktop)
-
-## ❓ Support
-
-Si vous rencontrez des problèmes :
-
-1. Vérifiez que toutes les dépendances sont installées
-2. Consultez les logs du serveur
-3. Vérifiez votre configuration `.env`
-4. Ouvrez une issue sur GitHub avec les détails du problème
-
----
-
-**Développé avec ❤️ pour faciliter l'accès aux données d'inclusion en France** 
