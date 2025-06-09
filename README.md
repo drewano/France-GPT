@@ -83,7 +83,7 @@ MCP_SSE_PATH=/sse
 
 # --- Configuration de l'API ---
 # Nom du fichier de spécification OpenAPI
-OPENAPI_FILE=openapi.json
+OPENAPI_URL=https://api.data.inclusion.beta.gouv.fr/api/openapi.json
 
 # Nom du serveur MCP (affiché dans les clients)
 MCP_SERVER_NAME=DataInclusionAPI
