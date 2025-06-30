@@ -11,7 +11,11 @@ authors = [
 dependencies = [
     "fastmcp",
     "httpx",
-    "python-dotenv"
+    "python-dotenv",
+    "langgraph",
+    "langchain",
+    "langchain-anthropic",
+    "pydantic-settings"
 ]
 
 [project.urls]

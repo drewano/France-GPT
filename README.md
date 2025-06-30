@@ -63,7 +63,7 @@ Le moyen le plus simple de lancer le serveur est d'utiliser Docker.
     ```bash
     docker logs mcp-server
     ```
-    Vous devriez voir `Uvicorn running on http://0.0.0.0:8000`. Votre serveur est prêt !
+    Vous devriez voir `Starting MCP server on http://0.0.0.0:8000/mcp`. Votre serveur est prêt !
 
 ## 🔌 Intégration Client MCP (Claude Desktop, etc.)
 
@@ -73,8 +73,8 @@ Une fois le serveur lancé (localement ou via Docker), ajoutez cette configurati
 {
   "mcpServers": {
     "data-inclusion": {
-      "transport": "sse",
-      "url": "http://127.0.0.1:8000/sse"
+      "transport": "http",
+      "url": "http://127.0.0.1:8000/mcp"
     }
   }
 }
@@ -121,10 +121,10 @@ Configurez ces variables dans votre fichier `.env` :
 | ------------------------ | ------------------------------------------------------------------------- | --------------------------------------------------------- |
 | `MCP_HOST`               | Adresse IP d'écoute. **Utiliser `0.0.0.0` pour Docker.**                   | `127.0.0.1`                                               |
 | `MCP_PORT`               | Port d'écoute du serveur.                                                 | `8000`                                                    |
-| `MCP_SSE_PATH`           | Chemin de l'endpoint SSE.                                                 | `/sse`                                                    |
+| `MCP_API_PATH`           | Chemin de l'endpoint de l'API MCP.                                        | `/mcp`                                                    |
 | `OPENAPI_URL`            | URL de la spécification OpenAPI à charger.                                | `https://api.data.inclusion.beta.gouv.fr/api/openapi.json` |
 | `MCP_SERVER_NAME`        | Nom du serveur affiché dans les clients.                                  | `DataInclusionAPI`                                        |
-| `DATA_INCLUSION_API_KEY` | **(Requis)** Votre clé API pour l'API `data.inclusion`.                   | `None`                                                    |
+| `DATA_INCLUSION_API_KEY` | **(Requis)** Votre clé API pour l'API `data.inclusion`.                   | **(Obligatoire)**                                         |
 
 ## 🏗️ Structure du Projet
 

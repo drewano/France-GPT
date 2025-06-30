@@ -1,54 +1,55 @@
-import os
+import logging
 import httpx
 from fastmcp import FastMCP
 
 
-async def inspect_mcp_components(mcp_instance: FastMCP):
+async def inspect_mcp_components(mcp_instance: FastMCP, logger: logging.Logger):
     """Inspecte et affiche les composants MCP (outils, ressources, templates)."""
-    print("\n--- Inspecting MCP Components ---")
+    logger.info("--- Inspecting MCP Components ---")
     tools = await mcp_instance.get_tools()
     resources = await mcp_instance.get_resources()
     templates = await mcp_instance.get_resource_templates()
 
-    print(f"{len(tools)} Tool(s) found:")
+    logger.info(f"{len(tools)} Tool(s) found:")
     if tools:
-        print(f"  Names: {', '.join(sorted([t.name for t in tools.values() if t.name is not None]))}")
+        logger.info(f"  Names: {', '.join(sorted([t.name for t in tools.values() if t.name is not None]))}")
     else:
-        print("  No tools generated.")
+        logger.info("  No tools generated.")
 
-    print(f"{len(resources)} Resource(s) found:")
+    logger.info(f"{len(resources)} Resource(s) found:")
     if resources:
-        print(f"  Names: {', '.join(sorted([r.name for r in resources.values() if r.name is not None]))}")
+        logger.info(f"  Names: {', '.join(sorted([r.name for r in resources.values() if r.name is not None]))}")
     else:
-        print("  No resources generated.")
+        logger.info("  No resources generated.")
 
-    print(f"{len(templates)} Resource Template(s) found:")
+    logger.info(f"{len(templates)} Resource Template(s) found:")
     if templates:
-        print(f"  Names: {', '.join(sorted([t.name for t in templates.values() if t.name is not None]))}")
+        logger.info(f"  Names: {', '.join(sorted([t.name for t in templates.values() if t.name is not None]))}")
     else:
-        print("  No resource templates generated.")
-    print("--- End of MCP Components Inspection ---\n")
+        logger.info("  No resource templates generated.")
+    logger.info("--- End of MCP Components Inspection ---")
 
 
-def create_api_client(base_url: str) -> httpx.AsyncClient:
+def create_api_client(base_url: str, logger: logging.Logger, api_key: str | None = None) -> httpx.AsyncClient:
     """Crée un client HTTP avec authentification pour l'API Data Inclusion.
     
     Args:
         base_url: L'URL de base de l'API
+        logger: Instance du logger pour les messages
+        api_key: Clé d'API optionnelle pour l'authentification
         
     Returns:
         httpx.AsyncClient: Client HTTP configuré avec les headers d'authentification
     """
     headers = {}
-    api_key = os.getenv("DATA_INCLUSION_API_KEY")
     
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
-        print(f"✅ Using DATA_INCLUSION_API_KEY from environment variable (key: ***{api_key[-4:]})")
+        logger.info(f"Using DATA_INCLUSION_API_KEY from configuration (key: ***{api_key[-4:]})")
     else:
-        print("⚠️  Warning: DATA_INCLUSION_API_KEY environment variable not set.")
-        print("   Some API endpoints may be publicly accessible, but authenticated endpoints will fail.")
-        print("   Please set DATA_INCLUSION_API_KEY in your .env file if you have an API key.")
+        logger.warning("DATA_INCLUSION_API_KEY not set in configuration.")
+        logger.warning("Some API endpoints may be publicly accessible, but authenticated endpoints will fail.")
+        logger.warning("Please set DATA_INCLUSION_API_KEY in your .env file if you have an API key.")
     
     # Ajout d'headers par défaut
     headers.update({

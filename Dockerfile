@@ -34,10 +34,10 @@ EXPOSE ${PORT}
 # MCP_HOST est mis à 0.0.0.0 pour être accessible depuis l'extérieur du conteneur.
 # Les autres valeurs sont reprises de votre env.example.
 # La clé API (DATA_INCLUSION_API_KEY) sera fournie au lancement, pas ici.
-ENV TRANSPORT=sse
+ENV TRANSPORT=http
 ENV MCP_HOST=0.0.0.0
 ENV MCP_PORT=${PORT}
-ENV MCP_SSE_PATH=/sse
+ENV MCP_API_PATH=/mcp
 ENV OPENAPI_URL=https://api.data.inclusion.beta.gouv.fr/api/openapi.json
 ENV MCP_SERVER_NAME=DataInclusionAPI
 
