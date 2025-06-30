@@ -12,11 +12,15 @@ import os
 import httpx
 from fastmcp import FastMCP
 from fastmcp.tools import Tool
+from fastmcp.tools.tool_transform import ArgTransform
 from fastmcp.server.openapi import RouteMap, MCPType
 from fastmcp.server.auth import BearerAuthProvider
 from fastmcp.server.auth.providers.bearer import RSAKeyPair
+from fastmcp.utilities.components import FastMCPComponent
+from fastmcp.utilities.openapi import parse_openapi_to_http_routes, HTTPRoute
+
 from .config import Settings
-from .utils import inspect_mcp_components, create_api_client
+from .utils import inspect_mcp_components, create_api_client, deep_clean_schema, find_route_by_id
 from .logging_config import setup_logging
 from .middleware import ErrorHandlingMiddleware, TimingMiddleware
 
@@ -55,6 +59,45 @@ def limit_page_size_in_spec(spec: dict, logger: logging.Logger, max_size: int = 
     return spec
 
 
+def customize_for_gemini(route, component, logger: logging.Logger):
+    """
+    Simplifie les schémas d'un composant pour une meilleure compatibilité
+    avec les modèles stricts comme Gemini, en retirant les titres.
+    """
+    tool_name = getattr(component, 'name', 'Unknown')
+    cleaned_schemas = []
+    
+    # Nettoyer le schéma d'entrée
+    if hasattr(component, 'input_schema') and component.input_schema:
+        deep_clean_schema(component.input_schema)
+        cleaned_schemas.append("input schema")
+        logger.info(f"Input schema cleaned for tool: {tool_name}")
+    
+    # Nettoyer le schéma de sortie
+    if hasattr(component, 'output_schema') and component.output_schema:
+        deep_clean_schema(component.output_schema)
+        cleaned_schemas.append("output schema")
+        logger.info(f"Output schema cleaned for tool: {tool_name}")
+    
+    # Message de résumé si des schémas ont été nettoyés
+    if cleaned_schemas:
+        logger.info(f"Schema cleaning completed for tool '{tool_name}': {', '.join(cleaned_schemas)}")
+    else:
+        logger.debug(f"No schemas found to clean for tool: {tool_name}")
+
+
+def discover_and_customize(route: HTTPRoute, component: FastMCPComponent, logger: logging.Logger, op_id_map: dict[str, str]):
+    """
+    Personnalise le composant pour Gemini et découvre le nom de l'outil généré.
+    """
+    # Appel de la fonction de personnalisation existante
+    customize_for_gemini(route, component, logger)
+    
+    # Découverte du nom de l'outil et stockage dans la map
+    if hasattr(route, 'operation_id') and route.operation_id and hasattr(component, 'name') and component.name:
+        op_id_map[route.operation_id] = component.name
+
+
 async def main():
     """
     Fonction principale qui configure et lance le serveur MCP.
@@ -69,6 +112,9 @@ async def main():
     
     # === 0. CHARGEMENT DE LA CONFIGURATION ===
     settings = Settings()
+    
+    # Dictionnaire pour stocker la correspondance entre operation_id et noms d'outils générés
+    op_id_to_mangled_name: dict[str, str] = {}
     
     # === 1. CONFIGURATION DU LOGGING ===
     logger = setup_logging()
@@ -89,6 +135,11 @@ async def main():
             
             api_title = openapi_spec.get("info", {}).get("title", "Unknown API")
             logger.info(f"Successfully loaded OpenAPI spec: '{api_title}'")
+            
+            # === PRÉ-PARSING DE LA SPÉCIFICATION OPENAPI ===
+            logger.info("Parsing OpenAPI specification to HTTP routes...")
+            http_routes = parse_openapi_to_http_routes(openapi_spec)
+            logger.info(f"Successfully parsed {len(http_routes)} HTTP routes from OpenAPI specification")
             
             # === MODIFICATION DES LIMITES DE PAGINATION ===
             # Limite la taille des pages pour les outils de listing à 25 éléments maximum
@@ -124,6 +175,7 @@ async def main():
         logger.info("Configuring custom tool names...")
         
         # Mapping des noms d'opérations OpenAPI vers des noms d'outils MCP plus conviviaux
+        # Note: Noms courts pour respecter la limite de 60 caractères de FastMCP
         custom_mcp_tool_names = {
             # Endpoints de Structures
             "list_structures_endpoint_api_v0_structures_get": "list_all_structures",
@@ -137,7 +189,7 @@ async def main():
             "retrieve_service_endpoint_api_v0_services__source___id__get": "get_service_details",
             "search_services_endpoint_api_v0_search_services_get": "search_services",
 
-            # Endpoints de Documentation (ceux-ci fonctionnent maintenant)
+            # Endpoints de Documentation
             "as_dict_list_api_v0_doc_labels_nationaux_get": "doc_list_labels_nationaux",
             "as_dict_list_api_v0_doc_thematiques_get": "doc_list_thematiques",
             "as_dict_list_api_v0_doc_typologies_services_get": "doc_list_typologies_services",
@@ -145,8 +197,10 @@ async def main():
             "as_dict_list_api_v0_doc_profils_get": "doc_list_profils_publics",
             "as_dict_list_api_v0_doc_typologies_structures_get": "doc_list_typologies_structures",
             "as_dict_list_api_v0_doc_modes_accueil_get": "doc_list_modes_accueil",
-            "as_dict_list_api_v0_doc_modes_orientation_accompagnateur_get": "doc_list_modes_orientation_accompagnateur",
-            "as_dict_list_api_v0_doc_modes_orientation_beneficiaire_get": "doc_list_modes_orientation_beneficiaire"
+            
+            # Endpoints modes_orientation (NOMS RACCOURCIS pour respecter limite 60 caractères)
+            "as_dict_list_api_v0_doc_modes_orientation_accompagnateur_get": "doc_modes_orient_accomp",
+            "as_dict_list_api_v0_doc_modes_orientation_beneficiaire_get": "doc_modes_orient_benef",
         }
 
         # === 6. CONFIGURATION DES ROUTES MCP ===
@@ -221,7 +275,8 @@ async def main():
             client=api_client,
             name=settings.MCP_SERVER_NAME,
             route_maps=custom_route_maps,
-            auth=auth_provider
+            auth=auth_provider,
+            mcp_component_fn=lambda route, component: discover_and_customize(route, component, logger, op_id_to_mangled_name)
         )
         
         logger.info(f"FastMCP server '{mcp_server.name}' created successfully!")
@@ -241,39 +296,146 @@ async def main():
         mcp_server.add_middleware(timing_middleware)
         logger.info("   - Timing middleware added successfully")
 
-        # === 10. MODERNISATION DU RENOMMAGE DES OUTILS ===
-        logger.info("Applying custom tool names using Tool.from_tool()...")
+        # === 10. RENOMMAGE ET ENRICHISSEMENT AVANCÉ DES OUTILS ===
+        logger.info("Applying advanced tool transformations using Tool.from_tool()...")
         
         successful_renames = 0
         total_tools = len(custom_mcp_tool_names)
         
         for original_name, new_name in custom_mcp_tool_names.items():
+            # Rechercher la route correspondante dans les données OpenAPI
+            route = await find_route_by_id(original_name, http_routes)
+            if route is None:
+                logger.warning(f"  ✗ Route not found for operation_id: '{original_name}' - skipping transformation")
+                continue
+            
+            # Utilise la map pour obtenir le nom de l'outil généré par FastMCP
+            mangled_tool_name = op_id_to_mangled_name.get(original_name)
+            if not mangled_tool_name:
+                logger.warning(f"  ✗ Could not find a generated tool for operation_id: '{original_name}' - skipping transformation")
+                continue
+            
             try:
-                # Récupérer l'outil original depuis le serveur
-                original_tool = await mcp_server.get_tool(original_name)
-                if original_tool:
-                    # Créer un nouvel outil transformé avec le nouveau nom
-                    # Utilisation explicite du paramètre 'name' pour plus de clarté
-                    transformed_tool = Tool.from_tool(
-                        tool=original_tool, 
-                        name=new_name
-                    )
-                    
-                    # Ajouter le nouvel outil au serveur
-                    mcp_server.add_tool(transformed_tool)
-                    
-                    # IMPORTANT: Désactiver l'outil original pour éviter les doublons
-                    # et la confusion pour le LLM
-                    original_tool.disable()
-                    
-                    successful_renames += 1
-                    logger.info(f"  ✓ Transformed tool: '{original_name}' -> '{new_name}'")
+                # Récupérer l'outil original en utilisant son nom "manglé"
+                original_tool = await mcp_server.get_tool(mangled_tool_name)
+                if not original_tool:
+                    logger.warning(f"  ✗ Tool not found: '{mangled_tool_name}' (may have been renamed during OpenAPI processing)")
+                    continue
+                
+                # === ENRICHISSEMENT DES ARGUMENTS ===
+                arg_transforms = {}
+                param_count = 0
+                
+                # Enrichir les descriptions des paramètres depuis l'OpenAPI
+                if hasattr(route, 'parameters') and route.parameters:
+                    for param in route.parameters:
+                        if hasattr(param, 'name') and param.name:
+                            transforms = {}
+                            
+                            # Ajouter une description si disponible
+                            if hasattr(param, 'description') and param.description and param.description.strip():
+                                transforms['description'] = param.description.strip()
+                                param_count += 1
+                            
+                            # Ajouter des exemples si disponibles
+                            if hasattr(param, 'example') and param.example:
+                                transforms['examples'] = [param.example]
+                            
+                            # Créer l'ArgTransform seulement s'il y a des transformations
+                            if transforms:
+                                arg_transforms[param.name] = ArgTransform(**transforms)
+                                logger.debug(f"    - Enriching parameter '{param.name}': {list(transforms.keys())}")
+                
+                # === CRÉATION DE LA DESCRIPTION ENRICHIE ===
+                tool_description = None
+                if hasattr(route, 'description') and route.description and route.description.strip():
+                    tool_description = route.description.strip()
+                elif hasattr(route, 'summary') and route.summary and route.summary.strip():
+                    # Fallback vers le summary si pas de description
+                    tool_description = route.summary.strip()
                 else:
-                    logger.warning(f"  ✗ Tool not found: '{original_name}' (may have been renamed during OpenAPI processing)")
+                    # Description par défaut basée sur le nom de l'outil
+                    tool_description = f"Execute the {new_name} operation on the Data Inclusion API"
+                
+                # === AJOUT DE TAGS POUR ORGANISATION ===
+                tool_tags = {"data-inclusion", "api"}
+                
+                # Ajouter des tags spécifiques selon le type d'endpoint
+                if "list_all" in new_name or "search" in new_name:
+                    tool_tags.add("listing")
+                if "get_" in new_name and "details" in new_name:
+                    tool_tags.add("details")
+                if "doc_" in new_name:
+                    tool_tags.add("documentation")
+                if any(endpoint in new_name for endpoint in ["structures", "services", "sources"]):
+                    tool_tags.add("core-data")
+                
+                # === CRÉATION DU NOUVEL OUTIL TRANSFORMÉ ===
+                transformed_tool = Tool.from_tool(
+                    tool=original_tool,
+                    name=new_name,
+                    description=tool_description,
+                    transform_args=arg_transforms if arg_transforms else None,
+                    tags=tool_tags
+                )
+                
+                # === AJOUT ET SUPPRESSION ===
+                # Ajouter le nouvel outil au serveur
+                mcp_server.add_tool(transformed_tool)
+                
+                # IMPORTANT: Supprimer l'outil original pour éviter les doublons
+                # et la confusion pour le LLM
+                try:
+                    mcp_server.remove_tool(mangled_tool_name)
+                    logger.debug(f"    - Removed original tool: '{mangled_tool_name}'")
+                except Exception as remove_error:
+                    # En cas d'échec de suppression, désactiver au moins l'outil
+                    logger.debug(f"    - Could not remove '{mangled_tool_name}', disabling instead: {remove_error}")
+                    original_tool.disable()
+                
+                # === LOGGING DE SUCCÈS ===
+                successful_renames += 1
+                enrichment_info = []
+                
+                if tool_description:
+                    enrichment_info.append("description")
+                if param_count > 0:
+                    enrichment_info.append(f"{param_count} param descriptions")
+                if tool_tags:
+                    enrichment_info.append(f"{len(tool_tags)} tags")
+                
+                enrichment_msg = f" (enriched: {', '.join(enrichment_info)})" if enrichment_info else ""
+                logger.info(f"  ✓ Transformed tool: '{original_name}' -> '{new_name}'{enrichment_msg}")
+                
             except Exception as e:
-                logger.warning(f"  ✗ Failed to transform tool '{original_name}' -> '{new_name}': {e}")
+                logger.error(f"  ✗ Failed to transform tool '{original_name}' -> '{new_name}': {e}")
+                logger.debug(f"    Exception details: {type(e).__name__}: {str(e)}")
         
-        logger.info(f"Tool transformation completed: {successful_renames}/{total_tools} tools successfully renamed")
+        # === RÉSUMÉ FINAL ===
+        if successful_renames > 0:
+            logger.info(f"✓ Tool transformation completed: {successful_renames}/{total_tools} tools successfully transformed")
+        else:
+            logger.warning(f"⚠️  No tools were successfully transformed out of {total_tools} attempted")
+        
+        # Vérifier que nous avons encore des outils après transformation
+        final_tools = await mcp_server.get_tools()
+        enabled_tools = [name for name, tool in final_tools.items() if tool.enabled]
+        logger.info(f"📊 Final tool count: {len(enabled_tools)} enabled tools available")
+        
+        # === DEBUG: AFFICHER LES OPERATION_IDS DISPONIBLES ===
+        # Afficher les operation_ids non mappés pour aider au debug
+        logger.info("=== OpenAPI Route Analysis ===")
+        available_ops = [route.operation_id for route in http_routes if hasattr(route, 'operation_id') and route.operation_id]
+        unmapped_ops = [op_id for op_id in available_ops if op_id not in custom_mcp_tool_names]
+        
+        logger.info(f"Total OpenAPI routes: {len(available_ops)}")
+        logger.info(f"Mapped routes: {len(custom_mcp_tool_names)}")
+        logger.info(f"Unmapped routes: {len(unmapped_ops)}")
+        
+        if unmapped_ops:
+            logger.info("⚠️  Unmapped operation_ids (should be added to custom_mcp_tool_names):")
+            for op_id in sorted(unmapped_ops):
+                logger.info(f"  - '{op_id}'")
 
         # === 11. INSPECTION DES COMPOSANTS MCP ===
         logger.info("Inspecting MCP components...")
