@@ -12,9 +12,7 @@ dependencies = [
     "fastmcp",
     "httpx",
     "python-dotenv",
-    "langgraph",
-    "langchain",
-    "langchain-anthropic",
+    "pydantic-ai-slim[mcp,google,openai,cli]",
     "pydantic-settings"
 ]
 

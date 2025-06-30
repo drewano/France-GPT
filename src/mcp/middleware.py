@@ -97,21 +97,24 @@ class ErrorHandlingMiddleware(Middleware):
             
             if isinstance(error_details, dict):
                 # Extraire le message d'erreur principal
-                api_message = (
-                    error_details.get("error", {}).get("message") if isinstance(error_details.get("error"), dict)
-                    else error_details.get("message") 
-                    or error_details.get("detail")
-                    or error_details.get("error")
-                    or "No error details available"
-                )
+                error_field = error_details.get("error")
+                if isinstance(error_field, dict):
+                    api_message = error_field.get("message", "No error message available")
+                else:
+                    api_message = (
+                        error_details.get("message") 
+                        or error_details.get("detail")
+                        or str(error_details.get("error", ""))
+                        or "No error details available"
+                    )
                 
                 detailed_message = f"API Error {status_code} ({reason}): {api_message}"
                 
                 # Ajouter des détails supplémentaires si disponibles
                 if "error_code" in error_details:
                     detailed_message += f" [Code: {error_details['error_code']}]"
-                elif isinstance(error_details.get("error"), dict) and "code" in error_details["error"]:
-                    detailed_message += f" [Code: {error_details['error']['code']}]"
+                elif isinstance(error_field, dict) and "code" in error_field:
+                    detailed_message += f" [Code: {error_field.get('code')}]"
                     
             else:
                 detailed_message = f"API Error {status_code} ({reason}): {str(error_details)}"
