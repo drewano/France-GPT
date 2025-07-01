@@ -10,6 +10,7 @@ import logging
 from contextlib import asynccontextmanager
 import uvicorn
 import httpx
+import logfire
 from fasta2a import FastA2A, Skill
 from fasta2a.broker import InMemoryBroker
 from fasta2a.storage import InMemoryStorage
@@ -64,6 +65,10 @@ async def lifespan(app: FastA2A):
     # Charger la configuration
     settings = Settings()
     
+    # Configurer et instrumenter Logfire pour l'observabilité
+    logfire.configure()
+    logfire.instrument_pydantic_ai()
+    
     logger.info("=" * 60)
     logger.info("🚀 Starting DataInclusion Agent initialization...")
     logger.info(f"📡 Target MCP server: {settings.MCP_SERVER_URL}")
@@ -93,9 +98,9 @@ async def lifespan(app: FastA2A):
         raise
     
     # Configuration pour la logique de retry
-    max_retries = 10
-    base_delay = 1.0  # Délai initial en secondes
-    backoff_multiplier = 2.0
+    max_retries = settings.AGENT_MCP_CONNECTION_MAX_RETRIES
+    base_delay = settings.AGENT_MCP_CONNECTION_BASE_DELAY
+    backoff_multiplier = settings.AGENT_MCP_CONNECTION_BACKOFF_MULTIPLIER
     
     # Logique de retry pour la connexion au serveur MCP
     logger.info(f"🔄 Starting connection retry loop (max {max_retries} attempts)...")

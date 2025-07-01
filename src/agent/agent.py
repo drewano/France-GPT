@@ -28,7 +28,7 @@ def create_inclusion_agent(mcp_server: MCPServerStreamableHTTP) -> Agent:
     
     # Utiliser OpenAI au lieu de Gemini pour éviter les problèmes avec les schémas $ref
     # OpenAI gère mieux les schémas JSON complexes avec des références
-    model = OpenAIModel('gpt-4.1')
+    model = OpenAIModel(settings.AGENT_MODEL_NAME)
     
     return Agent(
         # Modèle OpenAI qui supporte mieux les schémas JSON complexes

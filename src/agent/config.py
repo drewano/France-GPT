@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     # Configuration de l'API OpenAI (recommandé pour éviter les problèmes de schéma $ref)
     OPENAI_API_KEY: str
     
+    # Nom du modèle OpenAI à utiliser pour l'agent
+    AGENT_MODEL_NAME: str = 'gpt-4.1'
+    
     # Configuration de l'API Gemini (optionnel, peut causer des problèmes avec les schémas $ref)
     GEMINI_API_KEY: str | None = None
     
@@ -28,6 +31,16 @@ class Settings(BaseSettings):
     
     # Port du serveur agent
     AGENT_PORT: int = 8001
+    
+    # Configuration de la logique de retry pour la connexion MCP
+    # Nombre maximum de tentatives de connexion au serveur MCP
+    AGENT_MCP_CONNECTION_MAX_RETRIES: int = 10
+    
+    # Délai initial en secondes avant la première nouvelle tentative
+    AGENT_MCP_CONNECTION_BASE_DELAY: float = 1.0
+    
+    # Multiplicateur pour le backoff exponentiel entre les tentatives
+    AGENT_MCP_CONNECTION_BACKOFF_MULTIPLIER: float = 2.0
     
     # Configuration Pydantic Settings
     model_config = SettingsConfigDict(
