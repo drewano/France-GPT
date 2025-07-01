@@ -11,6 +11,10 @@ from contextlib import asynccontextmanager
 import uvicorn
 import httpx
 import logfire
+import redis.asyncio as redis
+from redis.backoff import ExponentialBackoff
+from redis.retry import Retry
+from redis.exceptions import ConnectionError as RedisConnectionError, TimeoutError as RedisTimeoutError
 from fasta2a import FastA2A, Skill
 from fasta2a.broker import InMemoryBroker
 from fasta2a.storage import InMemoryStorage
@@ -18,6 +22,7 @@ from pydantic_ai.mcp import MCPServerStreamableHTTP
 
 from .agent import create_inclusion_agent
 from .config import Settings
+from .persistence import RedisStorage, RedisBroker
 
 # Configuration du logging
 logging.basicConfig(level=logging.INFO)
@@ -73,11 +78,40 @@ async def lifespan(app: FastA2A):
     logger.info("🚀 Starting DataInclusion Agent initialization...")
     logger.info(f"📡 Target MCP server: {settings.MCP_SERVER_URL}")
     logger.info(f"🔧 Agent port: {settings.AGENT_PORT}")
+    logger.info(f"🗄️ Redis server: {settings.REDIS_URL}")
     logger.info("=" * 60)
     
     # Validation préalable de l'URL MCP
     if not await validate_mcp_url(settings.MCP_SERVER_URL):
         raise ValueError(f"Invalid MCP server URL: {settings.MCP_SERVER_URL}")
+    
+    # Initialiser/Vérifier les composants Redis
+    try:
+        logger.info("🔌 Verifying Redis client connection...")
+        
+        # Utiliser le client Redis global déjà créé
+        global _redis_client
+        if _redis_client is None:
+            logger.warning("Redis client not initialized, creating new one...")
+            redis_client, _, _ = create_redis_components(settings)
+        else:
+            redis_client = _redis_client
+        
+        # Tester la connexion Redis
+        await redis_client.ping()
+        logger.info("✓ Redis client connected successfully")
+        
+        # Stocker le client Redis dans l'état de l'application
+        app.state.redis_client = redis_client
+        
+    except Exception as e:
+        logger.error(f"✗ Failed to connect to Redis: {type(e).__name__}: {e}")
+        logger.error("🔍 REDIS TROUBLESHOOTING:")
+        logger.error(f"   • Redis URL: {settings.REDIS_URL}")
+        logger.error("   • Check if Redis container is running: docker-compose ps redis")
+        logger.error("   • Check Redis logs: docker-compose logs redis")
+        logger.error("   • Verify Redis health: docker exec redis redis-cli ping")
+        raise
     
     # Instancier le client MCP
     try:
@@ -118,6 +152,16 @@ async def lifespan(app: FastA2A):
                 # Stocker l'agent dans l'état de l'application
                 app.state.agent = agent
                 yield  # Passer la main à l'application
+                
+                # Nettoyage des ressources après l'arrêt de l'application
+                logger.info("🧹 Cleaning up resources...")
+                try:
+                    if hasattr(app.state, 'redis_client'):
+                        await app.state.redis_client.aclose()
+                        logger.info("✓ Redis client connection closed")
+                except Exception as e:
+                    logger.error(f"Error closing Redis client: {e}")
+                
                 return  # Sortir de la fonction après succès
                 
         except httpx.ConnectError as e:
@@ -188,38 +232,91 @@ async def lifespan(app: FastA2A):
             await asyncio.sleep(delay)
 
 
-# Créer l'application FastA2A avec configuration complète
-app = FastA2A(
-    # Configuration du stockage et du broker
-    storage=InMemoryStorage(),
-    broker=InMemoryBroker(),
+# Variables globales pour les composants partagés
+_redis_client = None
+_redis_storage = None
+_redis_broker = None
+
+
+def create_redis_components(settings: Settings):
+    """Créer les composants Redis configurés pour la production."""
+    global _redis_client, _redis_storage, _redis_broker
     
-    # Métadonnées de l'agent
-    name="DataInclusion Agent",
-    description="Agent IA spécialisé dans l'inclusion sociale en France. Aide à trouver des informations sur les structures et services d'aide, les ressources disponibles sur le territoire français.",
-    url="http://localhost:8001",
-    version="1.0.0",
+    # Configuration Redis avec pool de connexions optimisé
+    redis_client = redis.from_url(
+        settings.REDIS_URL,
+        retry_on_error=[RedisConnectionError, RedisTimeoutError],
+        retry=Retry(ExponentialBackoff(), 3),
+        health_check_interval=30,  # Vérification périodique des connexions
+        socket_connect_timeout=5,   # Timeout de connexion
+        socket_timeout=5,           # Timeout de lecture/écriture
+        max_connections=20,         # Pool de connexions
+    )
     
-    # Compétences de l'agent
-    skills=[
-        Skill(
-            id="datainclusion_chat",
-            name="DataInclusion Chat",
-            description="Recherche et fournit des informations sur les services d'inclusion sociale, les structures d'aide et les ressources disponibles en France",
-            tags=["inclusion", "social", "france", "aide", "services"],
-            examples=[
-                "Trouve-moi des structures d'aide pour l'insertion professionnelle à Paris",
-                "Quels sont les services disponibles pour l'aide au logement en région PACA ?",
-                "Comment trouver de l'aide alimentaire près de chez moi ?"
-            ],
-            input_modes=["application/json"],
-            output_modes=["application/json"]
-        )
-    ],
+    # Créer les composants Redis robustes
+    redis_storage = RedisStorage(
+        redis_client=redis_client,
+        task_ttl=7 * 24 * 3600,    # 7 jours
+        max_retries=3
+    )
     
-    # Gestionnaire de cycle de vie
-    lifespan=lifespan
-)
+    redis_broker = RedisBroker(
+        redis_client=redis_client,
+        channel_name="fasta2a:tasks",
+        max_retries=3,
+        reconnect_interval=5
+    )
+    
+    _redis_client = redis_client
+    _redis_storage = redis_storage
+    _redis_broker = redis_broker
+    
+    return redis_client, redis_storage, redis_broker
+
+
+def create_app() -> FastA2A:
+    """Créer l'application FastA2A avec architecture Redis robuste."""
+    # Charger la configuration
+    settings = Settings()
+    
+    # Créer les composants Redis partagés
+    redis_client, redis_storage, redis_broker = create_redis_components(settings)
+    
+    return FastA2A(
+        # Configuration du stockage et du broker Redis
+        storage=redis_storage,
+        broker=redis_broker,
+        
+        # Métadonnées de l'agent
+        name="DataInclusion Agent",
+        description="Agent IA spécialisé dans l'inclusion sociale en France. Aide à trouver des informations sur les structures et services d'aide, les ressources disponibles sur le territoire français.",
+        url="http://localhost:8001",
+        version="1.0.0",
+        
+        # Compétences de l'agent
+        skills=[
+            Skill(
+                id="datainclusion_chat",
+                name="DataInclusion Chat",
+                description="Recherche et fournit des informations sur les services d'inclusion sociale, les structures d'aide et les ressources disponibles en France",
+                tags=["inclusion", "social", "france", "aide", "services"],
+                examples=[
+                    "Trouve-moi des structures d'aide pour l'insertion professionnelle à Paris",
+                    "Quels sont les services disponibles pour l'aide au logement en région PACA ?",
+                    "Comment trouver de l'aide alimentaire près de chez moi ?"
+                ],
+                input_modes=["application/json"],
+                output_modes=["application/json"]
+            )
+        ],
+        
+        # Gestionnaire de cycle de vie
+        lifespan=lifespan
+    )
+
+
+# Créer l'instance de l'application
+app = create_app()
 
 
 if __name__ == "__main__":

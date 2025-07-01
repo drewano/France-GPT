@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     MCP_API_PATH: str = "/mcp"
     
     # Clés d'API et authentification
-    DATA_INCLUSION_API_KEY: str
+    DATA_INCLUSION_API_KEY: str = ""
     MCP_SERVER_SECRET_KEY: str | None = None
     
     # Configuration Pydantic Settings
