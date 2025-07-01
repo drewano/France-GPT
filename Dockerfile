@@ -25,6 +25,7 @@ RUN uv pip install --system -r pyproject.toml
 
 # Étape 7: Copier le reste du code de l'application
 COPY src/ ./src/
+COPY main.py ./
 
 # Étape 8: Exposer le port sur lequel l'application va écouter
 # Le conteneur rendra ce port disponible pour être mappé sur l'hôte.
@@ -43,4 +44,5 @@ ENV MCP_SERVER_NAME=DataInclusionAPI
 
 # Étape 10: Définir la commande pour lancer le serveur
 # C'est la commande qui sera exécutée au démarrage du conteneur.
-CMD ["python", "-m", "src.main"]
+# Cette commande sera surchargée par docker-compose.yml pour chaque service
+CMD ["python", "main.py"]

@@ -337,9 +337,8 @@ async def main():
                                 transforms['description'] = param.description.strip()
                                 param_count += 1
                             
-                            # Ajouter des exemples si disponibles
-                            if hasattr(param, 'example') and param.example:
-                                transforms['examples'] = [param.example]
+                            # Note: L'attribut 'example' n'est pas disponible sur ParameterInfo
+                            # Les exemples peuvent être ajoutés via d'autres moyens si nécessaire
                             
                             # Créer l'ArgTransform seulement s'il y a des transformations
                             if transforms:

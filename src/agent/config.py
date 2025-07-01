@@ -23,7 +23,11 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str | None = None
     
     # Configuration de connexion au serveur MCP
-    MCP_SERVER_URL: str = "http://127.0.0.1:8000/mcp"
+    # Utilise le nom du service Docker pour la communication inter-conteneurs
+    MCP_SERVER_URL: str = "http://mcp_server:8000/mcp"
+    
+    # Port du serveur agent
+    AGENT_PORT: int = 8001
     
     # Configuration Pydantic Settings
     model_config = SettingsConfigDict(

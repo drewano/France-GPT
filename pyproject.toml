@@ -13,7 +13,8 @@ dependencies = [
     "httpx",
     "python-dotenv",
     "pydantic-ai-slim[mcp,google,openai,cli]",
-    "pydantic-settings"
+    "pydantic-settings",
+    "fasta2a"
 ]
 
 [project.urls]
