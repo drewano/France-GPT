@@ -18,6 +18,8 @@ from fastmcp.server.auth import BearerAuthProvider
 from fastmcp.server.auth.providers.bearer import RSAKeyPair
 from fastmcp.utilities.components import FastMCPComponent
 from fastmcp.utilities.openapi import parse_openapi_to_http_routes, HTTPRoute
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse
 
 from .config import Settings
 from .utils import inspect_mcp_components, create_api_client, deep_clean_schema, find_route_by_id
@@ -281,6 +283,13 @@ async def main():
         
         logger.info(f"FastMCP server '{mcp_server.name}' created successfully!")
         logger.info("   - Custom GET-to-Tool mapping applied")
+
+        # === 8.5. AJOUT DE L'ENDPOINT DE SANTÉ ===
+        @mcp_server.custom_route("/health", methods=["GET"])
+        async def health_check(request: Request) -> PlainTextResponse:
+            """A simple health check endpoint."""
+            return PlainTextResponse("OK", status_code=200)
+        logger.info("   - Health check endpoint (/health) added successfully")
 
         # === 9. AJOUT DES MIDDLEWARES ===
         logger.info("Adding middleware stack...")

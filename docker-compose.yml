@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Service 1 : Le serveur MCP pour l'API data.inclusion
   mcp_server:
@@ -11,6 +9,12 @@ services:
       - "8000:8000" # Mappe le port 8000 de l'hôte au conteneur
     volumes:
       - ./src:/app/src # Synchronise le code pour le développement
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s  # Augmenté de 10s à 30s pour laisser plus de temps au serveur
+      timeout: 5s
+      retries: 5
+      start_period: 60s  # Augmenté de 30s à 60s pour un démarrage plus robuste
     networks:
       - app-network
 
@@ -24,10 +28,14 @@ services:
       - "8001:8001" # Mappe le port 8001 de l'hôte au conteneur
     volumes:
       - ./src:/app/src
+    restart: on-failure  # Redémarre automatiquement en cas d'échec
+    environment:
+      - MCP_CONNECTION_RETRY_DELAY=5  # Délai entre les tentatives de connexion MCP
     networks:
       - app-network
     depends_on:
-      - mcp_server # S'assure que le MCP est démarré avant l'agent
+      mcp_server:
+        condition: service_healthy
 
 networks:
   app-network:

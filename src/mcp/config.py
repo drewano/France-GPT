@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     
     # Configuration du serveur MCP
     MCP_SERVER_NAME: str = "DataInclusionAPI"
-    MCP_HOST: str = "127.0.0.1"
+    MCP_HOST: str = "0.0.0.0"
     MCP_PORT: int = 8000
     MCP_API_PATH: str = "/mcp"
     
