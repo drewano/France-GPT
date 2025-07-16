@@ -8,7 +8,6 @@ via le protocole Agent-to-Agent (A2A) de Pydantic AI.
 
 import sys
 import uvicorn
-from src.agent.server import app
 from src.agent.config import Settings
 
 
@@ -20,7 +19,7 @@ if __name__ == "__main__":
     try:
         settings = Settings()
         uvicorn.run(
-            app,
+            "src.agent.server:app",
             host="0.0.0.0",
             port=settings.AGENT_PORT,
             reload=False  # Pas de rechargement automatique pour le déploiement

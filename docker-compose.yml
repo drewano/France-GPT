@@ -29,29 +29,11 @@ services:
     volumes:
       - ./src:/app/src
     restart: on-failure  # Redémarre automatiquement en cas d'échec
-    environment:
-      - MCP_CONNECTION_RETRY_DELAY=5  # Délai entre les tentatives de connexion MCP
     networks:
       - app-network
     depends_on:
       mcp_server:
         condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  # Service 3 : Serveur Redis pour le broker et stockage persistant
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379" # Mappe le port 6379 de l'hôte au conteneur
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    networks:
-      - app-network
 
 networks:
   app-network:
