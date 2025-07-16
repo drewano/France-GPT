@@ -47,8 +47,6 @@ from .agent.agent import create_inclusion_agent
 from .gradio_utils import (
     create_tool_call_message,
     create_tool_result_message,
-    create_thinking_message,
-    create_final_response_message,
     create_error_message,
     log_gradio_message
 )
@@ -103,9 +101,6 @@ def create_complete_interface():
             # Initialiser la liste des messages de réponse
             response_messages = []
             
-            # Commencer par afficher le message de l'utilisateur
-            response_messages.append(gr.ChatMessage(role="user", content=message))
-            
             # Utiliser l'API avancée d'itération pour capturer les détails des outils
             async with agent.iter(message, message_history=formatted_history) as run:
                 async for node in run:
@@ -117,9 +112,9 @@ def create_complete_interface():
                         # Nœud de requête modèle - streaming des tokens
                         logger.info("Streaming de la requête modèle...")
                         
-                        # Ajouter un message pour indiquer que l'IA réfléchit
-                        thinking_message = create_thinking_message("", "🤔 Réflexion en cours...")
-                        response_messages.append(thinking_message)
+                        # Ajouter un message assistant normal pour le streaming
+                        streaming_message = gr.ChatMessage(role="assistant", content="")
+                        response_messages.append(streaming_message)
                         yield response_messages
                         
                         # Stream les tokens partiels
@@ -129,15 +124,14 @@ def create_complete_interface():
                                     logger.debug(f"Début de la partie {event.index}: {event.part}")
                                 elif isinstance(event, PartDeltaEvent):
                                     if isinstance(event.delta, TextPartDelta):
-                                        # Mettre à jour le message de réflexion avec le contenu
-                                        current_content = str(thinking_message.content) if thinking_message.content else ""
-                                        thinking_message.content = current_content + event.delta.content_delta
+                                        # Mettre à jour le message avec le contenu streamé
+                                        current_content = str(streaming_message.content) if streaming_message.content else ""
+                                        streaming_message.content = current_content + event.delta.content_delta
                                         yield response_messages
                                     elif isinstance(event.delta, ToolCallPartDelta):
                                         logger.debug(f"Appel d'outil en cours: {event.delta.args_delta}")
                                 elif isinstance(event, FinalResultEvent):
-                                    # Marquer la réflexion comme terminée
-                                    thinking_message.metadata = {"title": "🧠 Réflexion terminée", "status": "done"}
+                                    logger.debug("Streaming de la réponse terminé")
                                     yield response_messages
                                     
                     elif Agent.is_call_tools_node(node):
@@ -169,12 +163,7 @@ def create_complete_interface():
                                     yield response_messages
                                     
                     elif Agent.is_end_node(node):
-                        # Nœud de fin - afficher la réponse finale
-                        final_message = create_final_response_message(node.data.output)
-                        response_messages.append(final_message)
-                        log_gradio_message(final_message, "FINAL_RESPONSE")
-                        yield response_messages
-                        
+                        # Nœud de fin - traitement terminé
                         logger.info("Traitement terminé avec succès")
                         break
             
