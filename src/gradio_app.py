@@ -24,10 +24,11 @@ from typing import Dict, Any, List, AsyncGenerator, Optional
 
 import gradio as gr
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.responses import RedirectResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 from pydantic_ai import Agent
 from pydantic_ai.messages import (
@@ -48,7 +49,6 @@ from pydantic_ai.messages import (
 
 # Imports locaux
 from .agent.config import Settings
-from .agent.server import app as agent_app
 from .agent.agent import create_inclusion_agent
 from .gradio_utils import (
     create_tool_call_message,
@@ -64,9 +64,53 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Variable globale pour stocker l'agent
-# Cette variable sera assignée lors de l'initialisation de l'application
-global_agent: Optional[Agent] = None
+# L'agent sera stocké dans l'état de l'application FastAPI (app.state.agent)
+
+# Variable globale pour stocker l'instance de l'application FastAPI
+_app_instance = None
+
+def get_agent():
+    """
+    Récupère l'agent depuis l'état de l'application FastAPI.
+    
+    Returns:
+        Agent: L'instance de l'agent ou None si pas encore initialisé
+    """
+    if _app_instance is None:
+        return None
+    return getattr(_app_instance.state, 'agent', None)
+
+
+class ChatRequest(BaseModel):
+    """
+    Modèle Pydantic pour les requêtes de chat.
+    
+    Attributes:
+        prompt: Le message de l'utilisateur
+        history: Historique des messages précédents (optionnel)
+    """
+    prompt: str
+    history: list[ModelMessage] | None = None
+
+
+async def stream_agent_response(agent, prompt: str, history: list[ModelMessage] | None = None) -> AsyncGenerator[str, None]:
+    """
+    Fonction de streaming pour l'API FastAPI.
+    
+    Args:
+        agent: Instance de l'agent PydanticAI
+        prompt: Le message de l'utilisateur
+        history: Historique des messages précédents (optionnel)
+        
+    Yields:
+        Chunks de texte de la réponse de l'agent
+    """
+    try:
+        async with agent.run_stream(prompt, message_history=history) as result:
+            async for text_chunk in result.stream_text():
+                yield text_chunk
+    except Exception as e:
+        yield f"Erreur lors du traitement: {str(e)}"
 
 
 def create_complete_interface():
@@ -81,7 +125,7 @@ def create_complete_interface():
         Args:
             message: Message de l'utilisateur
             history: Historique des messages
-            request: Objet Request de Gradio/FastAPI
+            request: Objet Request de Gradio (non utilisé pour l'accès à l'agent)
             
         Yields:
             Listes de ChatMessage formatées incluant les détails des appels aux outils MCP
@@ -91,9 +135,8 @@ def create_complete_interface():
             return
         
         try:
-            # Utilisation de l'agent global au lieu de request.app.state.agent
-            agent = global_agent
-            
+            # Utilisation de l'agent récupéré depuis l'état de l'application
+            agent = get_agent()
             if agent is None:
                 yield [gr.ChatMessage(role="assistant", content="❌ Erreur: Agent non initialisé")]
                 return
@@ -252,8 +295,6 @@ async def lifespan(app: FastAPI):
     Args:
         app: Instance FastAPI
     """
-    global global_agent
-    
     logger.info("🚀 Démarrage de l'application Gradio + FastAPI...")
     
     # Chargement de la configuration
@@ -273,9 +314,8 @@ async def lifespan(app: FastAPI):
     for attempt in range(max_retries):
         try:
             async with agent.run_mcp_servers():
-                # Stocker l'instance de l'agent dans l'état de l'application ET dans la variable globale
+                # Stocker l'instance de l'agent dans l'état de l'application
                 app.state.agent = agent
-                global_agent = agent
                 
                 # Création des répertoires nécessaires
                 Path("feedback_data").mkdir(exist_ok=True)
@@ -302,7 +342,6 @@ async def lifespan(app: FastAPI):
             await asyncio.sleep(delay)
     
     # Nettoyage lors du shutdown
-    global_agent = None
     logger.info("🛑 Arrêt de l'application...")
     logger.info("✅ Nettoyage terminé")
 
@@ -315,6 +354,8 @@ def create_app() -> FastAPI:
     Returns:
         Instance FastAPI configurée
     """
+    global _app_instance
+    
     settings = Settings()
     
     # Application principale
@@ -326,6 +367,9 @@ def create_app() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc"
     )
+    
+    # Stocker l'instance de l'application dans la variable globale
+    _app_instance = app
     
     # Configuration CORS
     app.add_middleware(
@@ -375,8 +419,42 @@ def create_app() -> FastAPI:
                 }
             )
     
-    # Monter l'application agent sous /api
-    app.mount("/api", agent_app, name="agent")
+    # Créer l'APIRouter pour l'API agent
+    api_router = APIRouter()
+    
+    @api_router.post("/chat/stream")
+    async def chat_stream_api(chat_request: ChatRequest, request: Request):
+        """
+        Endpoint de chat avec streaming des réponses.
+        
+        Args:
+            chat_request: Requête contenant le prompt et l'historique
+            request: Objet Request de FastAPI pour accéder à l'état de l'application
+            
+        Returns:
+            StreamingResponse avec les chunks de texte de la réponse
+        """
+        # Récupération de l'agent depuis l'état de l'application
+        agent = request.app.state.agent
+        
+        # Retour de la réponse en streaming
+        return StreamingResponse(
+            stream_agent_response(agent, chat_request.prompt, chat_request.history),
+            media_type="text/event-stream"
+        )
+    
+    @api_router.get("/health")
+    async def api_health_check():
+        """
+        Endpoint de vérification de santé de l'API agent.
+        
+        Returns:
+            Statut OK avec code HTTP 200
+        """
+        return {"status": "OK"}
+    
+    # Monter l'APIRouter sous /api
+    app.include_router(api_router, prefix="/api")
     
     # Créer et monter l'interface Gradio
     gradio_interface = create_complete_interface()

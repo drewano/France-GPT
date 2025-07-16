@@ -40,11 +40,6 @@ services:
     env_file:
       - .env
     environment:
-      # --- AJOUT IMPORTANT CI-DESSOUS ---
-      # Indique à Python que la racine des packages est /app
-      - PYTHONPATH=/app 
-      # --- FIN DE L'AJOUT ---
-
       # Port sur lequel l'interface Gradio et l'API de l'agent seront accessibles
       - AGENT_PORT=8001
       # URL pour que l'agent puisse trouver le serveur MCP. 'mcp_server' est le nom du service.

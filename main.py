@@ -132,7 +132,7 @@ try:
 except ImportError as e:
     print(f"❌ Erreur d'importation: {e}")
     print("💡 Assurez-vous que toutes les dépendances sont installées:")
-    print("   pip install -r requirements.txt")
+    print("   uv pip install --system -r pyproject.toml")
     sys.exit(1)
 except Exception as e:
     print(f"❌ Erreur inattendue: {e}")
