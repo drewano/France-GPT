@@ -31,6 +31,26 @@ class ChatRequest(BaseModel):
     history: list[ModelMessage] | None = None
 
 
+async def stream_agent_response(agent, prompt: str, history: list[ModelMessage] | None = None) -> AsyncGenerator[str, None]:
+    """
+    Fonction de streaming pour l'API FastAPI.
+    
+    Args:
+        agent: Instance de l'agent PydanticAI
+        prompt: Le message de l'utilisateur
+        history: Historique des messages précédents (optionnel)
+        
+    Yields:
+        Chunks de texte de la réponse de l'agent
+    """
+    try:
+        async with agent.run_stream(prompt, message_history=history) as result:
+            async for text_chunk in result.stream_text():
+                yield text_chunk
+    except Exception as e:
+        yield f"Erreur lors du traitement: {str(e)}"
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -104,30 +124,9 @@ async def chat_stream(chat_request: ChatRequest, request: Request):
     # Récupération de l'agent depuis l'état de l'application
     agent = request.app.state.agent
     
-    async def generate_response() -> AsyncGenerator[str, None]:
-        """
-        Générateur asynchrone pour le streaming de la réponse.
-        
-        Yields:
-            Chunks de texte de la réponse de l'agent
-        """
-        try:
-            # Lancement du streaming avec l'agent
-            async with agent.run_stream(
-                prompt=chat_request.prompt,
-                message_history=chat_request.history
-            ) as result:
-                # Iteration sur les chunks de texte
-                async for text_chunk in result.stream_text():
-                    yield text_chunk
-                    
-        except Exception as e:
-            # En cas d'erreur, envoyer un message d'erreur
-            yield f"Erreur lors du traitement: {str(e)}"
-    
     # Retour de la réponse en streaming
     return StreamingResponse(
-        generate_response(),
+        stream_agent_response(agent, chat_request.prompt, chat_request.history),
         media_type="text/event-stream"
     )
 

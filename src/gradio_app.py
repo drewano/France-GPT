@@ -1,0 +1,316 @@
+#!/usr/bin/env python3
+"""
+Application Gradio intégrée avec FastAPI pour l'agent IA d'Inclusion Sociale.
+
+Cette application combine :
+- Le serveur FastAPI existant de l'agent IA (routes /api/*)
+- L'interface Gradio moderne (routes /chat/*)
+- Health checks pour les deux services
+
+Architecture :
+- /api/* : API REST de l'agent IA (chat/stream, health)
+- /chat/* : Interface Gradio interactive
+- / : Redirection vers l'interface Gradio
+- /health : Health check global
+- /docs : Documentation API FastAPI
+"""
+
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, Any, List, AsyncGenerator, Optional
+
+import gradio as gr
+import uvicorn
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic_ai.mcp import MCPServerStreamableHTTP
+from pydantic_ai import Agent
+
+# Imports locaux
+from .agent.config import Settings
+from .agent.server import app as agent_app
+from .agent.agent import create_inclusion_agent
+
+# Configuration du logging unifié
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Variable globale pour stocker l'agent
+# Cette variable sera assignée lors de l'initialisation de l'application
+global_agent: Optional[Agent] = None
+
+
+def create_complete_interface():
+    """
+    Crée l'interface Gradio complète avec streaming.
+    """
+    
+    async def chat_stream(message: str, history: List[Dict[str, str]], request: gr.Request) -> AsyncGenerator[str, None]:
+        """
+        Fonction de streaming pour l'interface de chat.
+        
+        Args:
+            message: Message de l'utilisateur
+            history: Historique des messages
+            request: Objet Request de Gradio/FastAPI
+            
+        Yields:
+            Chunks de la réponse de l'agent
+        """
+        if not message or not message.strip():
+            yield "⚠️ Veuillez entrer un message valide."
+            return
+        
+        try:
+            # Utilisation de l'agent global au lieu de request.app.state.agent
+            agent = global_agent
+            
+            if agent is None:
+                yield "❌ Erreur: Agent non initialisé"
+                return
+            
+            # Convertir l'historique au format attendu par l'agent
+            formatted_history = []
+            for msg in history:
+                if isinstance(msg, dict) and "role" in msg and "content" in msg:
+                    formatted_history.append(msg)
+            
+            # Utilisation directe de l'API de streaming de PydanticAI
+            async with agent.run_stream(message, message_history=formatted_history) as result:
+                # Stream le texte accumulé au fur et à mesure
+                async for text_chunk in result.stream_text():
+                    yield text_chunk
+            
+        except Exception as e:
+            logger.error(f"Erreur lors du streaming: {e}")
+            yield f"❌ Erreur: {str(e)}"
+    
+    # Exemples de conversation
+    examples = [
+        "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
+        "Trouve des structures d'aide près de 75001 Paris",
+        "Quels services d'insertion professionnelle à Lyon ?",
+        "Aide au logement d'urgence à Marseille",
+        "Services pour personnes handicapées à Lille",
+        "Comment obtenir une aide alimentaire ?",
+        "Structures d'accueil pour familles monoparentales"
+    ]
+    
+    # Créer l'interface ChatInterface
+    chat_interface = gr.ChatInterface(
+        fn=chat_stream,
+        type="messages",
+        title="🤖 Agent IA d'Inclusion Sociale",
+        description="Assistant intelligent spécialisé dans l'inclusion sociale en France",
+        examples=examples,
+        cache_examples=False,
+        chatbot=gr.Chatbot(
+            label="Assistant IA",
+            height=600,
+            show_copy_button=True,
+            avatar_images=(
+                "https://em-content.zobj.net/source/twitter/376/bust-in-silhouette_1f464.png",
+                "https://em-content.zobj.net/source/twitter/376/robot-face_1f916.png"
+            ),
+            placeholder="Bienvenue ! Posez votre question sur l'inclusion sociale...",
+        ),
+        textbox=gr.Textbox(
+            placeholder="Ex: Aide au logement près de 75001 Paris",
+            lines=1,
+            max_lines=3,
+            show_label=False
+        )
+    )
+    
+    return chat_interface
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Gestionnaire de cycle de vie pour l'application combinée.
+    
+    Gère la connexion au serveur MCP et l'initialisation de l'agent
+    avec logique de retry et backoff exponentiel.
+    
+    Args:
+        app: Instance FastAPI
+    """
+    global global_agent
+    
+    logger.info("🚀 Démarrage de l'application Gradio + FastAPI...")
+    
+    # Chargement de la configuration
+    settings = Settings()
+    
+    # Initialisation du serveur MCP
+    mcp_server = MCPServerStreamableHTTP(settings.MCP_SERVER_URL)
+    
+    # Création de l'agent avec le serveur MCP
+    agent = create_inclusion_agent(mcp_server)
+    
+    # Logique de connexion au MCP avec retry et backoff exponentiel
+    max_retries = settings.AGENT_MCP_CONNECTION_MAX_RETRIES
+    base_delay = settings.AGENT_MCP_CONNECTION_BASE_DELAY
+    backoff_multiplier = settings.AGENT_MCP_CONNECTION_BACKOFF_MULTIPLIER
+    
+    for attempt in range(max_retries):
+        try:
+            async with agent.run_mcp_servers():
+                # Stocker l'instance de l'agent dans l'état de l'application ET dans la variable globale
+                app.state.agent = agent
+                global_agent = agent
+                
+                # Création des répertoires nécessaires
+                Path("feedback_data").mkdir(exist_ok=True)
+                Path("exports").mkdir(exist_ok=True)
+                Path("logs").mkdir(exist_ok=True)
+                
+                logger.info("✅ Application initialisée avec succès")
+                
+                # Application prête
+                yield
+                
+                # Code après yield s'exécute lors du shutdown
+                break
+                
+        except Exception as e:
+            if attempt == max_retries - 1:
+                # Dernière tentative échouée
+                raise RuntimeError(f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e}")
+            
+            # Calcul du délai avec backoff exponentiel
+            delay = base_delay * (backoff_multiplier ** attempt)
+            
+            logger.warning(f"Tentative {attempt + 1}/{max_retries} échouée. Nouvelle tentative dans {delay:.2f}s...")
+            await asyncio.sleep(delay)
+    
+    # Nettoyage lors du shutdown
+    global_agent = None
+    logger.info("🛑 Arrêt de l'application...")
+    logger.info("✅ Nettoyage terminé")
+
+
+# Création de l'application FastAPI principale
+def create_app() -> FastAPI:
+    """
+    Crée l'application FastAPI combinée avec Gradio.
+    
+    Returns:
+        Instance FastAPI configurée
+    """
+    settings = Settings()
+    
+    # Application principale
+    app = FastAPI(
+        title="Agent IA d'Inclusion Sociale - Interface Complète",
+        description="Application complète combinant l'agent IA et l'interface Gradio",
+        version="1.0.0",
+        lifespan=lifespan,
+        docs_url="/docs",
+        redoc_url="/redoc"
+    )
+    
+    # Configuration CORS
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+    )
+    
+    # Servir les fichiers statiques
+    static_path = Path("static")
+    if static_path.exists():
+        app.mount("/static", StaticFiles(directory="static"), name="static")
+    
+    # Routes de l'application principale
+    
+    @app.get("/")
+    async def root():
+        """Redirection vers l'interface Gradio."""
+        return RedirectResponse(url="/chat")
+    
+    @app.get("/health")
+    async def health_check():
+        """Health check global de l'application."""
+        try:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "healthy",
+                    "timestamp": datetime.now().isoformat(),
+                    "services": {
+                        "agent": {"healthy": True},
+                        "interface": {"healthy": True}
+                    }
+                }
+            )
+            
+        except Exception as e:
+            logger.error(f"Erreur lors du health check: {e}")
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "status": "unhealthy",
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+    
+    # Monter l'application agent sous /api
+    app.mount("/api", agent_app, name="agent")
+    
+    # Créer et monter l'interface Gradio
+    gradio_interface = create_complete_interface()
+    
+    # Monter l'interface Gradio
+    app = gr.mount_gradio_app(
+        app=app,
+        blocks=gradio_interface,
+        path="/chat"
+    )
+    
+    logger.info("🎯 Application FastAPI + Gradio configurée:")
+    logger.info("   - Interface Gradio : http://localhost:8000/chat")
+    logger.info("   - API Agent : http://localhost:8000/api")
+    logger.info("   - Documentation : http://localhost:8000/docs")
+    logger.info("   - Health Check : http://localhost:8000/health")
+    
+    return app
+
+
+# Instance de l'application
+app = create_app()
+
+
+# Fonction utilitaire pour le développement
+def run_development():
+    """Lance l'application en mode développement avec rechargement automatique."""
+    settings = Settings()
+    
+    uvicorn.run(
+        "src.gradio_app:app",
+        host="0.0.0.0",
+        port=settings.AGENT_PORT,
+        reload=True,
+        reload_dirs=["src"],
+        reload_excludes=["*.pyc", "__pycache__", "*.log"],
+        log_level="info",
+        access_log=True,
+        use_colors=True
+    )
+
+
+if __name__ == "__main__":
+    """Point d'entrée pour l'exécution directe."""
+    run_development() 

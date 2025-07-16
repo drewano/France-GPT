@@ -32,11 +32,6 @@ class Settings(BaseSettings):
     # Port du serveur agent
     AGENT_PORT: int = 8001
     
-    # Configuration Redis
-    REDIS_HOST: str = "redis"
-    REDIS_PORT: int = 6379
-    REDIS_DB: int = 0
-    
     # Configuration de la logique de retry pour la connexion MCP
     # Nombre maximum de tentatives de connexion au serveur MCP
     AGENT_MCP_CONNECTION_MAX_RETRIES: int = 10
@@ -47,15 +42,9 @@ class Settings(BaseSettings):
     # Multiplicateur pour le backoff exponentiel entre les tentatives
     AGENT_MCP_CONNECTION_BACKOFF_MULTIPLIER: float = 2.0
     
-    @property
-    def REDIS_URL(self) -> str:
-        """
-        Construit l'URL de connexion Redis.
-        
-        Returns:
-            str: URL de connexion Redis au format redis://host:port/db
-        """
-        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+    # Configuration pour FastAPI + Gradio
+    CORS_ORIGINS: list[str] = ["*"]  # En production, spécifier les domaines autorisés
+    SECRET_KEY: str = "your-secret-key-here-change-in-production"
     
     # Configuration Pydantic Settings
     model_config = SettingsConfigDict(

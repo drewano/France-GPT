@@ -7,6 +7,6 @@ Ce package contient :
 """
 
 # Exposer les composants principaux du module MCP
-from .mcp import Settings, main
+from .mcp_server import Settings, main
 
 __all__ = ["Settings", "main"] 
