@@ -38,6 +38,12 @@ from pydantic_ai.messages import (
     PartStartEvent,
     TextPartDelta,
     ToolCallPartDelta,
+    ModelRequest,
+    UserPromptPart,
+    SystemPromptPart,
+    TextPart,
+    ModelResponse,
+    ModelMessage
 )
 
 # Imports locaux
@@ -92,11 +98,32 @@ def create_complete_interface():
                 yield [gr.ChatMessage(role="assistant", content="❌ Erreur: Agent non initialisé")]
                 return
             
-            # Convertir l'historique au format attendu par l'agent
-            formatted_history = []
+            # Convertir l'historique Gradio au format pydantic-ai
+            formatted_history: List[ModelMessage] = []
             for msg in history:
-                if isinstance(msg, dict) and "role" in msg and "content" in msg:
-                    formatted_history.append(msg)
+                if isinstance(msg, dict):
+                    # Nettoyer le message pour ne garder que les champs essentiels
+                    role = msg.get("role", "")
+                    content = msg.get("content", "")
+                    
+                    if role == "user" and content:
+                        # Créer un ModelRequest avec UserPromptPart
+                        user_request = ModelRequest(
+                            parts=[UserPromptPart(content=content)]
+                        )
+                        formatted_history.append(user_request)
+                    elif role == "assistant" and content:
+                        # Créer un ModelResponse avec TextPart
+                        assistant_response = ModelResponse(
+                            parts=[TextPart(content=content)]
+                        )
+                        formatted_history.append(assistant_response)
+                    elif role == "system" and content:
+                        # Créer un ModelRequest avec SystemPromptPart
+                        system_request = ModelRequest(
+                            parts=[SystemPromptPart(content=content)]
+                        )
+                        formatted_history.append(system_request)
             
             # Initialiser la liste des messages de réponse
             response_messages = []
