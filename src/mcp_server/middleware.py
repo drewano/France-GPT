@@ -1,211 +1,317 @@
 """
-Middleware personnalisés pour le serveur MCP DataInclusion.
+Middlewares personnalisés pour le serveur MCP DataInclusion.
+
+Ce module contient les middlewares qui ajoutent des fonctionnalités transversales
+au serveur MCP, comme la gestion d'erreurs, le timing et le logging des appels aux outils.
 """
 
-import time
 import logging
-import httpx
-from fastmcp.server.middleware import Middleware, MiddlewareContext
-from fastmcp.exceptions import ToolError, ResourceError
-from mcp import McpError
-from mcp.types import ErrorData
+import time
+import json
+from typing import Any, Dict, Optional
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
+
+from mcp.types import CallToolRequest, CallToolResult
 
 
-class ErrorHandlingMiddleware(Middleware):
+class ErrorHandlingMiddleware(BaseHTTPMiddleware):
     """
-    Middleware pour capturer les exceptions et les transformer en erreurs MCP standardisées.
+    Middleware de gestion d'erreurs pour le serveur MCP.
     
-    Ce middleware intercepte toutes les exceptions non gérées et les transforme en
-    erreurs MCP standardisées avec des codes d'erreur appropriés pour le client.
-    
-    Gestion spécialisée pour :
-    - McpError : Re-levées sans modification (déjà standardisées)
-    - ToolError/ResourceError : Messages spécifiques préservés 
-    - HTTPStatusError : Extraction des détails d'erreur API
-    - Autres exceptions : Préservation du message original quand informatif
+    Ce middleware capture les erreurs non gérées et les transforme en réponses
+    appropriées pour les clients MCP.
     """
     
-    def __init__(self, logger: logging.Logger):
-        """
-        Initialise le middleware de gestion d'erreurs.
-        
-        Args:
-            logger: Instance du logger pour enregistrer les erreurs
-        """
+    def __init__(self, app: ASGIApp, logger: logging.Logger):
+        super().__init__(app)
         self.logger = logger
     
-    async def on_request(self, context: MiddlewareContext, call_next):
+    async def dispatch(self, request: Request, call_next) -> Response:
         """
-        Intercepte les requêtes MCP pour capturer et standardiser les erreurs.
+        Traite les requêtes avec gestion d'erreurs.
         
         Args:
-            context: Contexte de la requête MCP contenant les métadonnées
-            call_next: Fonction pour continuer la chaîne de middleware
+            request: La requête HTTP entrante
+            call_next: La fonction suivante dans la chaîne de middleware
             
         Returns:
-            Le résultat de la requête après traitement
-            
-        Raises:
-            McpError: Exception MCP standardisée avec ErrorData approprié
+            Response: La réponse HTTP avec gestion d'erreurs
         """
         try:
-            # Traiter la requête normalement
-            return await call_next(context)
-            
-        except McpError:
-            # Re-lever les erreurs MCP déjà standardisées sans modification
-            raise
-            
-        except (ToolError, ResourceError) as e:
-            # Logger l'erreur spécifique des outils/ressources MCP
-            self.logger.error(
-                f"MCP tool/resource error in {context.method}: {type(e).__name__}: {e}",
-                exc_info=True
+            response = await call_next(request)
+            return response
+        except Exception as e:
+            self.logger.error(f"Erreur non gérée dans le serveur MCP: {e}")
+            # Retourner une réponse d'erreur appropriée
+            return Response(
+                content=json.dumps({"error": str(e)}),
+                status_code=500,
+                media_type="application/json"
             )
+
+
+class TimingMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware de timing pour mesurer les performances des requêtes.
+    
+    Ce middleware mesure le temps de traitement de chaque requête et le log.
+    """
+    
+    def __init__(self, app: ASGIApp, logger: logging.Logger):
+        super().__init__(app)
+        self.logger = logger
+    
+    async def dispatch(self, request: Request, call_next) -> Response:
+        """
+        Traite les requêtes avec mesure du temps.
+        
+        Args:
+            request: La requête HTTP entrante
+            call_next: La fonction suivante dans la chaîne de middleware
             
-            # Créer une ErrorData avec le message spécifique de l'outil
-            # Code -32603 : Erreur interne (selon la spec JSON-RPC)
-            error_data = ErrorData(
-                code=-32603,
-                message=str(e)  # Préserver le message spécifique de l'outil
-            )
+        Returns:
+            Response: La réponse HTTP avec timing
+        """
+        start_time = time.time()
+        
+        response = await call_next(request)
+        
+        process_time = time.time() - start_time
+        
+        # Log le timing
+        self.logger.info(f"Requête {request.method} {request.url.path} traitée en {process_time:.4f}s")
+        
+        # Ajouter le timing dans les headers
+        response.headers["X-Process-Time"] = str(process_time)
+        
+        return response
+
+
+class MCPToolCallLoggingMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware spécialisé pour logger les appels aux outils MCP.
+    
+    Ce middleware capture et log en détail tous les appels aux outils MCP,
+    incluant les arguments, les résultats et les métadonnées.
+    """
+    
+    def __init__(self, app: ASGIApp, logger: logging.Logger):
+        super().__init__(app)
+        self.logger = logger
+        self.call_counter = 0
+    
+    async def dispatch(self, request: Request, call_next) -> Response:
+        """
+        Traite les requêtes avec logging des appels aux outils MCP.
+        
+        Args:
+            request: La requête HTTP entrante
+            call_next: La fonction suivante dans la chaîne de middleware
             
-            # Lever une McpError standardisée pour le client
-            raise McpError(error_data)
+        Returns:
+            Response: La réponse HTTP avec logging des outils
+        """
+        # Incrémenter le compteur d'appels
+        self.call_counter += 1
+        call_id = self.call_counter
+        
+        # Vérifier si c'est un appel d'outil MCP
+        is_tool_call = self._is_tool_call_request(request)
+        
+        if is_tool_call:
+            # Logger le début de l'appel d'outil
+            tool_info = await self._extract_tool_info(request)
+            self.logger.info(f"🛠️ [Appel #{call_id}] Début appel outil: {tool_info.get('name', 'Unknown')}")
+            self.logger.debug(f"🛠️ [Appel #{call_id}] Arguments: {tool_info.get('arguments', {})}")
             
-        except httpx.HTTPStatusError as e:
-            # Logger l'erreur HTTP de manière détaillée
-            self.logger.error(
-                f"HTTP status error in {context.method}: {e.response.status_code} {e.response.reason_phrase}",
-                exc_info=True
-            )
+            start_time = time.time()
+        
+        # Traiter la requête
+        response = await call_next(request)
+        
+        if is_tool_call:
+            # Logger le résultat de l'appel d'outil
+            process_time = time.time() - start_time
             
-            # Essayer de parser la réponse JSON pour extraire les détails
-            error_details = None
             try:
-                error_details = e.response.json()
-            except Exception:
-                # Si on ne peut pas parser le JSON, utiliser le texte brut
-                try:
-                    error_details = {"message": e.response.text}
-                except Exception:
-                    error_details = {"message": "Unable to parse error response"}
-            
-            # Construire un message d'erreur clair
-            status_code = e.response.status_code
-            reason = e.response.reason_phrase or "Unknown Error"
-            
-            if isinstance(error_details, dict):
-                # Extraire le message d'erreur principal
-                error_field = error_details.get("error")
-                if isinstance(error_field, dict):
-                    api_message = error_field.get("message", "No error message available")
+                # Extraire le résultat de la réponse
+                result_info = await self._extract_result_info(response)
+                
+                self.logger.info(f"✅ [Appel #{call_id}] Outil terminé en {process_time:.4f}s")
+                self.logger.debug(f"✅ [Appel #{call_id}] Résultat: {result_info}")
+                
+                # Logger des statistiques supplémentaires
+                if result_info.get('is_error', False):
+                    self.logger.warning(f"⚠️ [Appel #{call_id}] Erreur dans l'outil: {result_info.get('error', 'Unknown')}")
                 else:
-                    api_message = (
-                        error_details.get("message") 
-                        or error_details.get("detail")
-                        or str(error_details.get("error", ""))
-                        or "No error details available"
-                    )
+                    result_size = len(str(result_info.get('content', '')))
+                    self.logger.debug(f"📊 [Appel #{call_id}] Taille résultat: {result_size} caractères")
                 
-                detailed_message = f"API Error {status_code} ({reason}): {api_message}"
-                
-                # Ajouter des détails supplémentaires si disponibles
-                if "error_code" in error_details:
-                    detailed_message += f" [Code: {error_details['error_code']}]"
-                elif isinstance(error_field, dict) and "code" in error_field:
-                    detailed_message += f" [Code: {error_field.get('code')}]"
-                    
-            else:
-                detailed_message = f"API Error {status_code} ({reason}): {str(error_details)}"
-            
-            # Créer une ErrorData avec le code Invalid Params (-32602)
-            error_data = ErrorData(
-                code=-32602,
-                message=detailed_message
-            )
-            
-            # Lever une McpError standardisée pour le client
-            raise McpError(error_data)
-            
-        except Exception as e:
-            # Logger l'erreur de manière détaillée
-            self.logger.error(
-                f"Unhandled exception in {context.method}: {type(e).__name__}: {e}",
-                exc_info=True  # Inclut la stack trace complète
-            )
-            
-            # Préserver le message d'erreur original s'il est informatif
-            original_message = str(e).strip()
-            if original_message and len(original_message) < 500:  # Éviter les messages trop longs
-                detailed_message = f"{type(e).__name__}: {original_message}"
-            else:
-                detailed_message = f"Internal server error: {type(e).__name__}"
-            
-            # Transformer l'exception en erreur MCP standardisée
-            # Code -32000 : Erreur interne du serveur (selon la spec JSON-RPC)
-            error_data = ErrorData(
-                code=-32000,
-                message=detailed_message
-            )
-            
-            # Lever une McpError standardisée pour le client
-            raise McpError(error_data)
-
-
-class TimingMiddleware(Middleware):
-    """
-    Middleware pour mesurer et journaliser le temps d'exécution des requêtes MCP.
+            except Exception as e:
+                self.logger.error(f"❌ [Appel #{call_id}] Erreur lors de l'extraction du résultat: {e}")
+        
+        return response
     
-    Ce middleware intercepte toutes les requêtes MCP, mesure leur temps d'exécution
-    et enregistre les métriques de performance via le système de logging.
-    """
-    
-    def __init__(self, logger: logging.Logger):
+    def _is_tool_call_request(self, request: Request) -> bool:
         """
-        Initialise le middleware de timing.
+        Vérifie si la requête est un appel d'outil MCP.
         
         Args:
-            logger: Instance du logger pour enregistrer les métriques de performance
-        """
-        self.logger = logger
-    
-    async def on_request(self, context: MiddlewareContext, call_next):
-        """
-        Intercepte les requêtes MCP pour mesurer leur temps d'exécution.
-        
-        Args:
-            context: Contexte de la requête MCP contenant les métadonnées
-            call_next: Fonction pour continuer la chaîne de middleware
+            request: La requête HTTP
             
         Returns:
-            Le résultat de la requête après traitement
+            bool: True si c'est un appel d'outil MCP
         """
-        # Enregistrer le temps de début
-        start_time = time.perf_counter()
+        # Vérifier l'URL et la méthode pour les appels d'outils MCP
+        path = request.url.path
+        method = request.method
+        
+        # Les appels d'outils MCP sont généralement des POST vers /mcp/tools/<tool_name>
+        return (method == "POST" and 
+                ("/mcp" in path or "/tools" in path or "/call_tool" in path))
+    
+    async def _extract_tool_info(self, request: Request) -> Dict[str, Any]:
+        """
+        Extrait les informations sur l'outil depuis la requête.
+        
+        Args:
+            request: La requête HTTP
+            
+        Returns:
+            Dict: Informations sur l'outil (nom, arguments, etc.)
+        """
+        tool_info = {
+            "name": "Unknown",
+            "arguments": {},
+            "path": request.url.path,
+            "method": request.method
+        }
         
         try:
-            # Traiter la requête
-            result = await call_next(context)
+            # Extraire le nom de l'outil depuis l'URL
+            path_parts = request.url.path.split('/')
+            if len(path_parts) > 1:
+                tool_info["name"] = path_parts[-1]
             
-            # Calculer la durée en millisecondes
-            duration_ms = (time.perf_counter() - start_time) * 1000
-            
-            # Journaliser le succès de la requête
-            self.logger.info(
-                f"Request {context.method} completed in {duration_ms:.2f}ms"
-            )
-            
-            return result
+            # Tenter d'extraire les arguments du body (si applicable)
+            if hasattr(request, '_body') and request._body:
+                try:
+                    body_json = json.loads(request._body.decode())
+                    if isinstance(body_json, dict):
+                        tool_info["arguments"] = body_json.get("arguments", {})
+                except (json.JSONDecodeError, AttributeError):
+                    pass
             
         except Exception as e:
-            # Calculer la durée même en cas d'erreur
-            duration_ms = (time.perf_counter() - start_time) * 1000
+            self.logger.debug(f"Impossible d'extraire les info de l'outil: {e}")
+        
+        return tool_info
+    
+    async def _extract_result_info(self, response: Response) -> Dict[str, Any]:
+        """
+        Extrait les informations sur le résultat depuis la réponse.
+        
+        Args:
+            response: La réponse HTTP
             
-            # Journaliser l'échec de la requête
-            self.logger.warning(
-                f"Request {context.method} failed after {duration_ms:.2f}ms: {type(e).__name__}: {e}"
-            )
+        Returns:
+            Dict: Informations sur le résultat
+        """
+        result_info = {
+            "status_code": response.status_code,
+            "content": "",
+            "is_error": response.status_code >= 400
+        }
+        
+        try:
+            # Extraire le contenu de la réponse
+            if hasattr(response, 'body') and response.body:
+                try:
+                    body_content = response.body.decode() if isinstance(response.body, bytes) else str(response.body)
+                    result_info["content"] = body_content[:500] + "..." if len(body_content) > 500 else body_content
+                    
+                    # Tenter de parser comme JSON
+                    try:
+                        parsed_content = json.loads(body_content)
+                        if isinstance(parsed_content, dict):
+                            result_info["is_error"] = parsed_content.get("isError", False)
+                            if "error" in parsed_content:
+                                result_info["error"] = parsed_content["error"]
+                    except json.JSONDecodeError:
+                        pass
+                        
+                except Exception as e:
+                    result_info["content"] = f"Erreur lors de l'extraction: {e}"
+                    
+        except Exception as e:
+            self.logger.debug(f"Impossible d'extraire les info du résultat: {e}")
+        
+        return result_info
+
+
+class MCPRequestResponseLoggingMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware pour logger toutes les requêtes et réponses MCP.
+    
+    Ce middleware fournit un logging complet de toutes les interactions MCP.
+    """
+    
+    def __init__(self, app: ASGIApp, logger: logging.Logger, log_bodies: bool = False):
+        super().__init__(app)
+        self.logger = logger
+        self.log_bodies = log_bodies
+        self.request_counter = 0
+    
+    async def dispatch(self, request: Request, call_next) -> Response:
+        """
+        Traite les requêtes avec logging complet.
+        
+        Args:
+            request: La requête HTTP entrante
+            call_next: La fonction suivante dans la chaîne de middleware
             
-            # Re-lever l'exception pour ne pas interrompre le flux d'erreur
-            raise 
+        Returns:
+            Response: La réponse HTTP avec logging complet
+        """
+        self.request_counter += 1
+        req_id = self.request_counter
+        
+        # Logger la requête entrante
+        self.logger.info(f"📥 [Req #{req_id}] {request.method} {request.url.path}")
+        
+        if self.log_bodies:
+            try:
+                # Logger les headers importants
+                headers = dict(request.headers)
+                filtered_headers = {k: v for k, v in headers.items() 
+                                  if k.lower() not in ['authorization', 'cookie']}
+                self.logger.debug(f"📥 [Req #{req_id}] Headers: {filtered_headers}")
+                
+                # Logger le body si disponible
+                if hasattr(request, '_body') and request._body:
+                    body_content = request._body.decode()[:1000]  # Limiter à 1000 caractères
+                    self.logger.debug(f"📥 [Req #{req_id}] Body: {body_content}")
+                    
+            except Exception as e:
+                self.logger.debug(f"📥 [Req #{req_id}] Erreur lors du logging du body: {e}")
+        
+        start_time = time.time()
+        
+        # Traiter la requête
+        response = await call_next(request)
+        
+        process_time = time.time() - start_time
+        
+        # Logger la réponse
+        self.logger.info(f"📤 [Req #{req_id}] {response.status_code} ({process_time:.4f}s)")
+        
+        if self.log_bodies and hasattr(response, 'body'):
+            try:
+                body_content = str(response.body)[:1000]  # Limiter à 1000 caractères
+                self.logger.debug(f"📤 [Req #{req_id}] Response body: {body_content}")
+            except Exception as e:
+                self.logger.debug(f"📤 [Req #{req_id}] Erreur lors du logging du body de réponse: {e}")
+        
+        return response 

@@ -30,11 +30,28 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 from pydantic_ai import Agent
+from pydantic_ai.messages import (
+    FinalResultEvent,
+    FunctionToolCallEvent,
+    FunctionToolResultEvent,
+    PartDeltaEvent,
+    PartStartEvent,
+    TextPartDelta,
+    ToolCallPartDelta,
+)
 
 # Imports locaux
 from .agent.config import Settings
 from .agent.server import app as agent_app
 from .agent.agent import create_inclusion_agent
+from .gradio_utils import (
+    create_tool_call_message,
+    create_tool_result_message,
+    create_thinking_message,
+    create_final_response_message,
+    create_error_message,
+    log_gradio_message
+)
 
 # Configuration du logging unifié
 logging.basicConfig(
@@ -50,12 +67,12 @@ global_agent: Optional[Agent] = None
 
 def create_complete_interface():
     """
-    Crée l'interface Gradio complète avec streaming.
+    Crée l'interface Gradio complète avec streaming et affichage des appels aux outils MCP.
     """
     
-    async def chat_stream(message: str, history: List[Dict[str, str]], request: gr.Request) -> AsyncGenerator[str, None]:
+    async def chat_stream(message: str, history: List[Dict[str, str]], request: gr.Request) -> AsyncGenerator[List[gr.ChatMessage], None]:
         """
-        Fonction de streaming pour l'interface de chat.
+        Fonction de streaming pour l'interface de chat avec affichage des appels aux outils MCP.
         
         Args:
             message: Message de l'utilisateur
@@ -63,10 +80,10 @@ def create_complete_interface():
             request: Objet Request de Gradio/FastAPI
             
         Yields:
-            Chunks de la réponse de l'agent
+            Listes de ChatMessage formatées incluant les détails des appels aux outils MCP
         """
         if not message or not message.strip():
-            yield "⚠️ Veuillez entrer un message valide."
+            yield [gr.ChatMessage(role="assistant", content="⚠️ Veuillez entrer un message valide.")]
             return
         
         try:
@@ -74,7 +91,7 @@ def create_complete_interface():
             agent = global_agent
             
             if agent is None:
-                yield "❌ Erreur: Agent non initialisé"
+                yield [gr.ChatMessage(role="assistant", content="❌ Erreur: Agent non initialisé")]
                 return
             
             # Convertir l'historique au format attendu par l'agent
@@ -83,15 +100,89 @@ def create_complete_interface():
                 if isinstance(msg, dict) and "role" in msg and "content" in msg:
                     formatted_history.append(msg)
             
-            # Utilisation directe de l'API de streaming de PydanticAI
-            async with agent.run_stream(message, message_history=formatted_history) as result:
-                # Stream le texte accumulé au fur et à mesure
-                async for text_chunk in result.stream_text():
-                    yield text_chunk
+            # Initialiser la liste des messages de réponse
+            response_messages = []
+            
+            # Commencer par afficher le message de l'utilisateur
+            response_messages.append(gr.ChatMessage(role="user", content=message))
+            
+            # Utiliser l'API avancée d'itération pour capturer les détails des outils
+            async with agent.iter(message, message_history=formatted_history) as run:
+                async for node in run:
+                    if Agent.is_user_prompt_node(node):
+                        # Nœud de prompt utilisateur
+                        logger.info(f"Traitement du message utilisateur: {node.user_prompt}")
+                        
+                    elif Agent.is_model_request_node(node):
+                        # Nœud de requête modèle - streaming des tokens
+                        logger.info("Streaming de la requête modèle...")
+                        
+                        # Ajouter un message pour indiquer que l'IA réfléchit
+                        thinking_message = create_thinking_message("", "🤔 Réflexion en cours...")
+                        response_messages.append(thinking_message)
+                        yield response_messages
+                        
+                        # Stream les tokens partiels
+                        async with node.stream(run.ctx) as request_stream:
+                            async for event in request_stream:
+                                if isinstance(event, PartStartEvent):
+                                    logger.debug(f"Début de la partie {event.index}: {event.part}")
+                                elif isinstance(event, PartDeltaEvent):
+                                    if isinstance(event.delta, TextPartDelta):
+                                        # Mettre à jour le message de réflexion avec le contenu
+                                        current_content = str(thinking_message.content) if thinking_message.content else ""
+                                        thinking_message.content = current_content + event.delta.content_delta
+                                        yield response_messages
+                                    elif isinstance(event.delta, ToolCallPartDelta):
+                                        logger.debug(f"Appel d'outil en cours: {event.delta.args_delta}")
+                                elif isinstance(event, FinalResultEvent):
+                                    # Marquer la réflexion comme terminée
+                                    thinking_message.metadata = {"title": "🧠 Réflexion terminée", "status": "done"}
+                                    yield response_messages
+                                    
+                    elif Agent.is_call_tools_node(node):
+                        # Nœud d'appel d'outils - ici on capture les appels aux outils MCP
+                        logger.info("Traitement des appels d'outils...")
+                        
+                        async with node.stream(run.ctx) as handle_stream:
+                            async for event in handle_stream:
+                                if isinstance(event, FunctionToolCallEvent):
+                                    # Afficher l'appel d'outil en utilisant l'utilitaire
+                                    tool_call_message = create_tool_call_message(
+                                        event.part.tool_name,
+                                        event.part.args,
+                                        event.part.tool_call_id
+                                    )
+                                    response_messages.append(tool_call_message)
+                                    log_gradio_message(tool_call_message, "TOOL_CALL")
+                                    yield response_messages
+                                    
+                                elif isinstance(event, FunctionToolResultEvent):
+                                    # Afficher le résultat de l'outil en utilisant l'utilitaire
+                                    result_message = create_tool_result_message(
+                                        tool_name="Outil MCP",  # Nom générique car pas disponible dans l'event
+                                        result=event.result.content,
+                                        call_id=event.tool_call_id
+                                    )
+                                    response_messages.append(result_message)
+                                    log_gradio_message(result_message, "TOOL_RESULT")
+                                    yield response_messages
+                                    
+                    elif Agent.is_end_node(node):
+                        # Nœud de fin - afficher la réponse finale
+                        final_message = create_final_response_message(node.data.output)
+                        response_messages.append(final_message)
+                        log_gradio_message(final_message, "FINAL_RESPONSE")
+                        yield response_messages
+                        
+                        logger.info("Traitement terminé avec succès")
+                        break
             
         except Exception as e:
             logger.error(f"Erreur lors du streaming: {e}")
-            yield f"❌ Erreur: {str(e)}"
+            error_message = create_error_message(str(e))
+            log_gradio_message(error_message, "ERROR")
+            yield [error_message]
     
     # Exemples de conversation
     examples = [
@@ -109,13 +200,14 @@ def create_complete_interface():
         fn=chat_stream,
         type="messages",
         title="🤖 Agent IA d'Inclusion Sociale",
-        description="Assistant intelligent spécialisé dans l'inclusion sociale en France",
+        description="Assistant intelligent spécialisé dans l'inclusion sociale en France - Affichage des appels aux outils MCP",
         examples=examples,
         cache_examples=False,
         chatbot=gr.Chatbot(
             label="Assistant IA",
             height=600,
             show_copy_button=True,
+            type="messages",
             avatar_images=(
                 "https://em-content.zobj.net/source/twitter/376/bust-in-silhouette_1f464.png",
                 "https://em-content.zobj.net/source/twitter/376/robot-face_1f916.png"

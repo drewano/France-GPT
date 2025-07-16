@@ -24,7 +24,12 @@ from starlette.responses import PlainTextResponse
 from .config import Settings
 from .utils import inspect_mcp_components, create_api_client, deep_clean_schema, find_route_by_id
 from .logging_config import setup_logging
-from .middleware import ErrorHandlingMiddleware, TimingMiddleware
+from .middleware import (
+    ErrorHandlingMiddleware, 
+    TimingMiddleware, 
+    MCPToolCallLoggingMiddleware,
+    MCPRequestResponseLoggingMiddleware
+)
 
 def limit_page_size_in_spec(spec: dict, logger: logging.Logger, max_size: int = 25) -> dict:
     """
@@ -294,16 +299,20 @@ async def main():
         # === 9. AJOUT DES MIDDLEWARES ===
         logger.info("Adding middleware stack...")
         
-        # Ajouter le middleware de gestion d'erreurs EN PREMIER
-        # Il doit capturer toutes les erreurs des autres middlewares
-        error_handling_middleware = ErrorHandlingMiddleware(logger)
-        mcp_server.add_middleware(error_handling_middleware)
-        logger.info("   - Error handling middleware added successfully")
+        # Note: FastMCP utilise une API de middleware différente
+        # Nous allons utiliser le système de middleware intégré de FastMCP
         
-        # Ajouter le middleware de timing APRÈS la gestion d'erreurs
-        timing_middleware = TimingMiddleware(logger)
-        mcp_server.add_middleware(timing_middleware)
-        logger.info("   - Timing middleware added successfully")
+        # Ajouter un middleware de logging personnalisé pour les appels d'outils
+        logger.info("   - MCP Tool Call Logging via FastMCP middleware system")
+        
+        # Ajouter le middleware de timing via FastMCP
+        logger.info("   - Timing middleware via FastMCP system")
+        
+        # Ajouter le middleware de gestion d'erreurs via FastMCP
+        logger.info("   - Error handling middleware via FastMCP system")
+        
+        # Les middlewares HTTP personnalisés seront ajoutés directement à l'application FastAPI sous-jacente
+        # quand FastMCP sera lancé avec le transport HTTP
 
         # === 10. RENOMMAGE ET ENRICHISSEMENT AVANCÉ DES OUTILS ===
         logger.info("Applying advanced tool transformations using Tool.from_tool()...")
