@@ -205,7 +205,7 @@ def create_complete_interface():
         cache_examples=False,
         chatbot=gr.Chatbot(
             label="Assistant IA",
-            height=600,
+            height=1100,
             show_copy_button=True,
             type="messages",
             avatar_images=(
