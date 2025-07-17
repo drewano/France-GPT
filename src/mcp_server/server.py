@@ -6,39 +6,33 @@ Il transforme automatiquement les endpoints OpenAPI en outils MCP.
 """
 
 import asyncio
-import json
 import logging
-import httpx
 from fastmcp import FastMCP
 from fastmcp.server.openapi import RouteMap, MCPType
 from fastmcp.server.auth import BearerAuthProvider
 from fastmcp.server.auth.providers.bearer import RSAKeyPair
-from fastmcp.utilities.openapi import parse_openapi_to_http_routes
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
 from ..core.config import MCPSettings
 from .utils import inspect_mcp_components, create_api_client
 from ..core.logging import setup_logging
-from .tool_transformer import (
-    limit_page_size_in_spec,
-    discover_and_customize,
-    transform_and_register_tools,
-)
+from .openapi_loader import OpenAPILoader
+from .tool_transformer import ToolTransformer
 from .tool_mapping import CUSTOM_MCP_TOOL_NAMES
 
 
-class MCPFactory:
+class MCPBuilder:
     """
-    Factory class pour construire et configurer le serveur MCP.
+    Builder class pour construire et configurer le serveur MCP.
 
-    Cette classe encapsule toute la logique de construction du serveur MCP,
-    en séparant chaque étape dans des méthodes privées dédiées.
+    Cette classe orchestre la construction du serveur MCP en utilisant
+    les composants spécialisés (OpenAPILoader, ToolTransformer, etc.).
     """
 
     def __init__(self, settings: MCPSettings, logger: logging.Logger):
         """
-        Initialise la factory avec les paramètres de configuration et le logger.
+        Initialise le builder avec les paramètres de configuration et le logger.
 
         Args:
             settings: Instance de MCPSettings contenant la configuration
@@ -47,99 +41,8 @@ class MCPFactory:
         self.settings = settings
         self.logger = logger
         self.api_client = None
-        self.openapi_spec = None
-        self.http_routes = None
-        self.auth_provider = None
-        self.op_id_to_mangled_name = {}
 
-    async def _load_openapi_spec(self) -> None:
-        """
-        Charge et pré-parse la spécification OpenAPI.
-
-        Cette méthode :
-        1. Charge la spécification OpenAPI depuis l'URL configurée
-        2. Parse la spécification en routes HTTP
-        3. Applique les limites de pagination
-
-        Raises:
-            httpx.RequestError: Si la récupération de la spécification échoue
-            json.JSONDecodeError: Si la réponse n'est pas un JSON valide
-        """
-        self.logger.info(
-            f"Loading OpenAPI specification from URL: '{self.settings.OPENAPI_URL}'..."
-        )
-
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(self.settings.OPENAPI_URL)
-                response.raise_for_status()  # Lève une exception si le statut n'est pas 2xx
-                self.openapi_spec = response.json()
-
-            api_title = self.openapi_spec.get("info", {}).get("title", "Unknown API")
-            self.logger.info(f"Successfully loaded OpenAPI spec: '{api_title}'")
-
-            # === PRÉ-PARSING DE LA SPÉCIFICATION OPENAPI ===
-            self.logger.info("Parsing OpenAPI specification to HTTP routes...")
-            self.http_routes = parse_openapi_to_http_routes(self.openapi_spec)
-            self.logger.info(
-                f"Successfully parsed {len(self.http_routes)} HTTP routes from OpenAPI specification"
-            )
-
-            # === MODIFICATION DES LIMITES DE PAGINATION ===
-            # Limite la taille des pages pour les outils de listing à 25 éléments maximum
-            # Cela s'applique aux outils: list_all_structures, list_all_services, search_services
-            self.logger.info("Applying pagination limits to data-listing endpoints...")
-            self.openapi_spec = limit_page_size_in_spec(
-                self.openapi_spec, logger=self.logger, max_size=25
-            )
-
-        except httpx.RequestError as e:
-            self.logger.error(
-                f"Failed to fetch OpenAPI specification from '{self.settings.OPENAPI_URL}'."
-            )
-            self.logger.error(f"Details: {e}")
-            raise
-
-        except json.JSONDecodeError as e:
-            self.logger.error(
-                f"Invalid JSON in the response from '{self.settings.OPENAPI_URL}'."
-            )
-            self.logger.error(f"Details: {e}")
-            raise
-
-    async def _create_api_client(self) -> None:
-        """
-        Crée le client HTTP authentifié pour l'API Data Inclusion.
-
-        Cette méthode :
-        1. Détermine l'URL de base depuis la spécification OpenAPI
-        2. Crée un client httpx avec authentification
-        """
-        # === DÉTERMINATION DE L'URL DE BASE ===
-        if self.openapi_spec is None:
-            raise ValueError("OpenAPI spec must be loaded before creating API client")
-
-        servers = self.openapi_spec.get("servers", [])
-        if (
-            servers
-            and isinstance(servers, list)
-            and len(servers) > 0
-            and "url" in servers[0]
-        ):
-            base_url = servers[0]["url"]
-            self.logger.info(f"Using base URL from OpenAPI spec: {base_url}")
-        else:
-            base_url = "http://localhost:8000"
-            self.logger.warning("No servers section found in OpenAPI spec.")
-            self.logger.warning(f"Using default base URL: {base_url}")
-
-        # === CRÉATION DU CLIENT HTTP AUTHENTIFIÉ ===
-        self.logger.info("Configuring HTTP client with authentication...")
-        self.api_client = create_api_client(
-            base_url, self.logger, self.settings.DATA_INCLUSION_API_KEY
-        )
-
-    def _configure_auth(self) -> None:
+    def _configure_auth(self) -> BearerAuthProvider | None:
         """
         Configure l'authentification Bearer pour le serveur MCP.
 
@@ -147,12 +50,14 @@ class MCPFactory:
         1. Lit la clé secrète depuis la configuration
         2. Configure BearerAuthProvider si une clé est fournie
         3. Génère un token de test pour le développement
+
+        Returns:
+            BearerAuthProvider | None: Le provider d'authentification ou None
         """
         self.logger.info("Configuring server authentication...")
 
         # Lecture de la clé secrète depuis la configuration
         secret_key = self.settings.MCP_SERVER_SECRET_KEY
-        self.auth_provider = None
 
         if secret_key and secret_key.strip():
             self.logger.info(
@@ -179,7 +84,7 @@ class MCPFactory:
                         .decode()
                     )
 
-                    self.auth_provider = BearerAuthProvider(
+                    auth_provider = BearerAuthProvider(
                         public_key=public_key_pem, audience="datainclusion-mcp-client"
                     )
                 else:
@@ -187,7 +92,7 @@ class MCPFactory:
                     # Pour des raisons de simplicité, on génère une nouvelle paire de clés
                     key_pair = RSAKeyPair.generate()
 
-                    self.auth_provider = BearerAuthProvider(
+                    auth_provider = BearerAuthProvider(
                         public_key=key_pair.public_key,
                         audience="datainclusion-mcp-client",
                     )
@@ -209,11 +114,12 @@ class MCPFactory:
                 self.logger.info(
                     "   - Server will require valid Bearer tokens for access"
                 )
+                return auth_provider
 
             except Exception as e:
                 self.logger.error(f"Failed to configure authentication: {e}")
                 self.logger.warning("Continuing without authentication...")
-                self.auth_provider = None
+                return None
         else:
             self.logger.warning(
                 "MCP_SERVER_SECRET_KEY not set - server will run WITHOUT authentication"
@@ -221,97 +127,14 @@ class MCPFactory:
             self.logger.warning(
                 "⚠️  All clients will have unrestricted access to the server"
             )
-
-    def _create_mcp_server(self) -> FastMCP:
-        """
-        Crée et configure l'instance FastMCP.
-
-        Cette méthode :
-        1. Configure les noms d'outils personnalisés
-        2. Configure les routes MCP
-        3. Crée l'instance FastMCP avec from_openapi
-        4. Ajoute l'endpoint de santé
-
-        Returns:
-            FastMCP: Instance configurée du serveur MCP
-        """
-        # === CONFIGURATION DES NOMS D'OUTILS PERSONNALISÉS ===
-        self.logger.info("Configuring custom tool names...")
-
-        # Utilisation de la constante importée pour le mapping des outils
-        self.custom_tool_names = CUSTOM_MCP_TOOL_NAMES
-
-        # === CONFIGURATION DES ROUTES MCP ===
-        self.logger.info("Configuring route mappings...")
-
-        # Configuration pour mapper tous les endpoints GET comme des outils MCP
-        custom_route_maps = [
-            RouteMap(methods=["GET"], pattern=r".*", mcp_type=MCPType.TOOL),
-        ]
-
-        # === CRÉATION DU SERVEUR MCP ===
-        self.logger.info(
-            f"Creating FastMCP server '{self.settings.MCP_SERVER_NAME}'..."
-        )
-
-        if self.openapi_spec is None:
-            raise ValueError("OpenAPI spec must be loaded before creating MCP server")
-        if self.api_client is None:
-            raise ValueError("API client must be created before creating MCP server")
-
-        mcp_server = FastMCP.from_openapi(
-            openapi_spec=self.openapi_spec,
-            client=self.api_client,
-            name=self.settings.MCP_SERVER_NAME,
-            route_maps=custom_route_maps,
-            auth=self.auth_provider,
-            mcp_component_fn=lambda route, component: discover_and_customize(
-                route, component, self.logger, self.op_id_to_mangled_name
-            ),
-        )
-
-        self.logger.info(f"FastMCP server '{mcp_server.name}' created successfully!")
-        self.logger.info("   - Custom GET-to-Tool mapping applied")
-
-        # === AJOUT DE L'ENDPOINT DE SANTÉ ===
-        @mcp_server.custom_route("/health", methods=["GET"])
-        async def health_check(request: Request) -> PlainTextResponse:
-            """A simple health check endpoint."""
-            return PlainTextResponse("OK", status_code=200)
-
-        self.logger.info("   - Health check endpoint (/health) added successfully")
-
-        return mcp_server
-
-    async def _enrich_tools(self, mcp_server: FastMCP) -> None:
-        """
-        Enrichit les outils MCP avec des noms et descriptions personnalisés.
-
-        Args:
-            mcp_server: Instance du serveur MCP à enrichir
-        """
-        if self.http_routes is None:
-            raise ValueError("HTTP routes must be loaded before enriching tools")
-        if not hasattr(self, "custom_tool_names"):
-            raise ValueError(
-                "Custom tool names must be configured before enriching tools"
-            )
-
-        # === RENOMMAGE ET ENRICHISSEMENT AVANCÉ DES OUTILS ===
-        await transform_and_register_tools(
-            mcp_server=mcp_server,
-            http_routes=self.http_routes,
-            custom_tool_names=self.custom_tool_names,
-            op_id_map=self.op_id_to_mangled_name,
-            logger=self.logger,
-        )
+            return None
 
     async def build(self) -> FastMCP:
         """
         Orchestre la construction complète du serveur MCP.
 
-        Cette méthode appelle toutes les méthodes privées dans le bon ordre
-        pour construire et configurer entièrement le serveur MCP.
+        Cette méthode utilise les composants spécialisés pour construire
+        le serveur MCP de manière modulaire et organisée.
 
         Returns:
             FastMCP: Instance complètement configurée du serveur MCP
@@ -321,19 +144,88 @@ class MCPFactory:
         """
         try:
             # 1. Chargement et parsing de la spécification OpenAPI
-            await self._load_openapi_spec()
+            self.logger.info("Loading OpenAPI specification...")
+            openapi_loader = OpenAPILoader(self.settings, self.logger)
+            openapi_spec, http_routes = await openapi_loader.load()
 
             # 2. Création du client API authentifié
-            await self._create_api_client()
+            self.logger.info("Creating HTTP client...")
+            servers = openapi_spec.get("servers", [])
+            if (
+                servers
+                and isinstance(servers, list)
+                and len(servers) > 0
+                and "url" in servers[0]
+            ):
+                base_url = servers[0]["url"]
+                self.logger.info(f"Using base URL from OpenAPI spec: {base_url}")
+            else:
+                base_url = "http://localhost:8000"
+                self.logger.warning("No servers section found in OpenAPI spec.")
+                self.logger.warning(f"Using default base URL: {base_url}")
+
+            self.api_client = create_api_client(
+                base_url, self.logger, self.settings.DATA_INCLUSION_API_KEY
+            )
 
             # 3. Configuration de l'authentification
-            self._configure_auth()
+            auth_provider = self._configure_auth()
 
             # 4. Création du serveur MCP
-            mcp_server = self._create_mcp_server()
+            self.logger.info(
+                f"Creating FastMCP server '{self.settings.MCP_SERVER_NAME}'..."
+            )
 
-            # 5. Enrichissement des outils
-            await self._enrich_tools(mcp_server)
+            # Configuration des routes MCP
+            custom_route_maps = [
+                RouteMap(methods=["GET"], pattern=r".*", mcp_type=MCPType.TOOL),
+            ]
+
+            # Dictionnaire pour stocker le mapping operation_id -> nom d'outil
+            op_id_to_mangled_name = {}
+
+            # Création du transformer temporaire pour le callback
+            temp_transformer = ToolTransformer(
+                mcp_server=None,  # type: ignore # Sera défini après création du serveur
+                http_routes=http_routes,
+                custom_tool_names=CUSTOM_MCP_TOOL_NAMES,
+                op_id_map=op_id_to_mangled_name,
+                logger=self.logger,
+            )
+
+            # Création du serveur MCP
+            mcp_server = FastMCP.from_openapi(
+                openapi_spec=openapi_spec,
+                client=self.api_client,
+                name=self.settings.MCP_SERVER_NAME,
+                route_maps=custom_route_maps,
+                auth=auth_provider,
+                mcp_component_fn=lambda route,
+                component: temp_transformer.discover_and_customize(route, component),
+            )
+
+            # Ajout de l'endpoint de santé
+            @mcp_server.custom_route("/health", methods=["GET"])
+            async def health_check(request: Request) -> PlainTextResponse:
+                """A simple health check endpoint."""
+                return PlainTextResponse("OK", status_code=200)
+
+            self.logger.info(
+                f"FastMCP server '{mcp_server.name}' created successfully!"
+            )
+            self.logger.info("   - Custom GET-to-Tool mapping applied")
+            self.logger.info("   - Health check endpoint (/health) added successfully")
+
+            # 5. Transformation des outils
+            self.logger.info("Transforming tools...")
+            tool_transformer = ToolTransformer(
+                mcp_server=mcp_server,
+                http_routes=http_routes,
+                custom_tool_names=CUSTOM_MCP_TOOL_NAMES,
+                op_id_map=op_id_to_mangled_name,
+                logger=self.logger,
+            )
+            await tool_transformer.transform_tools()
 
             # 6. Inspection des composants (pour debug)
             await inspect_mcp_components(mcp_server, self.logger)
@@ -348,7 +240,7 @@ class MCPFactory:
 
     async def cleanup(self) -> None:
         """
-        Nettoie les ressources utilisées par la factory.
+        Nettoie les ressources utilisées par le builder.
         """
         if self.api_client:
             self.logger.info("Closing HTTP client...")
@@ -360,7 +252,7 @@ async def main():
     """
     Fonction principale qui configure et lance le serveur MCP.
 
-    Cette fonction utilise MCPFactory pour construire et configurer le serveur MCP
+    Cette fonction utilise MCPBuilder pour construire et configurer le serveur MCP
     de manière modulaire et organisée.
     """
 
@@ -368,17 +260,17 @@ async def main():
     settings = MCPSettings()
 
     # === 2. CONFIGURATION DU LOGGING ===
-    logger = setup_logging()
+    logger = setup_logging(name="datainclusion.mcp")
 
-    factory = None
+    builder = None
 
     try:
         # === 3. CRÉATION ET CONSTRUCTION DU SERVEUR MCP ===
-        logger.info("Initializing MCP server factory...")
-        factory = MCPFactory(settings, logger)
+        logger.info("Initializing MCP server builder...")
+        builder = MCPBuilder(settings, logger)
 
         logger.info("Building MCP server...")
-        mcp_server = await factory.build()
+        mcp_server = await builder.build()
 
         # === 4. LANCEMENT DU SERVEUR ===
         server_url = (
@@ -403,8 +295,8 @@ async def main():
 
     finally:
         # === 5. NETTOYAGE DES RESSOURCES ===
-        if factory:
-            await factory.cleanup()
+        if builder:
+            await builder.cleanup()
 
 
 if __name__ == "__main__":

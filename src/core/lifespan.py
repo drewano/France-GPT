@@ -17,7 +17,7 @@ from .config import AgentSettings
 from ..agent.agent import create_inclusion_agent
 
 # Configuration du logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("datainclusion.agent")
 
 
 @asynccontextmanager

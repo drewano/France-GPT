@@ -34,7 +34,7 @@ from ..gradio_utils import (
 )
 
 # Configuration du logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("datainclusion.agent")
 
 
 def _format_gradio_history(history: List[Dict[str, str]]) -> List[ModelMessage]:

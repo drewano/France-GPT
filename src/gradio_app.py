@@ -33,10 +33,7 @@ from .api.router import api_router, set_app_instance
 from .ui.chat import create_complete_interface
 
 # Configuration du logging unifié
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("datainclusion.agent")
 
 
 # Création de l'application FastAPI principale

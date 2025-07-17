@@ -20,7 +20,11 @@ from pathlib import Path
 try:
     import uvicorn
     from src.core.config import AgentSettings
-    from src.gradio_app import app, logger
+    from src.core.logging import setup_logging
+    from src.gradio_app import app
+
+    # Configuration centralisée du logging pour l'application agent/UI
+    logger = setup_logging(name="datainclusion.agent")
 
     def setup_environment():
         """Configure l'environnement pour l'exécution."""

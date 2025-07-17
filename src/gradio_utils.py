@@ -13,7 +13,7 @@ import logging
 from datetime import datetime
 
 # Configuration du logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("datainclusion.agent")
 
 
 # Types Gradio corrects selon la documentation
