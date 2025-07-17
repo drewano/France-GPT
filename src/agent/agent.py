@@ -9,7 +9,7 @@ from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 from pydantic_ai.models.openai import OpenAIModel
 
-from .config import Settings
+from ..core.config import AgentSettings
 
 
 def create_inclusion_agent(mcp_server: MCPServerStreamableHTTP) -> Agent:
@@ -24,7 +24,7 @@ def create_inclusion_agent(mcp_server: MCPServerStreamableHTTP) -> Agent:
     """
     
     # Charger la configuration pour obtenir la clé API
-    settings = Settings()
+    settings = AgentSettings()
     
     # Utiliser OpenAI au lieu de Gemini pour éviter les problèmes avec les schémas $ref
     # OpenAI gère mieux les schémas JSON complexes avec des références

@@ -21,9 +21,9 @@ from fastmcp.utilities.openapi import parse_openapi_to_http_routes, HTTPRoute
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
-from .config import Settings
+from ..core.config import MCPSettings
 from .utils import inspect_mcp_components, create_api_client
-from .logging_config import setup_logging
+from ..core.logging import setup_logging
 from .tool_transformer import limit_page_size_in_spec, discover_and_customize, transform_and_register_tools
 
 
@@ -40,7 +40,7 @@ async def main():
     """
     
     # === 0. CHARGEMENT DE LA CONFIGURATION ===
-    settings = Settings()
+    settings = MCPSettings()
     
     # Dictionnaire pour stocker la correspondance entre operation_id et noms d'outils générés
     op_id_to_mangled_name: dict[str, str] = {}

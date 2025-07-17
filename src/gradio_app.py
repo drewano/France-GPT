@@ -48,7 +48,7 @@ from pydantic_ai.messages import (
 )
 
 # Imports locaux
-from .agent.config import Settings
+from .core.config import AgentSettings
 from .agent.agent import create_inclusion_agent
 from .gradio_utils import (
     create_tool_call_message,
@@ -298,7 +298,7 @@ async def lifespan(app: FastAPI):
     logger.info("🚀 Démarrage de l'application Gradio + FastAPI...")
     
     # Chargement de la configuration
-    settings = Settings()
+    settings = AgentSettings()
     
     # Initialisation du serveur MCP
     mcp_server = MCPServerStreamableHTTP(settings.MCP_SERVER_URL)
@@ -356,7 +356,7 @@ def create_app() -> FastAPI:
     """
     global _app_instance
     
-    settings = Settings()
+    settings = AgentSettings()
     
     # Application principale
     app = FastAPI(
@@ -482,7 +482,7 @@ app = create_app()
 # Fonction utilitaire pour le développement
 def run_development():
     """Lance l'application en mode développement avec rechargement automatique."""
-    settings = Settings()
+    settings = AgentSettings()
     
     uvicorn.run(
         "src.gradio_app:app",

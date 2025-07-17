@@ -1,14 +1,14 @@
 """
-Configuration management for the AI Agent using Pydantic Settings.
+Configuration management centralisée pour tous les composants de l'application.
 
-Ce module centralise la configuration de l'agent IA en utilisant
+Ce module centralise la configuration de l'agent IA et du serveur MCP en utilisant
 Pydantic Settings pour une gestion robuste et typée des variables d'environnement.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class AgentSettings(BaseSettings):
     """
     Configuration de l'agent IA basée sur Pydantic Settings.
     
@@ -45,6 +45,35 @@ class Settings(BaseSettings):
     # Configuration pour FastAPI + Gradio
     CORS_ORIGINS: list[str] = ["*"]  # En production, spécifier les domaines autorisés
     SECRET_KEY: str = "your-secret-key-here-change-in-production"
+    
+    # Configuration Pydantic Settings
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"  # Ignore les variables d'environnement non définies
+    )
+
+
+class MCPSettings(BaseSettings):
+    """
+    Configuration du serveur MCP basée sur Pydantic Settings.
+    
+    Cette classe charge automatiquement les variables d'environnement
+    depuis le fichier .env et valide leur type.
+    """
+    
+    # Configuration de l'API OpenAPI
+    OPENAPI_URL: str = "https://api.data.inclusion.beta.gouv.fr/api/openapi.json"
+    
+    # Configuration du serveur MCP
+    MCP_SERVER_NAME: str = "DataInclusionAPI"
+    MCP_HOST: str = "0.0.0.0"
+    MCP_PORT: int = 8000
+    MCP_API_PATH: str = "/mcp"
+    
+    # Clés d'API et authentification
+    DATA_INCLUSION_API_KEY: str = ""
+    MCP_SERVER_SECRET_KEY: str | None = None
     
     # Configuration Pydantic Settings
     model_config = SettingsConfigDict(

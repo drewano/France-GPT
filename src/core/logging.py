@@ -1,8 +1,8 @@
 """
-Configuration du logging pour le serveur MCP DataInclusion.
+Configuration du logging pour l'application.
 
 Ce module configure un système de logging cohérent pour tous les composants
-du serveur MCP, avec des niveaux et formatages appropriés pour le debugging 
+de l'application, avec des niveaux et formatages appropriés pour le debugging 
 et la surveillance en production.
 """
 
@@ -13,14 +13,14 @@ from typing import Optional, Any
 
 def setup_logging(level: str = "INFO", format_style: str = "standard") -> logging.Logger:
     """
-    Configure le système de logging pour le serveur MCP.
+    Configure le système de logging pour l'application.
     
     Args:
         level: Niveau de log (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         format_style: Style de formatage ("standard", "detailed", "json")
         
     Returns:
-        Logger configuré pour le serveur MCP
+        Logger configuré pour l'application
     """
     
     # Configuration des niveaux de log

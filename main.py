@@ -19,7 +19,7 @@ from pathlib import Path
 # Ajouter le répertoire src au path Python
 try:
     import uvicorn
-    from src.agent.config import Settings
+    from src.core.config import AgentSettings
     from src.gradio_app import app, logger
     
     def setup_environment():
@@ -37,7 +37,7 @@ try:
             logger.info(f"📁 Répertoire créé/vérifié: {directory}")
         
         # Vérifier les variables d'environnement critiques
-        settings = Settings()
+        settings = AgentSettings()
         
         # Avertissements pour la configuration
         if settings.SECRET_KEY == "your-secret-key-here-change-in-production":
