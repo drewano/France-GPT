@@ -137,55 +137,6 @@ def create_tool_result_message(tool_name: str, result: Any, call_id: Optional[st
     )
 
 
-def create_thinking_message(content: str = "", title: str = "🤔 Réflexion...") -> gr.ChatMessage:
-    """
-    Crée un message Gradio pour indiquer que l'IA réfléchit.
-    
-    Args:
-        content: Contenu du message de réflexion
-        title: Titre du message
-        
-    Returns:
-        gr.ChatMessage: Message Gradio formaté pour la réflexion
-    """
-    
-    metadata: MetadataDict = {
-        "title": title,
-        "id": f"thinking_{datetime.now().strftime('%H%M%S')}",
-        "status": "pending"
-    }
-    
-    return gr.ChatMessage(
-        role="assistant",
-        content=content,
-        metadata=metadata
-    )
-
-
-def create_final_response_message(content: str) -> gr.ChatMessage:
-    """
-    Crée un message Gradio pour la réponse finale de l'IA.
-    
-    Args:
-        content: Contenu de la réponse finale
-        
-    Returns:
-        gr.ChatMessage: Message Gradio formaté pour la réponse finale
-    """
-    
-    metadata: MetadataDict = {
-        "title": "💬 Réponse finale",
-        "id": f"final_{datetime.now().strftime('%H%M%S')}",
-        "status": "done"
-    }
-    
-    return gr.ChatMessage(
-        role="assistant",
-        content=content,
-        metadata=metadata
-    )
-
-
 def create_error_message(error_msg: str, title: str = "⚠️ Erreur") -> gr.ChatMessage:
     """
     Crée un message Gradio pour une erreur.
@@ -278,69 +229,6 @@ def format_result_for_display(result: Any) -> str:
         return f"```\n{result_str}\n```"
 
 
-def create_tool_summary_message(tool_calls: List[Dict[str, Any]]) -> gr.ChatMessage:
-    """
-    Crée un message de résumé des appels d'outils.
-    
-    Args:
-        tool_calls: Liste des appels d'outils avec leurs détails
-        
-    Returns:
-        gr.ChatMessage: Message Gradio avec le résumé
-    """
-    
-    if not tool_calls:
-        return create_error_message("Aucun appel d'outil à résumer")
-    
-    content = f"**📊 Résumé des appels d'outils ({len(tool_calls)} appels)**\n\n"
-    
-    for i, tool_call in enumerate(tool_calls, 1):
-        tool_name = tool_call.get("tool_name", "Inconnu")
-        duration = tool_call.get("duration", 0)
-        success = tool_call.get("success", True)
-        
-        status_emoji = "✅" if success else "❌"
-        content += f"{i}. {status_emoji} **{tool_name}** ({duration:.3f}s)\n"
-    
-    metadata: MetadataDict = {
-        "title": "📊 Résumé des outils",
-        "id": f"summary_{datetime.now().strftime('%H%M%S')}",
-        "status": "done"
-    }
-    
-    return gr.ChatMessage(
-        role="assistant",
-        content=content,
-        metadata=metadata
-    )
-
-
-def update_message_metadata(message: gr.ChatMessage, new_metadata: MetadataDict) -> gr.ChatMessage:
-    """
-    Met à jour les métadonnées d'un message Gradio.
-    
-    Args:
-        message: Message Gradio existant
-        new_metadata: Nouvelles métadonnées à ajouter/modifier
-        
-    Returns:
-        gr.ChatMessage: Message avec métadonnées mises à jour
-    """
-    
-    # Copier les métadonnées existantes
-    current_metadata: MetadataDict = message.metadata.copy() if message.metadata else {}
-    
-    # Ajouter les nouvelles métadonnées
-    current_metadata.update(new_metadata)
-    
-    # Créer un nouveau message avec les métadonnées mises à jour
-    return gr.ChatMessage(
-        role=message.role,
-        content=message.content,
-        metadata=current_metadata
-    )
-
-
 def log_gradio_message(message: gr.ChatMessage, context: str = "GRADIO") -> None:
     """
     Log un message Gradio pour le debugging.
@@ -355,34 +243,3 @@ def log_gradio_message(message: gr.ChatMessage, context: str = "GRADIO") -> None
         logger.debug(f"[{context}] Content: {message.content}")
     else:
         logger.debug(f"[{context}] Content: {len(str(message.content))} caractères")
-
-
-# Constantes utiles
-TOOL_ICONS = {
-    "search": "🔍",
-    "database": "🗃️",
-    "api": "🌐",
-    "file": "📄",
-    "calculation": "🧮",
-    "default": "🛠️"
-}
-
-
-def get_tool_icon(tool_name: str) -> str:
-    """
-    Retourne l'icône appropriée pour un outil selon son nom.
-    
-    Args:
-        tool_name: Nom de l'outil
-        
-    Returns:
-        str: Emoji représentant l'outil
-    """
-    
-    tool_name_lower = tool_name.lower()
-    
-    for category, icon in TOOL_ICONS.items():
-        if category in tool_name_lower:
-            return icon
-    
-    return TOOL_ICONS["default"] 
