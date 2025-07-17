@@ -52,54 +52,55 @@ try:
         logger.info("✅ Configuration de l'environnement terminée")
         return settings
     
-    def run_production():
-        """Lance l'application en mode production."""
+    def run_app():
+        """Lance l'application selon l'environnement configuré."""
         settings = setup_environment()
         
-        logger.info("🚀 Démarrage de l'application en mode PRODUCTION")
-        logger.info("📋 Configuration:")
-        logger.info(f"   - Host: 0.0.0.0")
-        logger.info(f"   - Port: {settings.AGENT_PORT}")
-        logger.info(f"   - Interface Gradio: http://localhost:{settings.AGENT_PORT}/chat")
-        logger.info(f"   - API Agent: http://localhost:{settings.AGENT_PORT}/api")
-        logger.info(f"   - Documentation: http://localhost:{settings.AGENT_PORT}/docs")
-        logger.info(f"   - Health Check: http://localhost:{settings.AGENT_PORT}/health")
+        # Déterminer le mode d'exécution
+        environment = os.getenv("ENVIRONMENT", "production").lower()
+        is_development = environment == "development"
         
-        uvicorn.run(
-            app,
-            host="0.0.0.0",
-            port=settings.AGENT_PORT,
-            log_level="info",
-            access_log=True,
-            reload=False,
-            workers=1  # Gradio ne supporte pas bien les workers multiples
-        )
-    
-    def run_development():
-        """Lance l'application en mode développement."""
-        settings = setup_environment()
-        
-        logger.info("🔧 Démarrage de l'application en mode DÉVELOPPEMENT")
-        logger.info("📋 Configuration:")
-        logger.info(f"   - Host: 0.0.0.0")
-        logger.info(f"   - Port: {settings.AGENT_PORT}")
-        logger.info(f"   - Auto-reload: Activé")
-        logger.info(f"   - Interface Gradio: http://localhost:{settings.AGENT_PORT}/chat")
-        logger.info(f"   - API Agent: http://localhost:{settings.AGENT_PORT}/api")
-        logger.info(f"   - Documentation: http://localhost:{settings.AGENT_PORT}/docs")
-        logger.info(f"   - Health Check: http://localhost:{settings.AGENT_PORT}/health")
-        
-        uvicorn.run(
-            "src.gradio_app:app",
-            host="0.0.0.0",
-            port=settings.AGENT_PORT,
-            reload=True,
-            reload_dirs=["src", "static"],
-            reload_excludes=["*.pyc", "__pycache__", "*.log", "feedback_data", "exports"],
-            log_level="info",
-            access_log=True,
-            use_colors=True
-        )
+        if is_development:
+            logger.info("🔧 Démarrage de l'application en mode DÉVELOPPEMENT")
+            logger.info("📋 Configuration:")
+            logger.info(f"   - Host: 0.0.0.0")
+            logger.info(f"   - Port: {settings.AGENT_PORT}")
+            logger.info(f"   - Auto-reload: Activé")
+            logger.info(f"   - Interface Gradio: http://localhost:{settings.AGENT_PORT}/chat")
+            logger.info(f"   - API Agent: http://localhost:{settings.AGENT_PORT}/api")
+            logger.info(f"   - Documentation: http://localhost:{settings.AGENT_PORT}/docs")
+            logger.info(f"   - Health Check: http://localhost:{settings.AGENT_PORT}/health")
+            
+            uvicorn.run(
+                "src.gradio_app:app",
+                host="0.0.0.0",
+                port=settings.AGENT_PORT,
+                reload=True,
+                reload_dirs=["src", "static"],
+                reload_excludes=["*.pyc", "__pycache__", "*.log", "feedback_data", "exports"],
+                log_level="info",
+                access_log=True,
+                use_colors=True
+            )
+        else:
+            logger.info("🚀 Démarrage de l'application en mode PRODUCTION")
+            logger.info("📋 Configuration:")
+            logger.info(f"   - Host: 0.0.0.0")
+            logger.info(f"   - Port: {settings.AGENT_PORT}")
+            logger.info(f"   - Interface Gradio: http://localhost:{settings.AGENT_PORT}/chat")
+            logger.info(f"   - API Agent: http://localhost:{settings.AGENT_PORT}/api")
+            logger.info(f"   - Documentation: http://localhost:{settings.AGENT_PORT}/docs")
+            logger.info(f"   - Health Check: http://localhost:{settings.AGENT_PORT}/health")
+            
+            uvicorn.run(
+                app,
+                host="0.0.0.0",
+                port=settings.AGENT_PORT,
+                log_level="info",
+                access_log=True,
+                reload=False,
+                workers=1  # Gradio ne supporte pas bien les workers multiples
+            )
     
     if __name__ == "__main__":
         """
@@ -113,13 +114,7 @@ try:
         - CORS_ORIGINS : Domaines autorisés pour CORS (séparés par virgules)
         """
         try:
-            # Déterminer le mode d'exécution
-            environment = os.getenv("ENVIRONMENT", "production").lower()
-            
-            if environment == "development":
-                run_development()
-            else:
-                run_production()
+            run_app()
                 
         except KeyboardInterrupt:
             logger.info("👋 Arrêt demandé par l'utilisateur")
