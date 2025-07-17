@@ -44,23 +44,46 @@ Le projet est divisé en deux services Docker communiquant entre eux, assurant u
 
 ```mermaid
 graph TD
-    subgraph "Machine Utilisateur"
-        A[Utilisateur] <--> B[Navigateur Web];
+    subgraph "Utilisateur"
+        User[👤 Utilisateur] --> Browser[🌐 Navigateur Web]
     end
 
-    subgraph "Environnement Docker"
-        B -- HTTPS --> C{Agent & UI Service (Gradio/FastAPI) <br> Port 8001};
-        C -- MCP (HTTP) --> D{MCP Tool Server (FastMCP) <br> Port 8000};
-    end
-    
     subgraph "Services Externes"
-        D -- REST API --> E[API data.inclusion.beta.gouv.fr];
-        C -- API Call --> F[API OpenAI];
+        DataInclusionAPI["API data.inclusion.beta.gouv.fr"]
+        OpenAI_API["API OpenAI (GPT-4)"]
     end
 
-    style A fill:#fff,stroke:#333,stroke-width:2px
-    style E fill:#f9f,stroke:#333,stroke-width:2px
-    style F fill:#9cf,stroke:#333,stroke-width:2px
+    subgraph "Environnement Docker (datainclusion-net)"
+        Browser -- "HTTP/S sur Port 8001" --> AgentService
+        
+        AgentService -- "1. Requête de l'agent (Pydantic-AI)" --> OpenAI_API
+        AgentService -- "3. Appel d'outil (MCP)" --> MCPServer
+
+        MCPServer -- "4. Appel API REST" --> DataInclusionAPI
+        MCPServer -- "2. Charge la spec OpenAPI au démarrage" --> DataInclusionAPI
+
+        subgraph "Service 'agent' (Port 8001)"
+            AgentService["Agent & UI Service
+            Interface Gradio
+            API FastAPI (/api)
+            Agent Pydantic-AI
+            main.py"]
+        end
+        
+        subgraph "Service 'mcp_server' (Port 8000)"
+            MCPServer["MCP Tool Server 
+            FastMCP
+            Transforme OpenAPI en outils
+            Gère l'authentification API
+            src/mcp_server/server.py"]
+        end
+    end
+
+    style User fill:#cde4ff,stroke:#333
+    style AgentService fill:#d5f5e3,stroke:#27ae60
+    style MCPServer fill:#fdebd0,stroke:#f39c12
+    style DataInclusionAPI fill:#e8daef,stroke:#8e44ad
+    style OpenAI_API fill:#d6eaf8,stroke:#3498db
 ```
 
 ## 🛠️ Technologies Utilisées
