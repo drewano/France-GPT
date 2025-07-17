@@ -6,4 +6,4 @@ et fournir des outils d'assistance pour le serveur MCP DataInclusion.
 """
 
 # Placeholder pour les futurs composants agent
-__all__ = [] 
+__all__ = []

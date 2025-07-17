@@ -34,8 +34,7 @@ from .ui.chat import create_complete_interface
 
 # Configuration du logging unifié
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -47,14 +46,14 @@ _app_instance = None
 def create_app() -> FastAPI:
     """
     Crée l'application FastAPI combinée avec Gradio.
-    
+
     Returns:
         Instance FastAPI configurée
     """
     global _app_instance
-    
+
     settings = AgentSettings()
-    
+
     # Application principale
     app = FastAPI(
         title="Agent IA d'Inclusion Sociale - Interface Complète",
@@ -62,15 +61,15 @@ def create_app() -> FastAPI:
         version="1.0.0",
         lifespan=lifespan,
         docs_url="/docs",
-        redoc_url="/redoc"
+        redoc_url="/redoc",
     )
-    
+
     # Stocker l'instance de l'application dans la variable globale
     _app_instance = app
-    
+
     # Configurer l'instance de l'application dans l'API router
     set_app_instance(app)
-    
+
     # Configuration CORS
     app.add_middleware(
         CORSMiddleware,
@@ -79,19 +78,19 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
-    
+
     # Servir les fichiers statiques
     static_path = Path("static")
     if static_path.exists():
         app.mount("/static", StaticFiles(directory="static"), name="static")
-    
+
     # Routes de l'application principale
-    
+
     @app.get("/")
     async def root():
         """Redirection vers l'interface Gradio."""
         return RedirectResponse(url="/chat")
-    
+
     @app.get("/health")
     async def health_check():
         """Health check global de l'application."""
@@ -103,11 +102,11 @@ def create_app() -> FastAPI:
                     "timestamp": datetime.now().isoformat(),
                     "services": {
                         "agent": {"healthy": True},
-                        "interface": {"healthy": True}
-                    }
-                }
+                        "interface": {"healthy": True},
+                    },
+                },
             )
-            
+
         except Exception as e:
             logger.error(f"Erreur lors du health check: {e}")
             return JSONResponse(
@@ -115,29 +114,25 @@ def create_app() -> FastAPI:
                 content={
                     "status": "unhealthy",
                     "error": str(e),
-                    "timestamp": datetime.now().isoformat()
-                }
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
-    
+
     # Monter l'APIRouter sous /api
     app.include_router(api_router, prefix="/api")
-    
+
     # Créer et monter l'interface Gradio
     gradio_interface = create_complete_interface()
-    
+
     # Monter l'interface Gradio
-    app = gr.mount_gradio_app(
-        app=app,
-        blocks=gradio_interface,
-        path="/chat"
-    )
-    
+    app = gr.mount_gradio_app(app=app, blocks=gradio_interface, path="/chat")
+
     logger.info("🎯 Application FastAPI + Gradio configurée:")
     logger.info("   - Interface Gradio : http://localhost:8000/chat")
     logger.info("   - API Agent : http://localhost:8000/api")
     logger.info("   - Documentation : http://localhost:8000/docs")
     logger.info("   - Health Check : http://localhost:8000/health")
-    
+
     return app
 
 
@@ -149,7 +144,7 @@ app = create_app()
 def run_development():
     """Lance l'application en mode développement avec rechargement automatique."""
     settings = AgentSettings()
-    
+
     uvicorn.run(
         "src.gradio_app:app",
         host="0.0.0.0",
@@ -159,10 +154,10 @@ def run_development():
         reload_excludes=["*.pyc", "__pycache__", "*.log"],
         log_level="info",
         access_log=True,
-        use_colors=True
+        use_colors=True,
     )
 
 
 if __name__ == "__main__":
     """Point d'entrée pour l'exécution directe."""
-    run_development() 
+    run_development()

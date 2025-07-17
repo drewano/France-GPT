@@ -17,7 +17,8 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "gradio",
-    "gradio[oauth]"
+    "gradio[oauth]",
+    "ruff"
 ]
 
 [project.urls]
