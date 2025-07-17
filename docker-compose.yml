@@ -1,0 +1,75 @@
+# Définition des services qui composent l'application
+services:
+
+  # --- Service 1: Le serveur MCP ---
+  # Ce service exécute le serveur FastMCP qui transforme l'API data.inclusion en outils.
+  mcp_server:
+    container_name: datainclusion-mcp-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Surcharge la commande par défaut du Dockerfile pour lancer spécifiquement le serveur MCP
+    command: python -m src.mcp_server.server
+    env_file:
+      - .env
+    environment:
+      # S'assure que le serveur écoute sur le bon port à l'intérieur du conteneur
+      - MCP_PORT=8000
+    networks:
+      - datainclusion-net
+    ports:
+      # Expose le port 8000 pour que les clients MCP (ex: Claude Desktop) puissent s'y connecter
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      # Vérifie que le serveur MCP est bien démarré et répond
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # --- Service 2: L'Agent IA et l'interface Gradio/FastAPI ---
+  # C'est le service principal, qui fournit l'interface utilisateur et l'API de chat.
+  agent:
+    container_name: datainclusion-agent-ui
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # La commande par défaut du Dockerfile ("python main.py") est déjà correcte pour ce service
+    env_file:
+      - .env
+    environment:
+      # Port sur lequel l'interface Gradio et l'API de l'agent seront accessibles
+      - AGENT_PORT=8001
+      # URL pour que l'agent puisse trouver le serveur MCP. 'mcp_server' est le nom du service.
+      - MCP_SERVER_URL=http://mcp_server:8000/mcp
+      # Mode de fonctionnement pour la journalisation et les configurations
+      - ENVIRONMENT=production
+    networks:
+      - datainclusion-net
+    ports:
+      # Expose le port 8001 pour accéder à l'interface Gradio via http://localhost:8001
+      - "8001:8001"
+    volumes:
+      # Persiste les données générées (logs, feedback, exports) sur la machine hôte
+      - ./logs:/app/logs
+      - ./feedback_data:/app/feedback_data
+      - ./exports:/app/exports
+    # S'assure que le serveur MCP est démarré et sain avant de lancer l'agent
+    depends_on:
+      mcp_server:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      # Vérifie que l'interface Gradio/FastAPI est bien démarrée
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# Définition du réseau partagé pour permettre la communication entre les conteneurs
+networks:
+  datainclusion-net:
+    driver: bridge

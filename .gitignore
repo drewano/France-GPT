@@ -81,3 +81,4 @@ db.sqlite3-journal
 
 # Jupyter Notebook
 .ipynb_checkpoints 
+repomix-output.xml

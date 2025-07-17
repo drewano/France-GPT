@@ -1,155 +1,172 @@
-# Data Inclusion MCP Server
+# Agent IA pour l'Inclusion Sociale
 
-Un serveur MCP (Model Context Protocol) qui expose l'API [data.inclusion.beta.gouv.fr](https://data.inclusion.beta.gouv.fr) pour faciliter l'accès aux données d'inclusion en France via des assistants IA compatibles MCP.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![Frameworks](https://img.shields.io/badge/frameworks-FastAPI%20%7C%20Gradio%20%7C%20FastMCP-orange)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg?logo=docker)](https://www.docker.com/)
 
-[![Licence: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python Version](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+Cet agent conversationnel intelligent est conçu pour aider les utilisateurs à naviguer dans l'écosystème de l'inclusion sociale en France. Il se connecte à l'API [data.inclusion.beta.gouv.fr](https://data.inclusion.beta.gouv.fr/) pour fournir des informations précises et à jour sur les structures d'aide, les services disponibles et les ressources sur tout le territoire.
 
-## 📋 Description
+L'interface de chat offre une expérience utilisateur transparente, montrant en temps réel les outils que l'agent utilise pour trouver des réponses, ce qui permet de comprendre son "raisonnement".
 
-Ce projet transforme automatiquement l'API REST de `data.inclusion` en outils MCP, permettant aux assistants IA (comme Claude Desktop) d'interroger facilement les données sur les structures, services et ressources d'inclusion sociale en France. Il charge la spécification OpenAPI de l'API à la volée pour générer les outils.
+### Aperçu de l'interface
 
-### ✨ Fonctionnalités
+*(Image d'exemple montrant le chat, les questions suggérées et la visualisation d'un appel d'outil)*
 
--   **🔄 Conversion Automatique** : Transforme les endpoints de l'API en outils MCP à la volée.
--   **🔧 Outils Conviviaux** : Noms d'outils renommés pour une meilleure compréhension par les IA.
--   **🐳 Support Docker** : Prêt à l'emploi avec une configuration Docker simple.
--   **🔑 Authentification Sécurisée** : Gère l'authentification par `Bearer Token` via les variables d'environnement.
--   **⚙️ Pagination Intelligente** : Limite automatiquement le nombre de résultats pour des réponses plus rapides et ciblées.
+## ✨ Fonctionnalités Principales
 
-### 🛠️ Outils Disponibles
+* **🤖 Agent Expert :** Un assistant basé sur un LLM (GPT-4) spécialisé dans les questions d'inclusion sociale.
+* **🔌 Conversion d'API en Outils :** Utilise **FastMCP** pour transformer dynamiquement la spécification OpenAPI de `data.inclusion` en outils utilisables par l'agent IA.
+* **🔍 Transparence Totale :** L'interface **Gradio** affiche en temps réel les appels aux outils (`search_services`, `get_structure_details`, etc.), permettant de voir exactement comment l'agent obtient ses informations.
+* **💬 Interface de Chat Moderne :** Une interface utilisateur réactive et conviviale construite avec Gradio 4.
+* **🚀 Architecture Robuste :** Déploiement via **Docker Compose** avec deux services découplés :
+    1. Un serveur MCP dédié à la gestion des outils.
+    2. Un serveur pour l'agent IA et l'interface utilisateur.
+* **⚙️ Configuration Centralisée :** Gestion simple des configurations via un fichier `.env` et Pydantic Settings.
+* **✅ Prêt pour la Production :** Inclut des health-checks, une journalisation structurée et une configuration pour le déploiement.
+* **📖 API Documentée :** L'agent expose sa propre API FastAPI avec une documentation Swagger UI (`/docs`).
 
-Le serveur expose plus d'une dizaine d'outils, dont les principaux :
+## 🏗️ Architecture
 
--   `list_all_structures` : Liste les structures d'inclusion.
--   `get_structure_details` : Obtient les détails d'une structure spécifique.
--   `search_services` : Recherche des services selon des critères (code postal, thématique, etc.).
--   `list_all_services` : Liste l'ensemble des services disponibles.
--   `doc_list_*` : Accède aux différents référentiels (thématiques, types de frais, etc.).
+Le projet est divisé en deux services Docker communiquant entre eux, assurant une séparation claire des responsabilités et une meilleure modularité.
 
-## 🚀 Démarrage Rapide avec Docker (Recommandé)
+1. **`mcp_server` (Serveur d'Outils)** :
+    * Charge la spécification OpenAPI de `data.inclusion`.
+    * La transforme en "outils" (fonctions) MCP (Model-Controlled Proxy).
+    * Expose ces outils sur un port interne (`8000`) pour que l'agent puisse les consommer.
+    * Gère l'authentification avec l'API `data.inclusion`.
 
-Le moyen le plus simple de lancer le serveur est d'utiliser Docker.
+2. **`agent` (Agent & Interface Utilisateur)** :
+    * Contient l'agent IA (`pydantic-ai`) qui utilise le modèle GPT.
+    * Se connecte au `mcp_server` pour découvrir et utiliser les outils disponibles.
+    * Expose une interface de chat Gradio sur le port `8001`.
+    * Fournit une API FastAPI pour une intégration programmatique.
+
+```mermaid
+graph TD
+    subgraph "Machine Utilisateur"
+        A[Utilisateur] <--> B[Navigateur Web];
+    end
+
+    subgraph "Environnement Docker"
+        B -- HTTPS --> C{Agent & UI Service (Gradio/FastAPI) <br> Port 8001};
+        C -- MCP (HTTP) --> D{MCP Tool Server (FastMCP) <br> Port 8000};
+    end
+    
+    subgraph "Services Externes"
+        D -- REST API --> E[API data.inclusion.beta.gouv.fr];
+        C -- API Call --> F[API OpenAI];
+    end
+
+    style A fill:#fff,stroke:#333,stroke-width:2px
+    style E fill:#f9f,stroke:#333,stroke-width:2px
+    style F fill:#9cf,stroke:#333,stroke-width:2px
+```
+
+## 🛠️ Technologies Utilisées
+
+* **Backend & IA :** Python 3.12, FastAPI, Pydantic-AI, FastMCP
+* **Frontend :** Gradio
+* **Déploiement :** Docker, Docker Compose
+* **Dépendances :** Uvicorn, HTTPX, python-dotenv
+
+## 🚀 Démarrage Rapide
 
 ### Prérequis
 
--   **Docker**
--   **Git**
+* [Docker](https://www.docker.com/get-started)
+* [Docker Compose](https://docs.docker.com/compose/install/) (généralement inclus avec Docker Desktop)
 
-### Étapes
+### Installation
 
-1.  **Cloner le repository :**
+1. **Clonez le dépôt :**
+
     ```bash
     git clone https://github.com/votre-user/datainclusion-mcp-server.git
     cd datainclusion-mcp-server
     ```
 
-2.  **Configurer l'environnement :**
-    -   Copiez le fichier d'exemple : `cp env.example .env`
-    -   Ouvrez le fichier `.env` et ajoutez votre clé API : `DATA_INCLUSION_API_KEY=votre_cle_api_ici`
-    -   **Important :** Laissez `MCP_HOST=0.0.0.0` pour que le conteneur soit accessible depuis votre machine.
+2. **Configurez les variables d'environnement :**
+    Copiez le fichier d'exemple et modifiez-le pour y ajouter vos clés d'API.
 
-3.  **Construire l'image Docker :**
     ```bash
-    docker build -t datainclusion-mcp .
+    cp .env.example .env
     ```
 
-4.  **Lancer le conteneur :**
-    ```bash
-    docker run -d --rm -p 8000:8000 --env-file .env --name mcp-server datainclusion-mcp
+    Ouvrez le fichier `.env` et remplissez les valeurs suivantes :
+
+    ```ini
+    # Clé API pour l'API data.inclusion (obligatoire)
+    # Contactez l'équipe data.inclusion pour en obtenir une.
+    DATA_INCLUSION_API_KEY=VOTRE_CLE_ICI
+
+    # Clé API pour le modèle de langage (obligatoire)
+    # Le projet est configuré pour OpenAI par défaut.
+    OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+    # (Optionnel) Clé pour sécuriser le serveur MCP.
+    # Si non définie, le serveur MCP sera accessible sans authentification sur le réseau Docker.
+    MCP_SERVER_SECRET_KEY=une-cle-secrete-aleatoire
     ```
 
-5.  **Vérifier les logs :**
+3. **Lancez l'application avec Docker Compose :**
+    Cette commande va construire les images Docker et démarrer les deux services.
+
     ```bash
-    docker logs mcp-server
-    ```
-    Vous devriez voir `Uvicorn running on http://0.0.0.0:8000`. Votre serveur est prêt !
-
-## 🔌 Intégration Client MCP (Claude Desktop, etc.)
-
-Une fois le serveur lancé (localement ou via Docker), ajoutez cette configuration à votre client MCP :
-
-```json
-{
-  "mcpServers": {
-    "data-inclusion": {
-      "transport": "sse",
-      "url": "http://127.0.0.1:8000/sse"
-    }
-  }
-}
-```
-
-> **Localisation du fichier de config Claude :**
-> - **Windows** : `%APPDATA%\Claude\claude_desktop_config.json`
-> - **macOS** : `~/Library/Application Support/Claude/claude_desktop_config.json`
-> - **Linux** : `~/.config/Claude/claude_desktop_config.json`
-
-## ⚙️ Installation et Lancement Manuels
-
-Si vous ne souhaitez pas utiliser Docker.
-
-### Prérequis
-
--   **Python 3.12+**
-
-### Étapes
-
-1.  **Cloner le repository et naviguer dans le dossier.**
-2.  **Installer les dépendances :**
-    ```bash
-    # Avec uv (recommandé)
-    uv pip install -e .
-    
-    # Ou avec pip
-    pip install -e .
-    ```
-3.  **Configurer l'environnement :**
-    -   `cp env.example .env`
-    -   Ouvrez `.env` et ajoutez votre clé API.
-    -   Pour un lancement local, `MCP_HOST=127.0.0.1` est suffisant.
-4.  **Lancer le serveur :**
-    ```bash
-    python src/main.py
+    docker-compose up --build
     ```
 
-## 🛠️ Configuration des Variables d'Environnement
+### Accès à l'application
 
-Configurez ces variables dans votre fichier `.env` :
+* **Interface de Chat :** Ouvrez votre navigateur et allez à [**http://localhost:8001/chat**](http://localhost:8001/chat)
+* **API de l'agent :** La documentation est disponible sur [http://localhost:8001/docs](http://localhost:8001/docs)
+* **Health Check :** [http://localhost:8001/health](http://localhost:8001/health)
 
-| Variable                 | Description                                                               | Défaut                                                    |
-| ------------------------ | ------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `MCP_HOST`               | Adresse IP d'écoute. **Utiliser `0.0.0.0` pour Docker.**                   | `127.0.0.1`                                               |
-| `MCP_PORT`               | Port d'écoute du serveur.                                                 | `8000`                                                    |
-| `MCP_SSE_PATH`           | Chemin de l'endpoint SSE.                                                 | `/sse`                                                    |
-| `OPENAPI_URL`            | URL de la spécification OpenAPI à charger.                                | `https://api.data.inclusion.beta.gouv.fr/api/openapi.json` |
-| `MCP_SERVER_NAME`        | Nom du serveur affiché dans les clients.                                  | `DataInclusionAPI`                                        |
-| `DATA_INCLUSION_API_KEY` | **(Requis)** Votre clé API pour l'API `data.inclusion`.                   | `None`                                                    |
+## 🔧 Configuration (Variables d'environnement)
 
-## 🏗️ Structure du Projet
+Toutes les configurations sont gérées via le fichier `.env`.
 
-```
-datainclusion-mcp-server/
-├── src/
-│   ├── main.py              # Point d'entrée principal du serveur
-│   └── utils.py             # Fonctions utilitaires (client HTTP, inspection)
-├── .env.example             # Template de configuration d'environnement
-├── .gitignore               # Fichiers ignorés par Git
-├── Dockerfile               # Instructions pour construire l'image Docker
-├── pyproject.toml           # Dépendances et métadonnées du projet
-└── README.md                # Cette documentation
-```
+| Variable                               | Description                                                                                             | Service Concerné |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------- |
+| `OPENAPI_URL`                          | URL de la spécification OpenAPI à utiliser pour générer les outils.                                     | `mcp_server`     |
+| `DATA_INCLUSION_API_KEY`               | **(Requis)** Clé API pour s'authentifier auprès de l'API `data.inclusion`.                                  | `mcp_server`     |
+| `MCP_SERVER_SECRET_KEY`                | Clé secrète pour signer les tokens d'accès au serveur MCP. Si vide, l'authentification est désactivée. | `mcp_server`     |
+| `OPENAI_API_KEY`                       | **(Requis)** Votre clé API OpenAI pour le modèle de langage.                                              | `agent`          |
+| `AGENT_MODEL_NAME`                     | Nom du modèle OpenAI à utiliser (ex: `gpt-4.1`, `gpt-4-turbo`).                                           | `agent`          |
+| `AGENT_PORT`                           | Port sur lequel l'interface Gradio et l'API de l'agent seront exposées.                                   | `agent`          |
+| `MCP_SERVER_URL`                       | URL interne pour que l'agent se connecte au serveur MCP. Ne pas modifier si vous utilisez Docker.       | `agent`          |
+| `ENVIRONMENT`                          | Mode de l'application (`production` ou `development`).                                                  | `agent`          |
 
-## 🤝 Contribution
+## 🧑‍💻 Développement Local (Sans Docker)
 
-Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une *Pull Request* ou une *Issue*.
+Si vous souhaitez exécuter les services localement pour le développement :
 
-1.  Forker le projet.
-2.  Créer une branche pour votre fonctionnalité (`git checkout -b feature/ma-super-feature`).
-3.  Commiter vos changements (`git commit -m 'Ajout de ma-super-feature'`).
-4.  Pousser vers la branche (`git push origin feature/ma-super-feature`).
-5.  Ouvrir une Pull Request.
+1. **Installez les dépendances :**
 
-## 📝 Licence
+    ```bash
+    pip install uv  # Installer le gestionnaire de paquets rapide
+    uv pip install -r pyproject.toml
+    ```
+
+2. **Configurez votre fichier `.env`.**
+
+3. **Lancez le serveur MCP :**
+    Dans un premier terminal :
+
+    ```bash
+    python -m src.mcp_server.server
+    ```
+
+    Il tournera par défaut sur `http://localhost:8000`.
+
+4. **Lancez l'agent et l'UI :**
+    Dans un second terminal, assurez-vous que `MCP_SERVER_URL` dans votre `.env` pointe vers `http://localhost:8000/mcp` et que `AGENT_PORT` est différent (ex: `8001`).
+
+    ```bash
+    # Pour le mode développement avec rechargement automatique
+    python main.py
+    ```
+
+## 📜 Licence
 
 Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
