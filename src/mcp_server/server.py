@@ -14,7 +14,7 @@ from fastmcp.server.auth.providers.bearer import RSAKeyPair
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
-from ..core.config import MCPSettings
+from ..core.config import settings
 from .utils import inspect_mcp_components, create_api_client
 from ..core.logging import setup_logging
 from .openapi_loader import OpenAPILoader
@@ -30,15 +30,13 @@ class MCPBuilder:
     les composants spécialisés (OpenAPILoader, ToolTransformer, etc.).
     """
 
-    def __init__(self, settings: MCPSettings, logger: logging.Logger):
+    def __init__(self, logger: logging.Logger):
         """
-        Initialise le builder avec les paramètres de configuration et le logger.
+        Initialise le builder avec le logger.
 
         Args:
-            settings: Instance de MCPSettings contenant la configuration
             logger: Instance du logger pour enregistrer les messages
         """
-        self.settings = settings
         self.logger = logger
         self.api_client = None
 
@@ -57,7 +55,7 @@ class MCPBuilder:
         self.logger.info("Configuring server authentication...")
 
         # Lecture de la clé secrète depuis la configuration
-        secret_key = self.settings.MCP_SERVER_SECRET_KEY
+        secret_key = settings.mcp.MCP_SERVER_SECRET_KEY
 
         if secret_key and secret_key.strip():
             self.logger.info(
@@ -145,7 +143,7 @@ class MCPBuilder:
         try:
             # 1. Chargement et parsing de la spécification OpenAPI
             self.logger.info("Loading OpenAPI specification...")
-            openapi_loader = OpenAPILoader(self.settings, self.logger)
+            openapi_loader = OpenAPILoader(self.logger)
             openapi_spec, http_routes = await openapi_loader.load()
 
             # 2. Création du client API authentifié
@@ -165,7 +163,7 @@ class MCPBuilder:
                 self.logger.warning(f"Using default base URL: {base_url}")
 
             self.api_client = create_api_client(
-                base_url, self.logger, self.settings.DATA_INCLUSION_API_KEY
+                base_url, self.logger, settings.mcp.DATA_INCLUSION_API_KEY
             )
 
             # 3. Configuration de l'authentification
@@ -173,7 +171,7 @@ class MCPBuilder:
 
             # 4. Création du serveur MCP
             self.logger.info(
-                f"Creating FastMCP server '{self.settings.MCP_SERVER_NAME}'..."
+                f"Creating FastMCP server '{settings.mcp.MCP_SERVER_NAME}'..."
             )
 
             # Configuration des routes MCP
@@ -197,7 +195,7 @@ class MCPBuilder:
             mcp_server = FastMCP.from_openapi(
                 openapi_spec=openapi_spec,
                 client=self.api_client,
-                name=self.settings.MCP_SERVER_NAME,
+                name=settings.mcp.MCP_SERVER_NAME,
                 route_maps=custom_route_maps,
                 auth=auth_provider,
                 mcp_component_fn=lambda route,
@@ -256,34 +254,29 @@ async def main():
     de manière modulaire et organisée.
     """
 
-    # === 1. CHARGEMENT DE LA CONFIGURATION ===
-    settings = MCPSettings()
-
-    # === 2. CONFIGURATION DU LOGGING ===
+    # === 1. CONFIGURATION DU LOGGING ===
     logger = setup_logging(name="datainclusion.mcp")
 
     builder = None
 
     try:
-        # === 3. CRÉATION ET CONSTRUCTION DU SERVEUR MCP ===
+        # === 2. CRÉATION ET CONSTRUCTION DU SERVEUR MCP ===
         logger.info("Initializing MCP server builder...")
-        builder = MCPBuilder(settings, logger)
+        builder = MCPBuilder(logger)
 
         logger.info("Building MCP server...")
         mcp_server = await builder.build()
 
-        # === 4. LANCEMENT DU SERVEUR ===
-        server_url = (
-            f"http://{settings.MCP_HOST}:{settings.MCP_PORT}{settings.MCP_API_PATH}"
-        )
+        # === 3. LANCEMENT DU SERVEUR ===
+        server_url = f"http://{settings.mcp.MCP_HOST}:{settings.mcp.MCP_PORT}{settings.mcp.MCP_API_PATH}"
         logger.info(f"Starting MCP server on {server_url}")
         logger.info("Press Ctrl+C to stop the server")
 
         await mcp_server.run_async(
             transport="http",
-            host=settings.MCP_HOST,
-            port=settings.MCP_PORT,
-            path=settings.MCP_API_PATH,
+            host=settings.mcp.MCP_HOST,
+            port=settings.mcp.MCP_PORT,
+            path=settings.mcp.MCP_API_PATH,
         )
 
     except KeyboardInterrupt:
@@ -294,7 +287,7 @@ async def main():
         logger.error("Please check your configuration and try again.")
 
     finally:
-        # === 5. NETTOYAGE DES RESSOURCES ===
+        # === 4. NETTOYAGE DES RESSOURCES ===
         if builder:
             await builder.cleanup()
 

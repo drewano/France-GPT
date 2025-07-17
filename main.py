@@ -19,7 +19,7 @@ from pathlib import Path
 # Ajouter le répertoire src au path Python
 try:
     import uvicorn
-    from src.core.config import AgentSettings
+    from src.core.config import settings
     from src.core.logging import setup_logging
     from src.gradio_app import app
 
@@ -35,31 +35,28 @@ try:
             Path(directory).mkdir(exist_ok=True)
             logger.info(f"📁 Répertoire créé/vérifié: {directory}")
 
-        # Vérifier les variables d'environnement critiques
-        settings = AgentSettings()
-
         # Avertissements pour la configuration
-        if settings.SECRET_KEY == "your-secret-key-here-change-in-production":
+        if settings.agent.SECRET_KEY == "your-secret-key-here-change-in-production":
             logger.warning(
                 "⚠️ SECRET_KEY utilise la valeur par défaut - à changer en production !"
             )
 
-        if settings.CORS_ORIGINS == ["*"]:
+        if settings.agent.CORS_ORIGINS == ["*"]:
             logger.warning(
                 "⚠️ CORS_ORIGINS autorise tous les domaines - à restreindre en production !"
             )
 
-        if not settings.OPENAI_API_KEY:
+        if not settings.agent.OPENAI_API_KEY:
             logger.warning(
                 "⚠️ OPENAI_API_KEY non définie - certaines fonctionnalités peuvent ne pas fonctionner"
             )
 
         logger.info("✅ Configuration de l'environnement terminée")
-        return settings
+        return settings.agent
 
     def run_app():
         """Lance l'application selon l'environnement configuré."""
-        settings = setup_environment()
+        agent_settings = setup_environment()
 
         # Déterminer le mode d'exécution
         environment = os.getenv("ENVIRONMENT", "production").lower()
@@ -69,23 +66,25 @@ try:
             logger.info("🔧 Démarrage de l'application en mode DÉVELOPPEMENT")
             logger.info("📋 Configuration:")
             logger.info("   - Host: 0.0.0.0")
-            logger.info(f"   - Port: {settings.AGENT_PORT}")
+            logger.info(f"   - Port: {agent_settings.AGENT_PORT}")
             logger.info("   - Auto-reload: Activé")
             logger.info(
-                f"   - Interface Gradio: http://localhost:{settings.AGENT_PORT}/chat"
-            )
-            logger.info(f"   - API Agent: http://localhost:{settings.AGENT_PORT}/api")
-            logger.info(
-                f"   - Documentation: http://localhost:{settings.AGENT_PORT}/docs"
+                f"   - Interface Gradio: http://localhost:{agent_settings.AGENT_PORT}/chat"
             )
             logger.info(
-                f"   - Health Check: http://localhost:{settings.AGENT_PORT}/health"
+                f"   - API Agent: http://localhost:{agent_settings.AGENT_PORT}/api"
+            )
+            logger.info(
+                f"   - Documentation: http://localhost:{agent_settings.AGENT_PORT}/docs"
+            )
+            logger.info(
+                f"   - Health Check: http://localhost:{agent_settings.AGENT_PORT}/health"
             )
 
             uvicorn.run(
                 "src.gradio_app:app",
                 host="0.0.0.0",
-                port=settings.AGENT_PORT,
+                port=agent_settings.AGENT_PORT,
                 reload=True,
                 reload_dirs=["src", "static"],
                 reload_excludes=[
@@ -103,22 +102,24 @@ try:
             logger.info("🚀 Démarrage de l'application en mode PRODUCTION")
             logger.info("📋 Configuration:")
             logger.info("   - Host: 0.0.0.0")
-            logger.info(f"   - Port: {settings.AGENT_PORT}")
+            logger.info(f"   - Port: {agent_settings.AGENT_PORT}")
             logger.info(
-                f"   - Interface Gradio: http://localhost:{settings.AGENT_PORT}/chat"
-            )
-            logger.info(f"   - API Agent: http://localhost:{settings.AGENT_PORT}/api")
-            logger.info(
-                f"   - Documentation: http://localhost:{settings.AGENT_PORT}/docs"
+                f"   - Interface Gradio: http://localhost:{agent_settings.AGENT_PORT}/chat"
             )
             logger.info(
-                f"   - Health Check: http://localhost:{settings.AGENT_PORT}/health"
+                f"   - API Agent: http://localhost:{agent_settings.AGENT_PORT}/api"
+            )
+            logger.info(
+                f"   - Documentation: http://localhost:{agent_settings.AGENT_PORT}/docs"
+            )
+            logger.info(
+                f"   - Health Check: http://localhost:{agent_settings.AGENT_PORT}/health"
             )
 
             uvicorn.run(
                 app,
                 host="0.0.0.0",
-                port=settings.AGENT_PORT,
+                port=agent_settings.AGENT_PORT,
                 log_level="info",
                 access_log=True,
                 reload=False,

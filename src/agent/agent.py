@@ -9,7 +9,7 @@ from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 from pydantic_ai.models.openai import OpenAIModel
 
-from ..core.config import AgentSettings
+from ..core.config import settings
 
 
 def create_inclusion_agent(mcp_server: MCPServerStreamableHTTP) -> Agent:
@@ -23,12 +23,9 @@ def create_inclusion_agent(mcp_server: MCPServerStreamableHTTP) -> Agent:
         Agent configuré pour répondre aux questions sur l'inclusion sociale
     """
 
-    # Charger la configuration pour obtenir la clé API
-    settings = AgentSettings()
-
     # Utiliser OpenAI au lieu de Gemini pour éviter les problèmes avec les schémas $ref
     # OpenAI gère mieux les schémas JSON complexes avec des références
-    model = OpenAIModel(settings.AGENT_MODEL_NAME)
+    model = OpenAIModel(settings.agent.AGENT_MODEL_NAME)
 
     return Agent(
         # Modèle OpenAI qui supporte mieux les schémas JSON complexes

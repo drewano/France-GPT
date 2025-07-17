@@ -27,7 +27,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 # Imports locaux
-from .core.config import AgentSettings
+from .core.config import settings
 from .core.lifespan import lifespan
 from .api.router import api_router, set_app_instance
 from .ui.chat import create_complete_interface
@@ -44,8 +44,6 @@ def create_app() -> FastAPI:
     Returns:
         Instance FastAPI configurée
     """
-    settings = AgentSettings()
-
     # Application principale
     app = FastAPI(
         title="Agent IA d'Inclusion Sociale - Interface Complète",
@@ -62,7 +60,7 @@ def create_app() -> FastAPI:
     # Configuration CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.CORS_ORIGINS,
+        allow_origins=settings.agent.CORS_ORIGINS,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
@@ -132,12 +130,10 @@ app = create_app()
 # Fonction utilitaire pour le développement
 def run_development():
     """Lance l'application en mode développement avec rechargement automatique."""
-    settings = AgentSettings()
-
     uvicorn.run(
         "src.gradio_app:app",
         host="0.0.0.0",
-        port=settings.AGENT_PORT,
+        port=settings.agent.AGENT_PORT,
         reload=True,
         reload_dirs=["src"],
         reload_excludes=["*.pyc", "__pycache__", "*.log"],

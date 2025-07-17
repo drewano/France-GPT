@@ -46,13 +46,6 @@ class AgentSettings(BaseSettings):
     CORS_ORIGINS: list[str] = ["*"]  # En production, spécifier les domaines autorisés
     SECRET_KEY: str = "your-secret-key-here-change-in-production"
 
-    # Configuration Pydantic Settings
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",  # Ignore les variables d'environnement non définies
-    )
-
 
 class MCPSettings(BaseSettings):
     """
@@ -75,9 +68,26 @@ class MCPSettings(BaseSettings):
     DATA_INCLUSION_API_KEY: str = ""
     MCP_SERVER_SECRET_KEY: str | None = None
 
+
+class AppSettings(BaseSettings):
+    """
+    Configuration principale de l'application.
+
+    Cette classe centralise toutes les configurations des différents composants
+    de l'application via des modèles imbriqués.
+    """
+
+    # Configurations des composants
+    agent: AgentSettings = AgentSettings()
+    mcp: MCPSettings = MCPSettings()
+
     # Configuration Pydantic Settings
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",  # Ignore les variables d'environnement non définies
     )
+
+
+# Instance globale de configuration
+settings = AppSettings()

@@ -11,7 +11,7 @@ from typing import List, Dict, Tuple
 import httpx
 from fastmcp.utilities.openapi import parse_openapi_to_http_routes, HTTPRoute
 
-from ..core.config import MCPSettings
+from ..core.config import settings
 
 
 class OpenAPILoader:
@@ -24,15 +24,13 @@ class OpenAPILoader:
     - Application des limites de pagination
     """
 
-    def __init__(self, settings: MCPSettings, logger: logging.Logger):
+    def __init__(self, logger: logging.Logger):
         """
-        Initialise le loader avec les paramètres de configuration et le logger.
+        Initialise le loader avec le logger.
 
         Args:
-            settings: Instance de MCPSettings contenant la configuration
             logger: Instance du logger pour enregistrer les messages
         """
-        self.settings = settings
         self.logger = logger
 
     async def load(self) -> Tuple[Dict, List[HTTPRoute]]:
@@ -53,13 +51,13 @@ class OpenAPILoader:
             json.JSONDecodeError: Si la réponse n'est pas un JSON valide
         """
         self.logger.info(
-            f"Loading OpenAPI specification from URL: '{self.settings.OPENAPI_URL}'..."
+            f"Loading OpenAPI specification from URL: '{settings.mcp.OPENAPI_URL}'..."
         )
 
         try:
             # === CHARGEMENT DE LA SPÉCIFICATION OPENAPI ===
             async with httpx.AsyncClient() as client:
-                response = await client.get(self.settings.OPENAPI_URL)
+                response = await client.get(settings.mcp.OPENAPI_URL)
                 response.raise_for_status()  # Lève une exception si le statut n'est pas 2xx
                 openapi_spec = response.json()
 
@@ -83,14 +81,14 @@ class OpenAPILoader:
 
         except httpx.RequestError as e:
             self.logger.error(
-                f"Failed to fetch OpenAPI specification from '{self.settings.OPENAPI_URL}'."
+                f"Failed to fetch OpenAPI specification from '{settings.mcp.OPENAPI_URL}'."
             )
             self.logger.error(f"Details: {e}")
             raise
 
         except json.JSONDecodeError as e:
             self.logger.error(
-                f"Invalid JSON in the response from '{self.settings.OPENAPI_URL}'."
+                f"Invalid JSON in the response from '{settings.mcp.OPENAPI_URL}'."
             )
             self.logger.error(f"Details: {e}")
             raise

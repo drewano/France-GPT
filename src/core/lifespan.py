@@ -13,7 +13,7 @@ from fastapi import FastAPI
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 
 # Imports locaux
-from .config import AgentSettings
+from .config import settings
 from ..agent.agent import create_inclusion_agent
 
 # Configuration du logging
@@ -33,19 +33,16 @@ async def lifespan(app: FastAPI):
     """
     logger.info("🚀 Démarrage de l'application Gradio + FastAPI...")
 
-    # Chargement de la configuration
-    settings = AgentSettings()
-
     # Initialisation du serveur MCP
-    mcp_server = MCPServerStreamableHTTP(settings.MCP_SERVER_URL)
+    mcp_server = MCPServerStreamableHTTP(settings.agent.MCP_SERVER_URL)
 
     # Création de l'agent avec le serveur MCP
     agent = create_inclusion_agent(mcp_server)
 
     # Logique de connexion au MCP avec retry et backoff exponentiel
-    max_retries = settings.AGENT_MCP_CONNECTION_MAX_RETRIES
-    base_delay = settings.AGENT_MCP_CONNECTION_BASE_DELAY
-    backoff_multiplier = settings.AGENT_MCP_CONNECTION_BACKOFF_MULTIPLIER
+    max_retries = settings.agent.AGENT_MCP_CONNECTION_MAX_RETRIES
+    base_delay = settings.agent.AGENT_MCP_CONNECTION_BASE_DELAY
+    backoff_multiplier = settings.agent.AGENT_MCP_CONNECTION_BACKOFF_MULTIPLIER
 
     for attempt in range(max_retries):
         try:
