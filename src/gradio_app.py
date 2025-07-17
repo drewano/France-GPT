@@ -38,9 +38,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Variable globale pour stocker l'instance de l'application FastAPI
-_app_instance = None
-
 
 # Création de l'application FastAPI principale
 def create_app() -> FastAPI:
@@ -50,8 +47,6 @@ def create_app() -> FastAPI:
     Returns:
         Instance FastAPI configurée
     """
-    global _app_instance
-
     settings = AgentSettings()
 
     # Application principale
@@ -64,10 +59,7 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
 
-    # Stocker l'instance de l'application dans la variable globale
-    _app_instance = app
-
-    # Configurer l'instance de l'application dans l'API router
+    # Configurer l'instance de l'application pour l'accès Gradio
     set_app_instance(app)
 
     # Configuration CORS
