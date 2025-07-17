@@ -55,14 +55,3 @@ async def chat_stream(
                 yield f"data: {chunk}\n\n"
 
     return StreamingResponse(generate(), media_type="text/plain")
-
-
-@api_router.get("/health")
-async def api_health_check():
-    """
-    Endpoint de vérification de santé de l'API agent.
-
-    Returns:
-        Statut OK avec code HTTP 200
-    """
-    return {"status": "OK"}
