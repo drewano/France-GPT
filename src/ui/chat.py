@@ -41,6 +41,9 @@ def _format_gradio_history(history: List[Dict[str, str]]) -> List[ModelMessage]:
     """
     Convertit l'historique Gradio au format pydantic-ai ModelMessage.
 
+    Filtre les messages d'outils pour ne pas polluer l'historique de l'agent.
+    Ne garde que les messages utilisateur et assistant principaux.
+
     Args:
         history: Historique des messages au format Gradio
 
@@ -54,6 +57,18 @@ def _format_gradio_history(history: List[Dict[str, str]]) -> List[ModelMessage]:
             # Nettoyer le message pour ne garder que les champs essentiels
             role = msg.get("role", "")
             content = msg.get("content", "")
+
+            # Filtrer les messages d'outils en vérifiant les métadonnées
+            metadata = msg.get("metadata", {})
+            if metadata and isinstance(metadata, dict):
+                title = metadata.get("title", "")
+                # Ignorer les messages d'outils (ceux qui commencent par 🛠️ ou ✅/❌)
+                if (
+                    title.startswith("🛠️")
+                    or title.startswith("✅")
+                    or title.startswith("❌")
+                ):
+                    continue
 
             if role == "user" and content:
                 # Créer un ModelRequest avec UserPromptPart
@@ -73,7 +88,7 @@ def _format_gradio_history(history: List[Dict[str, str]]) -> List[ModelMessage]:
 
 async def _handle_agent_node(
     node, run_context, response_messages: List[gr.ChatMessage]
-):
+) -> AsyncGenerator[List[gr.ChatMessage], None]:
     """
     Gère un nœud de l'agent en déléguant à la fonction appropriée selon le type de nœud.
 
@@ -92,13 +107,15 @@ async def _handle_agent_node(
 
     elif Agent.is_model_request_node(node):
         # Nœud de requête modèle - déléguer au streaming de la réponse
-        async for _ in _stream_model_response(node, run_context, response_messages):
-            yield response_messages
+        async for messages in _stream_model_response(
+            node, run_context, response_messages
+        ):
+            yield messages
 
     elif Agent.is_call_tools_node(node):
         # Nœud d'appel d'outils - déléguer au streaming des appels d'outils
-        async for _ in _stream_tool_calls(node, run_context, response_messages):
-            yield response_messages
+        async for messages in _stream_tool_calls(node, run_context, response_messages):
+            yield messages
 
     elif Agent.is_end_node(node):
         # Nœud de fin - traitement terminé
@@ -108,7 +125,7 @@ async def _handle_agent_node(
 
 async def _stream_model_response(
     node, run_context, response_messages: List[gr.ChatMessage]
-):
+) -> AsyncGenerator[List[gr.ChatMessage], None]:
     """
     Gère le streaming de la réponse du modèle.
 
@@ -122,7 +139,7 @@ async def _stream_model_response(
     """
     logger.info("Streaming de la requête modèle...")
 
-    # Ajouter un message assistant normal pour le streaming
+    # Ajouter un message assistant vide pour le streaming
     streaming_message = gr.ChatMessage(role="assistant", content="")
     response_messages.append(streaming_message)
     yield response_messages
@@ -132,6 +149,12 @@ async def _stream_model_response(
         async for event in request_stream:
             if isinstance(event, PartStartEvent):
                 logger.debug(f"Début de la partie {event.index}: {event.part}")
+                # Traiter le contenu initial si c'est un TextPart
+                if isinstance(event.part, TextPart) and event.part.content:
+                    # Initialiser le contenu du message avec le contenu initial
+                    streaming_message.content = event.part.content
+                    yield response_messages
+
             elif isinstance(event, PartDeltaEvent):
                 if isinstance(event.delta, TextPartDelta):
                     # Mettre à jour le message avec le contenu streamé
@@ -146,6 +169,7 @@ async def _stream_model_response(
                     yield response_messages
                 elif isinstance(event.delta, ToolCallPartDelta):
                     logger.debug(f"Appel d'outil en cours: {event.delta.args_delta}")
+
             elif isinstance(event, FinalResultEvent):
                 logger.debug("Streaming de la réponse terminé")
                 yield response_messages
@@ -153,7 +177,7 @@ async def _stream_model_response(
 
 async def _stream_tool_calls(
     node, run_context, response_messages: List[gr.ChatMessage]
-):
+) -> AsyncGenerator[List[gr.ChatMessage], None]:
     """
     Gère le streaming des appels d'outils MCP.
 
@@ -167,9 +191,15 @@ async def _stream_tool_calls(
     """
     logger.info("Traitement des appels d'outils...")
 
+    # Mapper les tool_call_id vers les noms d'outils
+    tool_call_map = {}
+
     async with node.stream(run_context) as handle_stream:
         async for event in handle_stream:
             if isinstance(event, FunctionToolCallEvent):
+                # Stocker le nom de l'outil pour usage ultérieur
+                tool_call_map[event.part.tool_call_id] = event.part.tool_name
+
                 # Afficher l'appel d'outil en utilisant l'utilitaire
                 tool_call_message = create_tool_call_message(
                     event.part.tool_name,
@@ -181,9 +211,12 @@ async def _stream_tool_calls(
                 yield response_messages
 
             elif isinstance(event, FunctionToolResultEvent):
+                # Récupérer le nom de l'outil depuis le mapping
+                tool_name = tool_call_map.get(event.tool_call_id, "Outil MCP")
+
                 # Afficher le résultat de l'outil en utilisant l'utilitaire
                 result_message = create_tool_result_message(
-                    tool_name="Outil MCP",  # Nom générique car pas disponible dans l'event
+                    tool_name=tool_name,
                     result=event.result.content,
                     call_id=event.tool_call_id,
                 )
@@ -202,6 +235,9 @@ def create_complete_interface():
     ) -> AsyncGenerator[List[gr.ChatMessage], None]:
         """
         Fonction de streaming pour l'interface de chat avec affichage des appels aux outils MCP.
+
+        Utilise l'API d'itération avancée de Pydantic AI (agent.iter) pour capturer
+        et afficher chaque étape du processus de l'agent.
 
         Args:
             message: Message de l'utilisateur
