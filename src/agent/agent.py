@@ -8,6 +8,7 @@ avec sa configuration spécialisée pour l'inclusion sociale en France.
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.providers.openai import OpenAIProvider
 
 from ..core.config import settings
 
@@ -23,9 +24,28 @@ def create_inclusion_agent(mcp_server: MCPServerStreamableHTTP) -> Agent:
         Agent configuré pour répondre aux questions sur l'inclusion sociale
     """
 
+    # Configuration du provider OpenAI avec support des URLs personnalisées
+    provider_args = {}
+
+    # Ajouter l'API key si elle est configurée
+    if settings.agent.OPENAI_API_KEY:
+        provider_args["api_key"] = settings.agent.OPENAI_API_KEY
+
+    # Ajouter l'URL de base personnalisée si elle est configurée
+    if settings.agent.OPENAI_API_BASE_URL:
+        provider_args["base_url"] = settings.agent.OPENAI_API_BASE_URL
+
     # Utiliser OpenAI au lieu de Gemini pour éviter les problèmes avec les schémas $ref
     # OpenAI gère mieux les schémas JSON complexes avec des références
-    model = OpenAIModel(settings.agent.AGENT_MODEL_NAME)
+    if provider_args:
+        # Créer un provider personnalisé avec les arguments configurés
+        provider = OpenAIProvider(**provider_args)
+        model = OpenAIModel(
+            model_name=settings.agent.AGENT_MODEL_NAME, provider=provider
+        )
+    else:
+        # Utiliser le comportement par défaut sans provider personnalisé
+        model = OpenAIModel(model_name=settings.agent.AGENT_MODEL_NAME)
 
     return Agent(
         # Modèle OpenAI qui supporte mieux les schémas JSON complexes

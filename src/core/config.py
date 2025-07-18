@@ -19,6 +19,9 @@ class AgentSettings(BaseSettings):
     # Configuration de l'API OpenAI (recommandé pour éviter les problèmes de schéma $ref)
     OPENAI_API_KEY: str = ""
 
+    # URL de base pour les API compatibles OpenAI (ex: Ollama, vLLM)
+    OPENAI_API_BASE_URL: str | None = None
+
     # Nom du modèle OpenAI à utiliser pour l'agent
     AGENT_MODEL_NAME: str = "gpt-4.1"
 
