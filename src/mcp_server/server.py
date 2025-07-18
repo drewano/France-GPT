@@ -14,9 +14,9 @@ from fastmcp.server.auth.providers.bearer import RSAKeyPair
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
-from ..core.config import settings
+from src.core.config import settings
 from .utils import inspect_mcp_components, create_api_client
-from ..core.logging import setup_logging
+from src.core.logging import setup_logging
 from .openapi_loader import OpenAPILoader
 from .tool_transformer import ToolTransformer
 from .tool_mapping import CUSTOM_MCP_TOOL_NAMES

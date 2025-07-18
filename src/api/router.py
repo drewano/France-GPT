@@ -10,24 +10,8 @@ from pydantic import BaseModel
 from pydantic_ai.messages import ModelMessage
 from .dependencies import AgentDep
 
-# Plus de variables globales ! 🎉
+# API router pour les endpoints de l'agent
 api_router = APIRouter()
-
-# Variable pour stocker l'instance de l'application (closure pattern pour Gradio)
-_app_instance = None
-
-
-def set_app_instance(app):
-    """Configure l'instance de l'application pour l'accès Gradio."""
-    global _app_instance
-    _app_instance = app
-
-
-def get_agent():
-    """Récupère l'agent depuis l'état de l'application (pour Gradio)."""
-    if _app_instance is None:
-        return None
-    return getattr(_app_instance.state, "agent", None)
 
 
 class ChatRequest(BaseModel):

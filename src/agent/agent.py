@@ -10,7 +10,7 @@ from pydantic_ai.mcp import MCPServerStreamableHTTP
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
-from ..core.config import settings
+from src.core.config import settings
 
 
 def create_inclusion_agent(mcp_server: MCPServerStreamableHTTP) -> Agent:

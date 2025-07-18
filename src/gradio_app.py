@@ -15,7 +15,7 @@ Architecture :
 - /docs : Documentation API FastAPI
 """
 
-import logging
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -27,16 +27,16 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 # Imports locaux
-from .core.config import settings
-from .core.lifespan import lifespan
-from .api.router import api_router, set_app_instance
-from .ui.chat import create_complete_interface
+from src.core.config import settings
+from src.core.lifespan import lifespan
+from src.core.logging import setup_logging
+from src.api.router import api_router
+from src.ui.chat import create_complete_interface
 
 # Configuration du logging unifié
-logger = logging.getLogger("datainclusion.agent")
+logger = setup_logging(name="datainclusion.agent")
 
 
-# Création de l'application FastAPI principale
 def create_app() -> FastAPI:
     """
     Crée l'application FastAPI combinée avec Gradio.
@@ -53,9 +53,6 @@ def create_app() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
     )
-
-    # Configurer l'instance de l'application pour l'accès Gradio
-    set_app_instance(app)
 
     # Configuration CORS
     app.add_middleware(
@@ -109,40 +106,93 @@ def create_app() -> FastAPI:
     app.include_router(api_router, prefix="/api")
 
     # Créer et monter l'interface Gradio
-    gradio_interface = create_complete_interface()
-
-    # Monter l'interface Gradio
+    # L'interface sera créée avec un agent qui sera résolu de manière paresseuse
+    gradio_interface = create_complete_interface(app)
     app = gr.mount_gradio_app(app=app, blocks=gradio_interface, path="/chat")
 
-    logger.info("🎯 Application FastAPI + Gradio configurée:")
-    logger.info("   - Interface Gradio : http://localhost:8000/chat")
-    logger.info("   - API Agent : http://localhost:8000/api")
-    logger.info("   - Documentation : http://localhost:8000/docs")
-    logger.info("   - Health Check : http://localhost:8000/health")
-
     return app
+
+
+def run_app():
+    """Lance l'application selon l'environnement configuré."""
+    # Déterminer le mode d'exécution
+    environment = os.getenv("ENVIRONMENT", "production").lower()
+    is_development = environment == "development"
+
+    if is_development:
+        logger.info("🔧 Démarrage de l'application en mode DÉVELOPPEMENT")
+        logger.info("📋 Configuration:")
+        logger.info("   - Host: 0.0.0.0")
+        logger.info(f"   - Port: {settings.agent.AGENT_PORT}")
+        logger.info("   - Auto-reload: Activé")
+        logger.info(
+            f"   - Interface Gradio: http://localhost:{settings.agent.AGENT_PORT}/chat"
+        )
+        logger.info(f"   - API Agent: http://localhost:{settings.agent.AGENT_PORT}/api")
+        logger.info(
+            f"   - Documentation: http://localhost:{settings.agent.AGENT_PORT}/docs"
+        )
+        logger.info(
+            f"   - Health Check: http://localhost:{settings.agent.AGENT_PORT}/health"
+        )
+
+        uvicorn.run(
+            "src.gradio_app:app",
+            host="0.0.0.0",
+            port=settings.agent.AGENT_PORT,
+            reload=True,
+            reload_dirs=["src", "static"],
+            reload_excludes=[
+                "*.pyc",
+                "__pycache__",
+                "*.log",
+                "feedback_data",
+                "exports",
+            ],
+            log_level="info",
+            access_log=True,
+            use_colors=True,
+        )
+    else:
+        logger.info("🚀 Démarrage de l'application en mode PRODUCTION")
+        logger.info("📋 Configuration:")
+        logger.info("   - Host: 0.0.0.0")
+        logger.info(f"   - Port: {settings.agent.AGENT_PORT}")
+        logger.info(
+            f"   - Interface Gradio: http://localhost:{settings.agent.AGENT_PORT}/chat"
+        )
+        logger.info(f"   - API Agent: http://localhost:{settings.agent.AGENT_PORT}/api")
+        logger.info(
+            f"   - Documentation: http://localhost:{settings.agent.AGENT_PORT}/docs"
+        )
+        logger.info(
+            f"   - Health Check: http://localhost:{settings.agent.AGENT_PORT}/health"
+        )
+
+        uvicorn.run(
+            app,
+            host="0.0.0.0",
+            port=settings.agent.AGENT_PORT,
+            log_level="info",
+            access_log=True,
+            reload=False,
+            workers=1,  # Gradio ne supporte pas bien les workers multiples
+        )
 
 
 # Instance de l'application
 app = create_app()
 
 
-# Fonction utilitaire pour le développement
-def run_development():
-    """Lance l'application en mode développement avec rechargement automatique."""
-    uvicorn.run(
-        "src.gradio_app:app",
-        host="0.0.0.0",
-        port=settings.agent.AGENT_PORT,
-        reload=True,
-        reload_dirs=["src"],
-        reload_excludes=["*.pyc", "__pycache__", "*.log"],
-        log_level="info",
-        access_log=True,
-        use_colors=True,
-    )
-
-
 if __name__ == "__main__":
-    """Point d'entrée pour l'exécution directe."""
-    run_development()
+    """
+    Point d'entrée pour l'exécution directe.
+    
+    Variables d'environnement supportées :
+    - ENVIRONMENT : "production" ou "development" (défaut: production)
+    - AGENT_PORT : Port d'écoute (défaut: 8001)
+    - OPENAI_API_KEY : Clé API OpenAI (requis)
+    - SECRET_KEY : Clé secrète pour les sessions (à changer en production)
+    - CORS_ORIGINS : Domaines autorisés pour CORS (séparés par virgules)
+    """
+    run_app()

@@ -3,6 +3,26 @@ Configuration management centralisée pour tous les composants de l'application.
 
 Ce module centralise la configuration de l'agent IA et du serveur MCP en utilisant
 Pydantic Settings pour une gestion robuste et typée des variables d'environnement.
+
+Point d'entrée unique pour toute la configuration de l'application :
+    from src.core.config import settings
+
+Utilisation :
+    # Configuration de l'agent IA
+    api_key = settings.agent.OPENAI_API_KEY
+    model_name = settings.agent.AGENT_MODEL_NAME
+
+    # Configuration du serveur MCP
+    mcp_host = settings.mcp.MCP_HOST
+    mcp_port = settings.mcp.MCP_PORT
+
+Structure hiérarchique :
+    - settings.agent.* : Configuration de l'agent IA (OpenAI, ports, connexions MCP)
+    - settings.mcp.* : Configuration du serveur MCP (OpenAPI, authentification, serveur)
+
+Variables d'environnement :
+    Toutes les variables sont chargées automatiquement depuis le fichier .env
+    ou depuis les variables d'environnement du système.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -93,4 +113,6 @@ class AppSettings(BaseSettings):
 
 
 # Instance globale de configuration
+# Point d'entrée unique pour toute la configuration de l'application
+# Utilisation recommandée : from src.core.config import settings
 settings = AppSettings()

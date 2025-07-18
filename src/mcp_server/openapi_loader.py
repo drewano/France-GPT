@@ -11,7 +11,7 @@ from typing import List, Dict, Tuple
 import httpx
 from fastmcp.utilities.openapi import parse_openapi_to_http_routes, HTTPRoute
 
-from ..core.config import settings
+from src.core.config import settings
 
 
 class OpenAPILoader:
