@@ -18,7 +18,8 @@ dependencies = [
     "uvicorn",
     "gradio",
     "gradio[oauth]",
-    "ruff"
+    "ruff",
+    "pylint"
 ]
 
 [project.urls]

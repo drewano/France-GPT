@@ -16,7 +16,8 @@ async def inspect_mcp_components(mcp_instance: FastMCP, logger: logging.Logger):
     disabled_tools = [t for t in tools.values() if not t.enabled and t.name is not None]
 
     logger.info(
-        f"{len(tools)} Total Tool(s) found ({len(enabled_tools)} enabled, {len(disabled_tools)} disabled):"
+        f"{len(tools)} Total Tool(s) found ({len(enabled_tools)} enabled, "
+        f"{len(disabled_tools)} disabled):"
     )
     if enabled_tools:
         logger.info(
@@ -140,7 +141,8 @@ async def find_route_by_id(
         routes: La liste des objets HTTPRoute à parcourir
 
     Returns:
-        HTTPRoute | None: L'objet HTTPRoute correspondant ou None si aucune correspondance n'est trouvée
+        HTTPRoute | None: L'objet HTTPRoute correspondant ou None si aucune "
+        "correspondance n'est trouvée
     """
     for route in routes:
         if hasattr(route, "operation_id") and route.operation_id == operation_id:

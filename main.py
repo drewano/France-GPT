@@ -19,29 +19,10 @@ try:
     import uvicorn
     from src.core.config import settings
     from src.core.logging import setup_logging
-    from src.app.factory import create_app as create_base_app
-    from src.ui.chat import mount_gradio_interface
+    from src.app.factory import create_app
 
     # Configuration du logging
     logger = setup_logging(name="datainclusion.agent")
-
-    def create_app():
-        """
-        Orchestre l'assemblage de l'application FastAPI combinée avec Gradio.
-
-        Utilise la factory d'application pour créer l'instance FastAPI de base,
-        puis délègue le montage de l'interface Gradio au module UI.
-
-        Returns:
-            Instance FastAPI configurée avec Gradio
-        """
-        # Créer l'application FastAPI de base via la factory
-        app = create_base_app()
-
-        # Déléguer le montage de l'interface Gradio au module UI
-        app = mount_gradio_interface(app)
-
-        return app
 
     def run_app():
         """Lance l'application selon l'environnement configuré."""
@@ -113,7 +94,7 @@ try:
                 workers=1,  # Gradio ne supporte pas bien les workers multiples
             )
 
-    # Instance de l'application
+    # Instance de l'application entièrement configurée par la factory
     app = create_app()
 
     if __name__ == "__main__":

@@ -18,6 +18,7 @@ from src.core.config import settings
 from src.core.lifespan import lifespan
 from src.core.logging import setup_logging
 from src.api.router import api_router
+from src.ui.chat import mount_gradio_interface
 
 # Configuration du logging unifié
 logger = setup_logging(name="datainclusion.agent")
@@ -25,7 +26,7 @@ logger = setup_logging(name="datainclusion.agent")
 
 def create_app() -> FastAPI:
     """
-    Crée l'application FastAPI configurée.
+    Crée l'application FastAPI configurée complète avec l'interface Gradio.
 
     Cette fonction centralise la création et la configuration de l'instance
     FastAPI, incluant :
@@ -34,9 +35,10 @@ def create_app() -> FastAPI:
     - Montage des fichiers statiques
     - Routes de base (/, /health)
     - Inclusion du routeur API
+    - Montage de l'interface Gradio
 
     Returns:
-        Instance FastAPI configurée
+        Instance FastAPI configurée complète avec l'interface Gradio montée
     """
     # Application principale
     app = FastAPI(
@@ -98,5 +100,8 @@ def create_app() -> FastAPI:
 
     # Monter l'APIRouter sous /api
     app.include_router(api_router, prefix="/api")
+
+    # Monter l'interface Gradio
+    app = mount_gradio_interface(app)
 
     return app

@@ -118,6 +118,7 @@ def mount_gradio_interface(app: FastAPI) -> FastAPI:
     Returns:
         Instance FastAPI avec l'interface Gradio montée
     """
+
     logger.info("🎨 Montage de l'interface Gradio sur l'application FastAPI...")
 
     # Créer l'interface Gradio complète

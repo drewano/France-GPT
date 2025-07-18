@@ -61,6 +61,24 @@ def setup_logging(name: str, level: str = "INFO") -> logging.Logger:
     return logger
 
 
+def log_gradio_message(message, context: str = "GRADIO") -> None:
+    """
+    Log un message Gradio pour le debugging.
+
+    Args:
+        message: Message Gradio à logger
+        context: Contexte du message (pour le logging)
+    """
+    # Obtenir le logger par défaut de l'application
+    logger = logging.getLogger("datainclusion.agent")
+
+    logger.debug(f"[{context}] Message: {message.role} - {message.metadata}")
+    if isinstance(message.content, str) and len(message.content) < 200:
+        logger.debug(f"[{context}] Content: {message.content}")
+    else:
+        logger.debug(f"[{context}] Content: {len(str(message.content))} caractères")
+
+
 # Configuration par défaut si le module est importé
 if __name__ != "__main__":
     # Configuration automatique lors de l'import

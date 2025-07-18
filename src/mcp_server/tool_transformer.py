@@ -211,7 +211,8 @@ class ToolTransformer:
         mangled_tool_name = self.op_id_map.get(original_name)
         if not mangled_tool_name:
             self.logger.warning(
-                f"  ✗ Could not find a generated tool for operation_id: '{original_name}' - skipping transformation"
+                f"  ✗ Could not find a generated tool for operation_id: "
+                f"'{original_name}' - skipping transformation"
             )
             return None, None
 
@@ -230,7 +231,8 @@ class ToolTransformer:
         original_tool = await self.mcp_server.get_tool(mangled_tool_name)
         if not original_tool:
             self.logger.warning(
-                f"  ✗ Tool not found: '{mangled_tool_name}' (may have been renamed during OpenAPI processing)"
+                f"  ✗ Tool not found: '{mangled_tool_name}' "
+                f"(may have been renamed during OpenAPI processing)"
             )
             return None
 
@@ -368,7 +370,8 @@ class ToolTransformer:
         # === RÉSUMÉ FINAL ===
         if successful_renames > 0:
             self.logger.info(
-                f"✓ Tool transformation completed: {successful_renames}/{total_tools} tools successfully transformed"
+                f"✓ Tool transformation completed: {successful_renames}/{total_tools} "
+                f"tools successfully transformed"
             )
         else:
             self.logger.warning(

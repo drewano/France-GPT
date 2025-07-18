@@ -13,8 +13,8 @@ from fastapi import FastAPI
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 
 # Imports locaux
-from src.core.config import settings
-from src.agent.agent import create_inclusion_agent
+from .config import settings
+from ..agent.agent import create_inclusion_agent
 
 # Configuration du logging
 logger = logging.getLogger("datainclusion.agent")
@@ -109,7 +109,8 @@ async def lifespan(app: FastAPI):
             delay = base_delay * (backoff_multiplier**attempt)
 
             logger.warning(
-                f"Tentative {attempt + 1}/{max_retries} échouée. Nouvelle tentative dans {delay:.2f}s..."
+                f"Tentative {attempt + 1}/{max_retries} échouée. "
+                f"Nouvelle tentative dans {delay:.2f}s..."
             )
             await asyncio.sleep(delay)
 

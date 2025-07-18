@@ -10,16 +10,16 @@ import logging
 from fastmcp import FastMCP
 from fastmcp.server.openapi import RouteMap, MCPType
 from fastmcp.server.auth import BearerAuthProvider
-from fastmcp.server.auth.providers.bearer import RSAKeyPair
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
-from src.core.config import settings
+from ..core.config import settings
+from ..core.logging import setup_logging
 from .utils import inspect_mcp_components, create_api_client
-from src.core.logging import setup_logging
 from .openapi_loader import OpenAPILoader
 from .tool_transformer import ToolTransformer
 from .tool_mapping import CUSTOM_MCP_TOOL_NAMES
+from .auth import setup_authentication
 
 
 class MCPBuilder:
@@ -48,88 +48,12 @@ class MCPBuilder:
         """
         Configure l'authentification Bearer pour le serveur MCP.
 
-        Cette méthode :
-        1. Lit la clé secrète depuis la configuration
-        2. Configure BearerAuthProvider si une clé est fournie
-        3. Génère un token de test pour le développement
+        Cette méthode délègue la configuration d'authentification au module dédié.
 
         Returns:
             BearerAuthProvider | None: Le provider d'authentification ou None
         """
-        self.logger.info("Configuring server authentication...")
-
-        # Lecture de la clé secrète depuis la configuration
-        secret_key = settings.mcp.MCP_SERVER_SECRET_KEY
-
-        if secret_key and secret_key.strip():
-            self.logger.info(
-                "Secret key found - configuring Bearer Token authentication..."
-            )
-            try:
-                # Si la clé ressemble à une clé RSA privée PEM, l'utiliser directement
-                if (
-                    secret_key.strip().startswith("-----BEGIN")
-                    and "PRIVATE KEY" in secret_key
-                ):
-                    # Utiliser la clé privée pour créer une paire de clés
-                    from cryptography.hazmat.primitives import serialization
-
-                    private_key = serialization.load_pem_private_key(
-                        secret_key.encode(), password=None
-                    )
-                    public_key_pem = (
-                        private_key.public_key()
-                        .public_bytes(
-                            encoding=serialization.Encoding.PEM,
-                            format=serialization.PublicFormat.SubjectPublicKeyInfo,
-                        )
-                        .decode()
-                    )
-
-                    auth_provider = BearerAuthProvider(
-                        public_key=public_key_pem, audience="datainclusion-mcp-client"
-                    )
-                else:
-                    # Utiliser la clé comme seed pour générer une paire de clés déterministe
-                    # Pour des raisons de simplicité, on génère une nouvelle paire de clés
-                    key_pair = RSAKeyPair.generate()
-
-                    auth_provider = BearerAuthProvider(
-                        public_key=key_pair.public_key,
-                        audience="datainclusion-mcp-client",
-                    )
-
-                    # Log du token de test (UNIQUEMENT pour le développement)
-                    test_token = key_pair.create_token(
-                        audience="datainclusion-mcp-client",
-                        subject="test-user",
-                        expires_in_seconds=3600,
-                    )
-                    self.logger.info(
-                        f"🔑 Test Bearer Token (for development): {test_token}"
-                    )
-
-                self.logger.info(
-                    "✓ Bearer Token authentication configured successfully"
-                )
-                self.logger.info("   - Audience: datainclusion-mcp-client")
-                self.logger.info(
-                    "   - Server will require valid Bearer tokens for access"
-                )
-                return auth_provider
-
-            except Exception as e:
-                self.logger.error(f"Failed to configure authentication: {e}")
-                self.logger.warning("Continuing without authentication...")
-                return None
-        else:
-            self.logger.warning(
-                "MCP_SERVER_SECRET_KEY not set - server will run WITHOUT authentication"
-            )
-            self.logger.warning(
-                "⚠️  All clients will have unrestricted access to the server"
-            )
-            return None
+        return setup_authentication(self.logger)
 
     async def _load_openapi_spec(self) -> None:
         """
@@ -359,7 +283,10 @@ async def main():
         mcp_server = await builder.build()
 
         # === 3. LANCEMENT DU SERVEUR ===
-        server_url = f"http://{settings.mcp.MCP_HOST}:{settings.mcp.MCP_PORT}{settings.mcp.MCP_API_PATH}"
+        server_url = (
+            f"http://{settings.mcp.MCP_HOST}:{settings.mcp.MCP_PORT}"
+            f"{settings.mcp.MCP_API_PATH}"
+        )
         logger.info(f"Starting MCP server on {server_url}")
         logger.info("Press Ctrl+C to stop the server")
 

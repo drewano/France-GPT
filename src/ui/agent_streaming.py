@@ -21,13 +21,13 @@ from pydantic_ai.messages import (
 )
 
 # Imports locaux
-from .utils import (
+from .components import (
     create_tool_call_message,
     create_tool_result_message,
     create_error_message,
-    log_gradio_message,
-    format_gradio_history,
 )
+from ..agent.history import format_gradio_history
+from ..core.logging import log_gradio_message
 
 # Configuration du logging
 logger = logging.getLogger("datainclusion.agent.streaming")
