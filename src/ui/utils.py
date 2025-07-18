@@ -7,13 +7,151 @@ de manière claire et informative.
 """
 
 import gradio as gr
-from typing import Dict, Any, Optional, Literal, NotRequired, TypedDict
+from typing import Dict, Any, Optional, Literal, NotRequired, TypedDict, List
 import json
 import logging
 import uuid
 
+# Imports pour pydantic-ai
+from pydantic_ai.messages import (
+    ModelRequest,
+    ModelResponse,
+    ModelMessage,
+    UserPromptPart,
+    SystemPromptPart,
+    TextPart,
+)
+
 # Configuration du logger
 logger = logging.getLogger("datainclusion.agent")
+
+
+def format_gradio_history(history: List[Dict[str, str]]) -> List[ModelMessage]:
+    """
+    Convertit l'historique Gradio au format pydantic-ai ModelMessage.
+
+    Filtre les messages d'outils pour ne pas polluer l'historique de l'agent.
+    Ne garde que les messages utilisateur et assistant principaux.
+
+    Args:
+        history: Historique des messages au format Gradio
+
+    Returns:
+        Liste des messages au format pydantic-ai
+    """
+    formatted_history: List[ModelMessage] = []
+
+    for msg in history:
+        if isinstance(msg, dict):
+            # Nettoyer le message pour ne garder que les champs essentiels
+            role = msg.get("role", "")
+            content = msg.get("content", "")
+
+            # Filtrer les messages d'outils en vérifiant les métadonnées
+            metadata = msg.get("metadata", {})
+            if metadata and isinstance(metadata, dict):
+                title = metadata.get("title", "")
+                # Ignorer les messages d'outils (ceux qui commencent par 🛠️ ou ✅/❌)
+                if (
+                    title.startswith("🛠️")
+                    or title.startswith("✅")
+                    or title.startswith("❌")
+                ):
+                    continue
+
+            if role == "user" and content:
+                # Créer un ModelRequest avec UserPromptPart
+                user_request = ModelRequest(parts=[UserPromptPart(content=content)])
+                formatted_history.append(user_request)
+            elif role == "assistant" and content:
+                # Créer un ModelResponse avec TextPart
+                assistant_response = ModelResponse(parts=[TextPart(content=content)])
+                formatted_history.append(assistant_response)
+            elif role == "system" and content:
+                # Créer un ModelRequest avec SystemPromptPart
+                system_request = ModelRequest(parts=[SystemPromptPart(content=content)])
+                formatted_history.append(system_request)
+
+    return formatted_history
+
+
+def extract_tool_call_mapping(tool_calls: List[Dict[str, Any]]) -> Dict[str, str]:
+    """
+    Extrait un mapping entre les ID d'appel d'outils et leurs noms.
+
+    Args:
+        tool_calls: Liste des appels d'outils
+
+    Returns:
+        Dict[str, str]: Mapping ID -> nom d'outil
+    """
+    mapping = {}
+    for tool_call in tool_calls:
+        if isinstance(tool_call, dict):
+            call_id = tool_call.get("id") or tool_call.get("tool_call_id")
+            tool_name = tool_call.get("name") or tool_call.get("tool_name")
+            if call_id and tool_name:
+                mapping[call_id] = tool_name
+    return mapping
+
+
+def validate_gradio_message(message: Dict[str, Any]) -> bool:
+    """
+    Valide qu'un message Gradio a la structure attendue.
+
+    Args:
+        message: Message à valider
+
+    Returns:
+        bool: True si le message est valide
+    """
+    if not isinstance(message, dict):
+        return False
+
+    required_fields = ["role", "content"]
+    for field in required_fields:
+        if field not in message:
+            return False
+
+    # Vérifier que le rôle est valide
+    valid_roles = ["user", "assistant", "system"]
+    if message["role"] not in valid_roles:
+        return False
+
+    return True
+
+
+def clean_gradio_history(history: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    """
+    Nettoie l'historique Gradio en supprimant les messages invalides ou d'outils.
+
+    Args:
+        history: Historique des messages Gradio
+
+    Returns:
+        List[Dict[str, str]]: Historique nettoyé
+    """
+    cleaned_history = []
+
+    for msg in history:
+        if not validate_gradio_message(msg):
+            continue
+
+        # Filtrer les messages d'outils en vérifiant les métadonnées
+        metadata = msg.get("metadata", {})
+        if metadata and isinstance(metadata, dict):
+            title = metadata.get("title", "")
+            # Ignorer les messages d'outils (ceux qui commencent par 🛠️ ou ✅/❌)
+            if (
+                title.startswith("🛠️")
+                or title.startswith("✅")
+                or title.startswith("❌")
+            ):
+                continue
+
+        cleaned_history.append(msg)
+
+    return cleaned_history
 
 
 # Types Gradio corrects selon la documentation

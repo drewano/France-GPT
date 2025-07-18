@@ -23,49 +23,7 @@ from fastmcp.tools.tool_transform import ArgTransform
 from fastmcp.utilities.components import FastMCPComponent
 from fastmcp.utilities.openapi import HTTPRoute
 
-from .utils import deep_clean_schema, find_route_by_id
-
-
-def customize_for_gemini(route, component, logger: logging.Logger):
-    """
-    Simplifie les schémas d'un composant pour une meilleure compatibilité avec les LLMs stricts.
-
-    Cette fonction nettoie les schémas JSON des outils MCP en supprimant les titres et autres
-    éléments qui peuvent causer des problèmes avec certains modèles de langage comme Gemini.
-    Elle utilise la fonction `deep_clean_schema` pour s'assurer que les schémas sont
-    compatibles avec les spécifications strictes des LLMs.
-
-    Args:
-        route: La route HTTP OpenAPI associée à l'outil.
-        component: Le composant FastMCP à personnaliser.
-        logger: Instance du logger pour enregistrer les opérations de nettoyage.
-
-    Note:
-        Cette fonction modifie directement les schémas du composant (modification in-place).
-        Elle nettoie à la fois les schémas d'entrée et de sortie s'ils existent.
-    """
-    tool_name = getattr(component, "name", "Unknown")
-    cleaned_schemas = []
-
-    # Nettoyer le schéma d'entrée
-    if hasattr(component, "input_schema") and component.input_schema:
-        deep_clean_schema(component.input_schema)
-        cleaned_schemas.append("input schema")
-        logger.info(f"Input schema cleaned for tool: {tool_name}")
-
-    # Nettoyer le schéma de sortie
-    if hasattr(component, "output_schema") and component.output_schema:
-        deep_clean_schema(component.output_schema)
-        cleaned_schemas.append("output schema")
-        logger.info(f"Output schema cleaned for tool: {tool_name}")
-
-    # Message de résumé si des schémas ont été nettoyés
-    if cleaned_schemas:
-        logger.info(
-            f"Schema cleaning completed for tool '{tool_name}': {', '.join(cleaned_schemas)}"
-        )
-    else:
-        logger.debug(f"No schemas found to clean for tool: {tool_name}")
+from .utils import find_route_by_id, clean_json_schema
 
 
 class ToolTransformer:
@@ -107,7 +65,7 @@ class ToolTransformer:
         component: FastMCPComponent,
     ):
         """
-        Personnalise le composant pour Gemini et découvre le nom de l'outil généré.
+        Personnalise le composant pour les LLMs et découvre le nom de l'outil généré.
 
         Cette méthode combine la personnalisation des schémas pour les LLMs et la découverte
         du mapping entre les operation_ids OpenAPI et les noms d'outils générés par FastMCP.
@@ -121,8 +79,8 @@ class ToolTransformer:
             Cette méthode modifie directement le dictionnaire op_id_map de l'instance
             pour stocker le mapping découvert entre operation_ids et noms d'outils.
         """
-        # Appel de la fonction de personnalisation existante
-        customize_for_gemini(route, component, self.logger)
+        # Appel de la fonction de nettoyage des schémas
+        clean_json_schema(route, component, self.logger)
 
         # Découverte du nom de l'outil et stockage dans la map
         if (

@@ -146,3 +146,45 @@ async def find_route_by_id(
         if hasattr(route, "operation_id") and route.operation_id == operation_id:
             return route
     return None
+
+
+def clean_json_schema(route, component, logger: logging.Logger):
+    """
+    Simplifie les schémas d'un composant pour une meilleure compatibilité avec les LLMs stricts.
+
+    Cette fonction nettoie les schémas JSON des outils MCP en supprimant les titres et autres
+    éléments qui peuvent causer des problèmes avec certains modèles de langage.
+    Elle utilise la fonction `deep_clean_schema` pour s'assurer que les schémas sont
+    compatibles avec les spécifications strictes des LLMs.
+
+    Args:
+        route: La route HTTP OpenAPI associée à l'outil.
+        component: Le composant FastMCP à personnaliser.
+        logger: Instance du logger pour enregistrer les opérations de nettoyage.
+
+    Note:
+        Cette fonction modifie directement les schémas du composant (modification in-place).
+        Elle nettoie à la fois les schémas d'entrée et de sortie s'ils existent.
+    """
+    tool_name = getattr(component, "name", "Unknown")
+    cleaned_schemas = []
+
+    # Nettoyer le schéma d'entrée
+    if hasattr(component, "input_schema") and component.input_schema:
+        deep_clean_schema(component.input_schema)
+        cleaned_schemas.append("input schema")
+        logger.info(f"Input schema cleaned for tool: {tool_name}")
+
+    # Nettoyer le schéma de sortie
+    if hasattr(component, "output_schema") and component.output_schema:
+        deep_clean_schema(component.output_schema)
+        cleaned_schemas.append("output schema")
+        logger.info(f"Output schema cleaned for tool: {tool_name}")
+
+    # Message de résumé si des schémas ont été nettoyés
+    if cleaned_schemas:
+        logger.info(
+            f"Schema cleaning completed for tool '{tool_name}': {', '.join(cleaned_schemas)}"
+        )
+    else:
+        logger.debug(f"No schemas found to clean for tool: {tool_name}")

@@ -17,73 +17,20 @@ from pydantic_ai.messages import (
     PartStartEvent,
     TextPartDelta,
     ToolCallPartDelta,
-    ModelRequest,
-    UserPromptPart,
-    SystemPromptPart,
     TextPart,
-    ModelResponse,
-    ModelMessage,
 )
 
 # Imports locaux
-from .gradio_utils import (
+from .utils import (
     create_tool_call_message,
     create_tool_result_message,
     create_error_message,
     log_gradio_message,
+    format_gradio_history,
 )
 
 # Configuration du logging
 logger = logging.getLogger("datainclusion.agent.streaming")
-
-
-def format_gradio_history(history: List[Dict[str, str]]) -> List[ModelMessage]:
-    """
-    Convertit l'historique Gradio au format pydantic-ai ModelMessage.
-
-    Filtre les messages d'outils pour ne pas polluer l'historique de l'agent.
-    Ne garde que les messages utilisateur et assistant principaux.
-
-    Args:
-        history: Historique des messages au format Gradio
-
-    Returns:
-        Liste des messages au format pydantic-ai
-    """
-    formatted_history: List[ModelMessage] = []
-
-    for msg in history:
-        if isinstance(msg, dict):
-            # Nettoyer le message pour ne garder que les champs essentiels
-            role = msg.get("role", "")
-            content = msg.get("content", "")
-
-            # Filtrer les messages d'outils en vérifiant les métadonnées
-            metadata = msg.get("metadata", {})
-            if metadata and isinstance(metadata, dict):
-                title = metadata.get("title", "")
-                # Ignorer les messages d'outils (ceux qui commencent par 🛠️ ou ✅/❌)
-                if (
-                    title.startswith("🛠️")
-                    or title.startswith("✅")
-                    or title.startswith("❌")
-                ):
-                    continue
-
-            if role == "user" and content:
-                # Créer un ModelRequest avec UserPromptPart
-                user_request = ModelRequest(parts=[UserPromptPart(content=content)])
-                formatted_history.append(user_request)
-            elif role == "assistant" and content:
-                # Créer un ModelResponse avec TextPart
-                assistant_response = ModelResponse(parts=[TextPart(content=content)])
-                formatted_history.append(assistant_response)
-            elif role == "system" and content:
-                # Créer un ModelRequest avec SystemPromptPart
-                system_request = ModelRequest(parts=[SystemPromptPart(content=content)])
-                formatted_history.append(system_request)
-
-    return formatted_history
 
 
 async def handle_agent_node(
