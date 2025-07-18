@@ -26,7 +26,7 @@ from pydantic_ai.messages import (
 )
 
 # Imports locaux
-from ..gradio_utils import (
+from .gradio_utils import (
     create_tool_call_message,
     create_tool_result_message,
     create_error_message,

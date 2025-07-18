@@ -2,6 +2,7 @@
 Interface de chat Gradio pour l'agent IA d'inclusion sociale.
 
 Ce module contient l'interface utilisateur Gradio pour interagir avec l'agent IA.
+Il est responsable de créer et monter l'interface sur l'application FastAPI.
 """
 
 import logging
@@ -102,3 +103,29 @@ def create_complete_interface(app: FastAPI):
     )
 
     return chat_interface
+
+
+def mount_gradio_interface(app: FastAPI) -> FastAPI:
+    """
+    Monte l'interface Gradio sur l'application FastAPI.
+
+    Cette fonction centralise toute la logique de montage de l'interface Gradio,
+    favorisant le découplage entre la logique de l'application et l'interface utilisateur.
+
+    Args:
+        app: Instance de l'application FastAPI sur laquelle monter l'interface
+
+    Returns:
+        Instance FastAPI avec l'interface Gradio montée
+    """
+    logger.info("🎨 Montage de l'interface Gradio sur l'application FastAPI...")
+
+    # Créer l'interface Gradio complète
+    gradio_interface = create_complete_interface(app)
+
+    # Monter l'interface sur l'application FastAPI
+    app = gr.mount_gradio_app(app=app, blocks=gradio_interface, path="/chat")
+
+    logger.info("✅ Interface Gradio montée avec succès sur /chat")
+
+    return app

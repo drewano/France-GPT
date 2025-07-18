@@ -164,98 +164,29 @@ class ToolTransformer:
         total_tools = len(self.custom_tool_names)
 
         for original_name, new_name in self.custom_tool_names.items():
-            # Rechercher la route correspondante dans les données OpenAPI
-            route = await find_route_by_id(original_name, self.http_routes)
-            if route is None:
-                self.logger.warning(
-                    f"  ✗ Route not found for operation_id: '{original_name}' - skipping transformation"
-                )
-                continue
-
-            # Utilise la map pour obtenir le nom de l'outil généré par FastMCP
-            mangled_tool_name = self.op_id_map.get(original_name)
-            if not mangled_tool_name:
-                self.logger.warning(
-                    f"  ✗ Could not find a generated tool for operation_id: '{original_name}' - skipping transformation"
-                )
+            # Rechercher la route et le nom de l'outil
+            route, mangled_tool_name = await self._find_route_and_tool_name(
+                original_name
+            )
+            if route is None or mangled_tool_name is None:
                 continue
 
             try:
-                # Récupérer l'outil original en utilisant son nom "manglé"
-                original_tool = await self.mcp_server.get_tool(mangled_tool_name)
+                # Récupérer l'outil original
+                original_tool = await self._get_original_tool(mangled_tool_name)
                 if not original_tool:
-                    self.logger.warning(
-                        f"  ✗ Tool not found: '{mangled_tool_name}' (may have been renamed during OpenAPI processing)"
-                    )
                     continue
 
-                # === ENRICHISSEMENT DES ARGUMENTS ===
-                arg_transforms = {}
-                param_count = 0
+                # Enrichir les arguments avec des descriptions
+                arg_transforms, param_count = self._enrich_arguments(route)
 
-                # Enrichir les descriptions des paramètres depuis l'OpenAPI
-                if hasattr(route, "parameters") and route.parameters:
-                    for param in route.parameters:
-                        if hasattr(param, "name") and param.name:
-                            transforms = {}
+                # Créer la description enrichie
+                tool_description = self._create_tool_description(route, new_name)
 
-                            # Ajouter une description si disponible
-                            if (
-                                hasattr(param, "description")
-                                and param.description
-                                and param.description.strip()
-                            ):
-                                transforms["description"] = param.description.strip()
-                                param_count += 1
+                # Créer les tags pour l'organisation
+                tool_tags = self._create_tool_tags(new_name)
 
-                            # Note: L'attribut 'example' n'est pas disponible sur ParameterInfo
-                            # Les exemples peuvent être ajoutés via d'autres moyens si nécessaire
-
-                            # Créer l'ArgTransform seulement s'il y a des transformations
-                            if transforms:
-                                arg_transforms[param.name] = ArgTransform(**transforms)
-                                self.logger.debug(
-                                    f"    - Enriching parameter '{param.name}': {list(transforms.keys())}"
-                                )
-
-                # === CRÉATION DE LA DESCRIPTION ENRICHIE ===
-                tool_description = None
-                if (
-                    hasattr(route, "description")
-                    and route.description
-                    and route.description.strip()
-                ):
-                    tool_description = route.description.strip()
-                elif (
-                    hasattr(route, "summary")
-                    and route.summary
-                    and route.summary.strip()
-                ):
-                    # Fallback vers le summary si pas de description
-                    tool_description = route.summary.strip()
-                else:
-                    # Description par défaut basée sur le nom de l'outil
-                    tool_description = (
-                        f"Execute the {new_name} operation on the Data Inclusion API"
-                    )
-
-                # === AJOUT DE TAGS POUR ORGANISATION ===
-                tool_tags = {"data-inclusion", "api"}
-
-                # Ajouter des tags spécifiques selon le type d'endpoint
-                if "list_all" in new_name or "search" in new_name:
-                    tool_tags.add("listing")
-                if "get_" in new_name and "details" in new_name:
-                    tool_tags.add("details")
-                if "doc_" in new_name:
-                    tool_tags.add("documentation")
-                if any(
-                    endpoint in new_name
-                    for endpoint in ["structures", "services", "sources"]
-                ):
-                    tool_tags.add("core-data")
-
-                # === CRÉATION DU NOUVEL OUTIL TRANSFORMÉ ===
+                # Créer l'outil transformé
                 transformed_tool = Tool.from_tool(
                     tool=original_tool,
                     name=new_name,
@@ -264,25 +195,10 @@ class ToolTransformer:
                     tags=tool_tags,
                 )
 
-                # === AJOUT ET SUPPRESSION ===
-                # Ajouter le nouvel outil au serveur
-                self.mcp_server.add_tool(transformed_tool)
+                # Remplacer l'outil original par le transformé
+                self._replace_tool(original_tool, transformed_tool, mangled_tool_name)
 
-                # IMPORTANT: Supprimer l'outil original pour éviter les doublons
-                # et la confusion pour le LLM
-                try:
-                    self.mcp_server.remove_tool(mangled_tool_name)
-                    self.logger.debug(
-                        f"    - Removed original tool: '{mangled_tool_name}'"
-                    )
-                except Exception as remove_error:
-                    # En cas d'échec de suppression, désactiver au moins l'outil
-                    self.logger.debug(
-                        f"    - Could not remove '{mangled_tool_name}', disabling instead: {remove_error}"
-                    )
-                    original_tool.disable()
-
-                # === LOGGING DE SUCCÈS ===
+                # Logging de succès
                 successful_renames += 1
                 enrichment_info = []
 
@@ -310,6 +226,187 @@ class ToolTransformer:
                     f"    Exception details: {type(e).__name__}: {str(e)}"
                 )
 
+        await self._log_transformation_stats(successful_renames, total_tools)
+
+    async def _find_route_and_tool_name(
+        self, original_name: str
+    ) -> tuple[HTTPRoute | None, str | None]:
+        """
+        Trouve la route OpenAPI et le nom de l'outil généré par FastMCP.
+
+        Args:
+            original_name: L'operation_id original de l'API OpenAPI
+
+        Returns:
+            Un tuple contenant la route OpenAPI et le nom de l'outil généré,
+            ou (None, None) si non trouvé
+        """
+        # Rechercher la route correspondante dans les données OpenAPI
+        route = await find_route_by_id(original_name, self.http_routes)
+        if route is None:
+            self.logger.warning(
+                f"  ✗ Route not found for operation_id: '{original_name}' - skipping transformation"
+            )
+            return None, None
+
+        # Utilise la map pour obtenir le nom de l'outil généré par FastMCP
+        mangled_tool_name = self.op_id_map.get(original_name)
+        if not mangled_tool_name:
+            self.logger.warning(
+                f"  ✗ Could not find a generated tool for operation_id: '{original_name}' - skipping transformation"
+            )
+            return None, None
+
+        return route, mangled_tool_name
+
+    async def _get_original_tool(self, mangled_tool_name: str) -> Tool | None:
+        """
+        Récupère l'outil original à partir de son nom généré par FastMCP.
+
+        Args:
+            mangled_tool_name: Le nom de l'outil généré par FastMCP
+
+        Returns:
+            L'outil original ou None si non trouvé
+        """
+        original_tool = await self.mcp_server.get_tool(mangled_tool_name)
+        if not original_tool:
+            self.logger.warning(
+                f"  ✗ Tool not found: '{mangled_tool_name}' (may have been renamed during OpenAPI processing)"
+            )
+            return None
+
+        return original_tool
+
+    def _enrich_arguments(
+        self, route: HTTPRoute
+    ) -> tuple[dict[str, ArgTransform], int]:
+        """
+        Enrichit les arguments d'un outil avec des descriptions depuis l'OpenAPI.
+
+        Args:
+            route: La route OpenAPI contenant les paramètres
+
+        Returns:
+            Un tuple contenant le dictionnaire des transformations d'arguments
+            et le nombre de paramètres enrichis
+        """
+        arg_transforms = {}
+        param_count = 0
+
+        # Enrichir les descriptions des paramètres depuis l'OpenAPI
+        if hasattr(route, "parameters") and route.parameters:
+            for param in route.parameters:
+                if hasattr(param, "name") and param.name:
+                    transforms = {}
+
+                    # Ajouter une description si disponible
+                    if (
+                        hasattr(param, "description")
+                        and param.description
+                        and param.description.strip()
+                    ):
+                        transforms["description"] = param.description.strip()
+                        param_count += 1
+
+                    # Note: L'attribut 'example' n'est pas disponible sur ParameterInfo
+                    # Les exemples peuvent être ajoutés via d'autres moyens si nécessaire
+
+                    # Créer l'ArgTransform seulement s'il y a des transformations
+                    if transforms:
+                        arg_transforms[param.name] = ArgTransform(**transforms)
+                        self.logger.debug(
+                            f"    - Enriching parameter '{param.name}': {list(transforms.keys())}"
+                        )
+
+        return arg_transforms, param_count
+
+    def _create_tool_description(self, route: HTTPRoute, new_name: str) -> str:
+        """
+        Crée une description enrichie pour l'outil à partir de la route OpenAPI.
+
+        Args:
+            route: La route OpenAPI contenant les descriptions
+            new_name: Le nouveau nom de l'outil
+
+        Returns:
+            La description enrichie de l'outil
+        """
+        if (
+            hasattr(route, "description")
+            and route.description
+            and route.description.strip()
+        ):
+            return route.description.strip()
+        elif hasattr(route, "summary") and route.summary and route.summary.strip():
+            # Fallback vers le summary si pas de description
+            return route.summary.strip()
+        else:
+            # Description par défaut basée sur le nom de l'outil
+            return f"Execute the {new_name} operation on the Data Inclusion API"
+
+    def _create_tool_tags(self, new_name: str) -> set[str]:
+        """
+        Crée les tags pour l'organisation des outils.
+
+        Args:
+            new_name: Le nouveau nom de l'outil
+
+        Returns:
+            Un ensemble de tags pour l'outil
+        """
+        tool_tags = {"data-inclusion", "api"}
+
+        # Ajouter des tags spécifiques selon le type d'endpoint
+        if "list_all" in new_name or "search" in new_name:
+            tool_tags.add("listing")
+        if "get_" in new_name and "details" in new_name:
+            tool_tags.add("details")
+        if "doc_" in new_name:
+            tool_tags.add("documentation")
+        if any(
+            endpoint in new_name for endpoint in ["structures", "services", "sources"]
+        ):
+            tool_tags.add("core-data")
+
+        return tool_tags
+
+    def _replace_tool(
+        self, original_tool: Tool, transformed_tool: Tool, mangled_tool_name: str
+    ) -> None:
+        """
+        Remplace l'outil original par l'outil transformé.
+
+        Args:
+            original_tool: L'outil original à supprimer
+            transformed_tool: L'outil transformé à ajouter
+            mangled_tool_name: Le nom de l'outil original généré par FastMCP
+        """
+        # Ajouter le nouvel outil au serveur
+        self.mcp_server.add_tool(transformed_tool)
+
+        # IMPORTANT: Supprimer l'outil original pour éviter les doublons
+        # et la confusion pour le LLM
+        try:
+            self.mcp_server.remove_tool(mangled_tool_name)
+            self.logger.debug(f"    - Removed original tool: '{mangled_tool_name}'")
+        except Exception as remove_error:
+            # En cas d'échec de suppression, désactiver au moins l'outil
+            self.logger.debug(
+                f"    - Could not remove '{mangled_tool_name}', disabling instead: {remove_error}"
+            )
+            original_tool.disable()
+
+    async def _log_transformation_stats(
+        self, successful_renames: int, total_tools: int
+    ) -> None:
+        """
+        Enregistre les statistiques de transformation et les informations de debug.
+
+        Args:
+            successful_renames: Nombre de transformations réussies
+            total_tools: Nombre total d'outils à transformer
+        """
         # === RÉSUMÉ FINAL ===
         if successful_renames > 0:
             self.logger.info(
