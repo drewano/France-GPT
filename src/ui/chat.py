@@ -22,7 +22,7 @@ async def on_chat_start():
 
         # Stocker l'agent dans la session utilisateur
         cl.user_session.set("agent", agent)
-        
+
         # Initialiser l'historique vide des messages pydantic-ai
         cl.user_session.set("messages", [])
 
@@ -39,46 +39,48 @@ async def on_chat_start():
         ).send()
 
 
-def filter_conversation_history(chat_history: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def filter_conversation_history(
+    chat_history: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
     """
     Filtre l'historique pour pydantic-ai en s'assurant que :
     1. La conversation commence par un message utilisateur
     2. Les messages de bienvenue sont exclus
     3. Seuls les vrais échanges conversationnels sont inclus
-    
+
     Args:
         chat_history: Historique brut du chat
-        
+
     Returns:
         Historique filtré compatible avec pydantic-ai
     """
     filtered_history = []
     found_first_user_message = False
-    
+
     for msg in chat_history:
         if not isinstance(msg, dict):
             continue
-            
+
         role = msg.get("role", "")
         content = msg.get("content", "")
-        
+
         # Ignorer les messages sans contenu
         if not content:
             continue
-            
+
         # Ignorer le message de bienvenue (commence par 👋)
         if role == "assistant" and content.strip().startswith("👋"):
             continue
-            
-        # Une fois qu'on a trouvé le premier message utilisateur, 
+
+        # Une fois qu'on a trouvé le premier message utilisateur,
         # on peut inclure les messages suivants
         if role == "user":
             found_first_user_message = True
-            
+
         # N'inclure les messages qu'après avoir trouvé le premier message utilisateur
         if found_first_user_message and role in ["user", "assistant"]:
             filtered_history.append({"role": role, "content": content})
-    
+
     return filtered_history
 
 
@@ -104,13 +106,15 @@ async def on_message(message: cl.Message):
 
         # Récupérer l'historique des messages pydantic-ai depuis la session utilisateur
         messages_raw = cl.user_session.get("messages", [])
-        messages: List[ModelMessage] = messages_raw if isinstance(messages_raw, list) else []
+        messages: List[ModelMessage] = (
+            messages_raw if isinstance(messages_raw, list) else []
+        )
 
         # Traiter le message avec l'agent moderne
         updated_messages = await process_agent_modern_with_history(
             agent, message.content, messages
         )
-        
+
         # Limiter l'historique et le sauvegarder dans la session
         trimmed_messages = trim_message_history(updated_messages)
         cl.user_session.set("messages", trimmed_messages)
