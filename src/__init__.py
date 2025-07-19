@@ -8,4 +8,4 @@ Ce package contient tous les modules de l'application :
 - core : Configuration et utilitaires centraux
 - mcp_server : Serveur MCP
 - ui : Interface utilisateur
-""" 
+"""
