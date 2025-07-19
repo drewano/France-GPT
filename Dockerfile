@@ -30,6 +30,9 @@ RUN uv pip install --system -r pyproject.toml
 COPY src/ ./src/
 COPY main.py ./
 
+# Étape 8.5: Configurer le PYTHONPATH pour que Python trouve les modules src
+ENV PYTHONPATH="/app:$PYTHONPATH"
+
 # Étape 9: Exposer le port sur lequel l'application va écouter
 # Le conteneur rendra ce port disponible pour être mappé sur l'hôte.
 EXPOSE ${PORT}

@@ -16,8 +16,7 @@ dependencies = [
     "pydantic-settings",
     "fastapi",
     "uvicorn",
-    "gradio",
-    "gradio[oauth]",
+    "chainlit",
     "ruff",
     "pylint"
 ]

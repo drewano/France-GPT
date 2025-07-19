@@ -2,7 +2,7 @@
 Module de gestion de l'historique des messages pour l'agent.
 
 Ce module contient toutes les fonctions responsables de la transformation
-et validation des données d'historique entre les formats Gradio et pydantic-ai.
+des données d'historique au format pydantic-ai pour l'agent IA.
 """
 
 from typing import Dict, Any, List, Final
@@ -34,15 +34,15 @@ class ConfigDefaults:
     LABEL_SYSTEM: Final[str] = "system"
 
 
-def format_gradio_history(history: List[Dict[str, str]]) -> List[ModelMessage]:
+def format_chainlit_history(history: List[Dict[str, Any]]) -> List[ModelMessage]:
     """
-    Convertit l'historique Gradio au format pydantic-ai ModelMessage.
+    Convertit l'historique Chainlit au format pydantic-ai ModelMessage.
 
-    Filtre les messages d'outils pour ne pas polluer l'historique de l'agent.
+    Filtre les messages d'outils et les steps pour ne pas polluer l'historique de l'agent.
     Ne garde que les messages utilisateur et assistant principaux.
 
     Args:
-        history: Historique des messages au format Gradio
+        history: Historique des messages au format Chainlit (souvent obtenu via cl.chat_context.to_openai())
 
     Returns:
         Liste des messages au format pydantic-ai
@@ -55,17 +55,25 @@ def format_gradio_history(history: List[Dict[str, str]]) -> List[ModelMessage]:
             role = msg.get("role", "")
             content = msg.get("content", "")
 
-            # Filtrer les messages d'outils en vérifiant les métadonnées
-            metadata = msg.get("metadata", {})
-            if metadata and isinstance(metadata, dict):
-                title = metadata.get("title", "")
-                # Ignorer les messages d'outils (ceux qui commencent par 🛠️ ou ✅/❌)
-                if (
-                    title.startswith(Emojis.TOOL)
-                    or title.startswith(Emojis.SUCCESS)
-                    or title.startswith(Emojis.ERROR)
-                ):
-                    continue
+            # Filtrer les messages vides ou non pertinents
+            if not content or not role:
+                continue
+
+            # Filtrer les messages d'outils en vérifiant différents indices
+            # Messages avec des noms d'outils ou des emojis d'outils dans le contenu
+            if (
+                content.startswith(Emojis.TOOL)
+                or content.startswith(Emojis.SUCCESS)
+                or content.startswith(Emojis.ERROR)
+                or "**🛠️" in content  # Messages de steps d'outils
+                or "**✅" in content  # Messages de résultats d'outils
+                or "**❌" in content  # Messages d'erreur d'outils
+            ):
+                continue
+
+            # Filtrer les messages de traitement (Chainlit spécifique)
+            if "Traitement en cours..." in content:
+                continue
 
             if role == ConfigDefaults.LABEL_USER and content:
                 # Créer un ModelRequest avec UserPromptPart
@@ -83,84 +91,24 @@ def format_gradio_history(history: List[Dict[str, str]]) -> List[ModelMessage]:
     return formatted_history
 
 
-def extract_tool_call_mapping(tool_calls: List[Dict[str, Any]]) -> Dict[str, str]:
+def get_chainlit_chat_history() -> List[Dict[str, Any]]:
     """
-    Extrait un mapping entre les ID d'appel d'outils et leurs noms.
+    Récupère l'historique de chat Chainlit au format standardisé.
 
-    Args:
-        tool_calls: Liste des appels d'outils
+    Cette fonction doit être appelée depuis un contexte Chainlit actif.
 
     Returns:
-        Dict[str, str]: Mapping ID -> nom d'outil
+        List[Dict[str, Any]]: Historique des messages au format Chainlit/OpenAI
     """
-    mapping = {}
-    for tool_call in tool_calls:
-        if isinstance(tool_call, dict):
-            call_id = tool_call.get("id") or tool_call.get("tool_call_id")
-            tool_name = tool_call.get("name") or tool_call.get("tool_name")
-            if call_id and tool_name:
-                mapping[call_id] = tool_name
-    return mapping
+    try:
+        # Importer cl seulement quand nécessaire pour éviter les dépendances circulaires
+        import chainlit as cl
 
-
-def validate_gradio_message(message: Dict[str, Any]) -> bool:
-    """
-    Valide qu'un message Gradio a la structure attendue.
-
-    Args:
-        message: Message à valider
-
-    Returns:
-        bool: True si le message est valide
-    """
-    if not isinstance(message, dict):
-        return False
-
-    required_fields = ["role", "content"]
-    for field in required_fields:
-        if field not in message:
-            return False
-
-    # Vérifier que le rôle est valide
-    valid_roles = [
-        ConfigDefaults.LABEL_USER,
-        ConfigDefaults.LABEL_ASSISTANT,
-        ConfigDefaults.LABEL_SYSTEM,
-    ]
-    if message["role"] not in valid_roles:
-        return False
-
-    return True
-
-
-def clean_gradio_history(history: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    """
-    Nettoie l'historique Gradio en supprimant les messages invalides ou d'outils.
-
-    Args:
-        history: Historique des messages Gradio
-
-    Returns:
-        List[Dict[str, str]]: Historique nettoyé
-    """
-    cleaned_history = []
-
-    for msg in history:
-        if not validate_gradio_message(msg):
-            continue
-
-        # Filtrer les messages d'outils en vérifiant les métadonnées
-        metadata = msg.get("metadata", {})
-        if metadata and isinstance(metadata, dict):
-            title = metadata.get("title", "")
-            # Ignorer les messages d'outils (ceux qui commencent par 🛠️ ou ✅/❌)
-            if (
-                title.startswith(Emojis.TOOL)
-                or title.startswith(Emojis.SUCCESS)
-                or title.startswith(Emojis.ERROR)
-            ):
-                continue
-
-        cleaned_history.append(msg)
-
-    return cleaned_history
+        # Utiliser cl.chat_context.to_openai() pour récupérer l'historique
+        return cl.chat_context.to_openai()
+    except ImportError:
+        # Si chainlit n'est pas disponible, retourner une liste vide
+        return []
+    except Exception:
+        # Si nous ne sommes pas dans un contexte Chainlit actif, retourner une liste vide
+        return []

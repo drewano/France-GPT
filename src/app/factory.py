@@ -10,7 +10,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 # Imports locaux
@@ -18,7 +18,7 @@ from src.core.config import settings
 from src.core.lifespan import lifespan
 from src.core.logging import setup_logging
 from src.api.router import api_router
-from src.ui.chat import mount_gradio_interface
+from chainlit.utils import mount_chainlit
 
 # Configuration du logging unifié
 logger = setup_logging(name="datainclusion.agent")
@@ -42,8 +42,8 @@ def create_app() -> FastAPI:
     """
     # Application principale
     app = FastAPI(
-        title="Agent IA d'Inclusion Sociale - Interface Complète",
-        description="Application complète combinant l'agent IA et l'interface Gradio",
+        title="Agent IA d'Inclusion Sociale - Interface Chainlit",
+        description="Application complète combinant l'agent IA et l'interface Chainlit",
         version="1.0.0",
         lifespan=lifespan,
         docs_url="/docs",
@@ -66,10 +66,10 @@ def create_app() -> FastAPI:
 
     # Routes de l'application principale
 
-    @app.get("/")
-    async def root():
-        """Redirection vers l'interface Gradio."""
-        return RedirectResponse(url="/chat")
+    @app.get("/api-info")
+    async def api_info():
+        """Information sur l'API - Chainlit gère maintenant la racine."""
+        return {"message": "API is running. Access the chat at /", "api_docs": "/docs"}
 
     @app.get("/health")
     async def health_check():
@@ -101,7 +101,7 @@ def create_app() -> FastAPI:
     # Monter l'APIRouter sous /api
     app.include_router(api_router, prefix="/api")
 
-    # Monter l'interface Gradio
-    app = mount_gradio_interface(app)
+    # Monter l'interface Chainlit à la racine
+    mount_chainlit(app=app, target="src/ui/chat.py", path="/")
 
     return app

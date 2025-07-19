@@ -1,16 +1,14 @@
 """
-Module de création de composants Gradio pour l'interface utilisateur.
+Module de création de composants Chainlit pour l'interface utilisateur.
 
 Ce module contient toutes les fonctions responsables de la création
-des composants gr.ChatMessage pour l'affichage des interactions avec l'agent.
+des cl.Step pour l'affichage des appels d'outils et leurs résultats.
 """
 
-import gradio as gr
-from typing import Dict, Any, Optional, Literal, NotRequired, TypedDict, Final
-import json
-import uuid
+import chainlit as cl
+from typing import Dict, Any, Optional
 
-# Imports des fonctions de formatage
+# Imports des fonctions de formatage depuis formatters.py
 from .formatters import (
     get_friendly_tool_name,
     format_arguments_for_display,
@@ -18,182 +16,186 @@ from .formatters import (
 )
 
 
-class Emojis:
-    """Emoji constants for consistent visual representation."""
-
-    SUCCESS: Final[str] = "✅"
-    ERROR: Final[str] = "❌"
-    WARNING: Final[str] = "⚠️"
-
-
-class ConfigDefaults:
-    """Default configuration values for roles."""
-
-    LABEL_ASSISTANT: Final[Literal["assistant"]] = "assistant"
-
-
-# Types Gradio corrects selon la documentation
-class MetadataDict(TypedDict):
-    """Structure des métadonnées pour les messages Gradio ChatMessage."""
-
-    title: NotRequired[str]
-    id: NotRequired[int | str]
-    parent_id: NotRequired[int | str]
-    log: NotRequired[str]
-    duration: NotRequired[float]
-    status: NotRequired[Literal["pending", "done"]]
-
-
-def create_tool_call_message(
+async def create_tool_call_step(
     tool_name: str,
-    arguments: Dict[str, Any] | str | None,
-    call_id: Optional[str] = None,
-) -> gr.ChatMessage:
+    arguments: Dict[str, Any],
+    parent_id: Optional[str] = None,
+) -> cl.Step:
     """
-    Crée un message Gradio pour un appel d'outil MCP.
+    Crée et envoie un cl.Step pour un appel d'outil MCP.
 
     Args:
         tool_name: Nom de l'outil appelé
-        arguments: Arguments passés à l'outil (dict, str, ou None)
-        call_id: ID unique de l'appel (optionnel)
+        arguments: Arguments passés à l'outil
+        parent_id: ID du step parent (optionnel)
 
     Returns:
-        gr.ChatMessage: Message Gradio formaté pour l'appel d'outil
+        cl.Step: Instance du step créé pour pouvoir le mettre à jour plus tard
     """
-
-    # Normaliser les arguments en dict pour le formatage
-    if isinstance(arguments, str):
-        try:
-            # Tenter de parser comme JSON
-            parsed_args = json.loads(arguments)
-            if isinstance(parsed_args, dict):
-                normalized_args = parsed_args
-            else:
-                normalized_args = {"value": arguments}
-        except (json.JSONDecodeError, ValueError):
-            # Si ce n'est pas du JSON, traiter comme string
-            normalized_args = {"value": arguments}
-    elif isinstance(arguments, dict):
-        normalized_args = arguments
-    else:
-        # arguments est None ou autre type
-        normalized_args = {}
-
-    # Formatage des arguments pour l'affichage
-    args_formatted = format_arguments_for_display(normalized_args)
 
     # Nom convivial de l'outil
     friendly_name = get_friendly_tool_name(tool_name)
 
-    # Contenu du message
-    content = f"**{friendly_name}**\n\n"
-    if normalized_args:
-        content += f"**Paramètres:**\n{args_formatted}"
+    # Formatage des arguments pour l'affichage
+    args_formatted = format_arguments_for_display(arguments)
+
+    # Créer le step avec les propriétés appropriées
+    step = cl.Step(name=friendly_name, type="tool")
+
+    # Assigner le parent_id si fourni
+    if parent_id:
+        step.parent_id = parent_id
+
+    # Définir l'input avec les arguments formatés
+    if arguments:
+        step.input = args_formatted
     else:
-        content += "*Aucun paramètre*"
+        step.input = "*Aucun paramètre*"
 
-    # Métadonnées pour l'affichage - utiliser MetadataDict
-    # Générer un ID unique si call_id n'est pas fourni
-    unique_id = call_id if call_id else f"tool_{tool_name}_{uuid.uuid4().hex[:8]}"
+    # Envoyer le step immédiatement
+    await step.send()
 
-    metadata: MetadataDict = {
-        "title": friendly_name,
-        "id": unique_id,
-    }
-
-    return gr.ChatMessage(
-        role=ConfigDefaults.LABEL_ASSISTANT, content=content, metadata=metadata
-    )
+    return step
 
 
-def create_tool_result_message(
-    tool_name: str,
+async def update_tool_result_step(
+    step: cl.Step,
     result: Any,
-    call_id: Optional[str] = None,
     duration: Optional[float] = None,
     is_error: bool = False,
-) -> gr.ChatMessage:
+) -> None:
     """
-    Crée un message Gradio pour le résultat d'un outil MCP.
+    Met à jour un cl.Step existant avec le résultat d'un outil.
 
     Args:
-        tool_name: Nom de l'outil
+        step: Instance du cl.Step à mettre à jour
         result: Résultat de l'outil
-        call_id: ID unique de l'appel (optionnel)
         duration: Durée d'exécution en secondes (optionnel)
         is_error: Si True, affiche comme une erreur
-
-    Returns:
-        gr.ChatMessage: Message Gradio formaté pour le résultat
     """
 
     # Formatage du résultat pour l'affichage
     result_formatted = format_result_for_display(result)
 
-    # Nom convivial de l'outil
-    friendly_name = get_friendly_tool_name(tool_name)
-
-    # Emoji et titre selon le statut
+    # Construction du contenu de sortie
     if is_error:
-        title = f"{Emojis.ERROR} {friendly_name} - Erreur"
-        content = f"**{Emojis.ERROR} Erreur lors de l'exécution**\n\n"
+        output_content = "❌ **Erreur lors de l'exécution**\n\n"
     else:
-        title = f"{Emojis.SUCCESS} {friendly_name} - Résultat"
-        content = f"**{Emojis.SUCCESS} Résultat obtenu**\n\n"
+        output_content = "✅ **Résultat obtenu**\n\n"
 
     # Ajouter la durée si disponible
     if duration is not None:
-        content += f"**Durée:** {duration:.3f}s\n\n"
+        output_content += f"**Durée:** {duration:.3f}s\n\n"
 
-    # Ajouter le résultat
-    content += f"**Données:**\n{result_formatted}"
+    # Ajouter le résultat formaté
+    output_content += f"**Données:**\n{result_formatted}"
 
-    # Métadonnées pour l'affichage - utiliser MetadataDict
-    # Générer un ID unique pour le résultat
-    result_id = (
-        f"result_{call_id}" if call_id else f"result_{tool_name}_{uuid.uuid4().hex[:8]}"
-    )
+    # Mettre à jour l'output du step
+    step.output = output_content
 
-    metadata: MetadataDict = {
-        "title": title,
-        "id": result_id,
-        "status": "done",
-    }
-
-    # Ajouter la durée dans les métadonnées si disponible
-    if duration is not None:
-        metadata["duration"] = duration
-
-    return gr.ChatMessage(
-        role=ConfigDefaults.LABEL_ASSISTANT, content=content, metadata=metadata
-    )
+    # Envoyer la mise à jour
+    await step.update()
 
 
-def create_error_message(
-    error_msg: str, title: str = f"{Emojis.WARNING} Erreur"
-) -> gr.ChatMessage:
+async def create_simple_step(
+    name: str,
+    content: str,
+    parent_id: Optional[str] = None,
+) -> cl.Step:
     """
-    Crée un message Gradio pour une erreur.
+    Crée un step simple avec un contenu donné.
 
     Args:
-        error_msg: Message d'erreur
-        title: Titre du message d'erreur
+        name: Nom du step
+        content: Contenu à afficher
+        parent_id: ID du step parent (optionnel)
 
     Returns:
-        gr.ChatMessage: Message Gradio formaté pour l'erreur
+        cl.Step: Instance du step créé
     """
 
-    # Générer un ID unique pour l'erreur
-    error_id = f"error_{uuid.uuid4().hex[:8]}"
+    step = cl.Step(name=name)
 
-    metadata: MetadataDict = {
-        "title": title,
-        "id": error_id,
-        "status": "done",
-    }
+    if parent_id:
+        step.parent_id = parent_id
 
-    return gr.ChatMessage(
-        role=ConfigDefaults.LABEL_ASSISTANT,
-        content=f"{Emojis.ERROR} {error_msg}",
-        metadata=metadata,
-    )
+    step.output = content
+
+    await step.send()
+
+    return step
+
+
+async def create_nested_tool_workflow(
+    workflow_name: str,
+    tools_data: list[Dict[str, Any]],
+) -> cl.Step:
+    """
+    Crée un workflow de plusieurs outils avec des steps imbriqués.
+
+    Args:
+        workflow_name: Nom du workflow principal
+        tools_data: Liste de dictionnaires contenant les données des outils
+                    Format: [{"tool_name": str, "arguments": dict, "result": any, "duration": float, "is_error": bool}]
+
+    Returns:
+        cl.Step: Step principal du workflow
+    """
+
+    # Créer le step principal du workflow
+    main_step = cl.Step(name=f"🔄 {workflow_name}")
+
+    main_step.input = f"Exécution de {len(tools_data)} outil(s)"
+
+    await main_step.send()
+
+    # Créer les steps enfants pour chaque outil
+    child_steps = []
+
+    try:
+        for i, tool_data in enumerate(tools_data, 1):
+            tool_name = tool_data.get("tool_name", f"Outil {i}")
+            arguments = tool_data.get("arguments", {})
+            result = tool_data.get("result")
+            duration = tool_data.get("duration")
+            is_error = tool_data.get("is_error", False)
+
+            # Créer le step enfant pour cet outil
+            child_step = await create_tool_call_step(
+                tool_name=tool_name, arguments=arguments, parent_id=main_step.id
+            )
+
+            child_steps.append(child_step)
+
+            # Si on a un résultat, mettre à jour le step
+            if result is not None:
+                await update_tool_result_step(
+                    step=child_step, result=result, duration=duration, is_error=is_error
+                )
+
+        # Mettre à jour le step principal avec le résumé
+        total_duration = sum(tool_data.get("duration", 0) for tool_data in tools_data)
+        successful_tools = sum(
+            1 for tool_data in tools_data if not tool_data.get("is_error", False)
+        )
+        failed_tools = len(tools_data) - successful_tools
+
+        summary = "✅ **Workflow terminé**\n\n"
+        summary += "**Résumé:**\n"
+        summary += f"- Outils exécutés: {len(tools_data)}\n"
+        summary += f"- Succès: {successful_tools}\n"
+        if failed_tools > 0:
+            summary += f"- Échecs: {failed_tools}\n"
+        if total_duration > 0:
+            summary += f"- Durée totale: {total_duration:.3f}s\n"
+
+        main_step.output = summary
+        await main_step.update()
+
+    except Exception as e:
+        # En cas d'erreur, mettre à jour le step principal
+        main_step.output = f"❌ **Erreur dans le workflow:** {str(e)}"
+        await main_step.update()
+        raise
+
+    return main_step

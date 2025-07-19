@@ -1,132 +1,106 @@
-"""
-Interface de chat Gradio pour l'agent IA d'inclusion sociale.
-
-Ce module contient l'interface utilisateur Gradio pour interagir avec l'agent IA.
-Il est responsable de créer et monter l'interface sur l'application FastAPI.
-"""
-
-import logging
-from typing import List, Dict, AsyncGenerator
-import gradio as gr
-from fastapi import FastAPI
-
-# Imports locaux
-from .agent_streaming import process_agent_stream
-
-# Configuration du logging
-logger = logging.getLogger("datainclusion.agent")
+import chainlit as cl
+from src.ui.streaming import process_agent_stream_chainlit
+from src.agent.history import format_chainlit_history
+from src.agent.agent import create_inclusion_agent
+from src.core.config import settings
+from pydantic_ai.mcp import MCPServerStreamableHTTP
+from typing import List, Dict, Any
 
 
-def create_complete_interface(app: FastAPI):
+@cl.on_chat_start
+async def on_chat_start():
     """
-    Crée l'interface Gradio complète avec streaming et affichage des appels aux outils MCP.
+    Fonction appelée au démarrage d'une nouvelle session de chat.
+    Initialise l'historique de la conversation et l'agent.
+    """
+    # Initialiser l'historique vide pour cette session
+    cl.user_session.set("history", [])
+
+    # Créer l'agent pour cette session
+    try:
+        # Initialisation du serveur MCP
+        mcp_server = MCPServerStreamableHTTP(settings.agent.MCP_SERVER_URL)
+
+        # Création de l'agent avec le serveur MCP
+        agent = create_inclusion_agent(mcp_server)
+
+        # Stocker l'agent dans la session utilisateur
+        cl.user_session.set("agent", agent)
+
+        # Envoyer un message de bienvenue
+        await cl.Message(
+            content="👋 **Bienvenue !** Je suis votre assistant IA d'inclusion sociale. "
+            "Posez-moi vos questions sur les structures et services d'inclusion."
+        ).send()
+
+    except Exception as e:
+        await cl.Message(
+            content="❌ **Erreur d'initialisation**: Impossible d'initialiser l'agent IA. "
+            f"Détails: {str(e)}"
+        ).send()
+
+
+@cl.on_message
+async def on_message(message: cl.Message):
+    """
+    Fonction appelée à chaque message reçu de l'utilisateur.
 
     Args:
-        app: Instance de l'application FastAPI contenant l'agent dans son état
+        message: Le message reçu de l'utilisateur
     """
+    try:
+        # Récupérer l'agent depuis la session utilisateur
+        agent = cl.user_session.get("agent")
 
-    async def chat_stream(
-        message: str, history: List[Dict[str, str]], request: gr.Request
-    ) -> AsyncGenerator[List[gr.ChatMessage], None]:
-        """
-        Fonction de streaming pour l'interface de chat avec affichage des appels aux outils MCP.
-
-        Utilise l'API d'itération avancée de Pydantic AI (agent.iter) pour capturer
-        et afficher chaque étape du processus de l'agent.
-
-        Args:
-            message: Message de l'utilisateur
-            history: Historique des messages
-            request: Objet Request de Gradio (non utilisé pour l'accès à l'agent)
-
-        Yields:
-            Listes de ChatMessage formatées incluant les détails des appels aux outils MCP
-        """
-        if not message or not message.strip():
-            yield [
-                gr.ChatMessage(
-                    role="assistant", content="⚠️ Veuillez entrer un message valide."
-                )
-            ]
-            return
-
-        # Récupérer l'agent depuis l'état de l'application
-        agent = getattr(app.state, "agent", None)
         if agent is None:
-            yield [
-                gr.ChatMessage(
-                    role="assistant", content="❌ Erreur: Agent non initialisé"
-                )
-            ]
+            await cl.Message(
+                content="❌ **Erreur de configuration**: L'agent IA n'est pas disponible. "
+                "Veuillez rafraîchir la page pour réinitialiser la session."
+            ).send()
             return
 
-        # Déléguer le streaming à la fonction dédiée
-        async for messages in process_agent_stream(agent, message, history):
-            yield messages
+        # Récupérer l'historique depuis la session utilisateur
+        history_raw = cl.user_session.get("history", [])
 
-    # Exemples de conversation
-    examples = [
-        "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
-        "Trouve des structures d'aide près de 75001 Paris",
-        "Quels services d'insertion professionnelle à Lyon ?",
-        "Aide au logement d'urgence à Marseille",
-        "Services pour personnes handicapées à Lille",
-        "Comment obtenir une aide alimentaire ?",
-        "Structures d'accueil pour familles monoparentales",
-    ]
+        # S'assurer que history est une liste et bien typée
+        if isinstance(history_raw, list):
+            history: List[Dict[str, Any]] = history_raw
+        else:
+            history = []
 
-    # Créer l'interface ChatInterface
-    chat_interface = gr.ChatInterface(
-        fn=chat_stream,
-        type="messages",
-        title="🤖 Agent IA d'Inclusion Sociale",
-        description="Assistant intelligent spécialisé dans l'inclusion sociale en France - Affichage des appels aux outils MCP",
-        examples=examples,
-        cache_examples=False,
-        chatbot=gr.Chatbot(
-            label="Assistant IA",
-            height=1100,
-            show_copy_button=True,
-            type="messages",
-            avatar_images=(
-                "https://em-content.zobj.net/source/twitter/376/bust-in-silhouette_1f464.png",
-                "https://em-content.zobj.net/source/twitter/376/robot-face_1f916.png",
-            ),
-            placeholder="Bienvenue ! Posez votre question sur l'inclusion sociale...",
-        ),
-        textbox=gr.Textbox(
-            placeholder="Ex: Aide au logement près de 75001 Paris",
-            lines=1,
-            max_lines=3,
-            show_label=False,
-        ),
-    )
+        # Ajouter le nouveau message de l'utilisateur à l'historique local
+        user_message = {"role": "user", "content": message.content}
+        history.append(user_message)
 
-    return chat_interface
+        # Formater l'historique pour pydantic-ai
+        formatted_history = format_chainlit_history(history)
 
+        # Appeler la fonction de streaming avec l'agent
+        await process_agent_stream_chainlit(agent, message.content, formatted_history)
 
-def mount_gradio_interface(app: FastAPI) -> FastAPI:
-    """
-    Monte l'interface Gradio sur l'application FastAPI.
+        # Récupérer la réponse de l'assistant depuis cl.chat_context
+        # et mettre à jour l'historique
+        current_history = cl.chat_context.to_openai()
 
-    Cette fonction centralise toute la logique de montage de l'interface Gradio,
-    favorisant le découplage entre la logique de l'application et l'interface utilisateur.
+        # Filtrer pour ne garder que les messages pertinents (user/assistant)
+        filtered_history: List[Dict[str, Any]] = []
+        for msg in current_history:
+            if isinstance(msg, dict):
+                role = msg.get("role", "")
+                content = msg.get("content", "")
 
-    Args:
-        app: Instance de l'application FastAPI sur laquelle monter l'interface
+                # Ne garder que les messages utilisateur et assistant avec du contenu
+                if role in ["user", "assistant"] and content:
+                    # Éviter les messages de traitement temporaires
+                    if content != "Traitement en cours...":
+                        filtered_history.append({"role": role, "content": content})
 
-    Returns:
-        Instance FastAPI avec l'interface Gradio montée
-    """
+        # Mettre à jour l'historique dans la session utilisateur
+        cl.user_session.set("history", filtered_history)
 
-    logger.info("🎨 Montage de l'interface Gradio sur l'application FastAPI...")
-
-    # Créer l'interface Gradio complète
-    gradio_interface = create_complete_interface(app)
-
-    # Monter l'interface sur l'application FastAPI
-    app = gr.mount_gradio_app(app=app, blocks=gradio_interface, path="/chat")
-
-    logger.info("✅ Interface Gradio montée avec succès sur /chat")
-
-    return app
+    except Exception as e:
+        # Gestion des erreurs générales
+        await cl.Message(
+            content=f"❌ **Erreur lors du traitement**: {str(e)}\n\n"
+            "Veuillez réessayer ou reformuler votre question."
+        ).send()

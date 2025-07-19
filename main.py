@@ -37,7 +37,7 @@ try:
             logger.info(f"   - Port: {settings.agent.AGENT_PORT}")
             logger.info("   - Auto-reload: Activé")
             logger.info(
-                f"   - Interface Gradio: http://localhost:{settings.agent.AGENT_PORT}/chat"
+                f"   - Interface Chainlit: http://localhost:{settings.agent.AGENT_PORT}/"
             )
             logger.info(
                 f"   - API Agent: http://localhost:{settings.agent.AGENT_PORT}/api"
@@ -72,7 +72,7 @@ try:
             logger.info("   - Host: 0.0.0.0")
             logger.info(f"   - Port: {settings.agent.AGENT_PORT}")
             logger.info(
-                f"   - Interface Gradio: http://localhost:{settings.agent.AGENT_PORT}/chat"
+                f"   - Interface Chainlit: http://localhost:{settings.agent.AGENT_PORT}/"
             )
             logger.info(
                 f"   - API Agent: http://localhost:{settings.agent.AGENT_PORT}/api"
