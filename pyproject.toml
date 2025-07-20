@@ -17,6 +17,10 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "chainlit",
+    "asyncpg",
+    "SQLAlchemy",
+    "greenlet",
+    "aiohttp",
     "ruff",
     "pylint"
 ]

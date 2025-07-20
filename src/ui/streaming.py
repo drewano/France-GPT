@@ -1,23 +1,33 @@
 """
-Module de gestion du streaming modernisé pour Chainlit + pydantic-ai.
+Module de streaming moderne pour Chainlit + Pydantic-AI.
 
-Cette implémentation suit les meilleures pratiques de pydantic-ai et chainlit
-pour un code plus simple, plus maintenable et plus performant avec affichage des outils.
+Cette implémentation suit les meilleures pratiques officielles de Pydantic-AI et Chainlit
+pour un streaming en temps réel avec affichage transparent des outils MCP.
+
+Architecture:
+- Utilise `agent.iter()` pour parcourir le graphe d'exécution nœud par nœud
+- Traite les différents types de nœuds (UserPrompt, ModelRequest, CallTools, End)
+- Utilise les événements de streaming de Pydantic-AI pour le temps réel
+- Intègre parfaitement avec Chainlit (cl.Message.stream_token, cl.Step)
 """
 
 import logging
-import asyncio
-from typing import List, Any, Optional
+from typing import List, Optional, Dict, Any
+
 import chainlit as cl
 from pydantic_ai import Agent
 from pydantic_ai.messages import (
     ModelMessage,
-    ToolCallPart,
-    ToolReturnPart,
+    PartStartEvent,
+    PartDeltaEvent,
+    FunctionToolCallEvent,
+    FunctionToolResultEvent,
+    TextPartDelta,
+    ToolCallPartDelta,
 )
 
 # Configuration du logging
-logger = logging.getLogger("datainclusion.agent.chainlit_streaming")
+logger = logging.getLogger("datainclusion.streaming")
 
 # Constante pour limiter l'historique
 MAX_HISTORY_LENGTH = 50
@@ -35,307 +45,292 @@ def trim_message_history(messages: List[ModelMessage]) -> List[ModelMessage]:
     """
     if len(messages) <= MAX_HISTORY_LENGTH:
         return messages
-    # Garder les messages les plus récents
     return messages[-MAX_HISTORY_LENGTH:]
 
 
-async def process_agent_with_history_and_tools(
+async def process_agent_with_perfect_streaming(
     agent: Agent, message: str, message_history: Optional[List[ModelMessage]] = None
 ) -> List[ModelMessage]:
     """
-    Traite un agent avec gestion de l'historique et affichage des outils MCP.
+    Traite un agent avec streaming parfait selon les docs Pydantic-AI et Chainlit.
 
-    Cette implémentation moderne combine :
-    - Gestion de l'historique avec pydantic-ai message_history
-    - Affichage des étapes avec cl.Step
-    - Streaming de la réponse
-    - Récupération de l'historique avec result.all_messages()
-
-    Args:
-        agent: Instance de l'agent pydantic-ai
-        message: Message de l'utilisateur
-        message_history: Historique des messages au format pydantic-ai
-
-    Returns:
-        Liste mise à jour des messages
-    """
-    try:
-        logger.info(f"Traitement avec historique pour: {message[:50]}...")
-
-        # Utiliser un Step pour montrer le traitement
-        async with cl.Step(name="Traitement avec Agent MCP", type="llm") as step:
-            step.input = message
-
-            # Traiter la requête avec l'agent
-            if hasattr(agent, "run") and asyncio.iscoroutinefunction(agent.run):
-                result = await agent.run(message, message_history=message_history or [])
-            elif hasattr(agent, "run_sync"):
-                result = agent.run_sync(message, message_history=message_history or [])
-            else:
-                result = await agent.run(message, message_history=message_history or [])
-
-            # Extraire le contenu de la réponse
-            result_text = (
-                str(result.output) if hasattr(result, "output") else str(result.data)
-            )
-            step.output = result_text
-
-            # Créer un message vide pour le streaming
-            response_msg = cl.Message(content="")
-            await response_msg.send()
-
-            # Simuler le streaming en divisant la réponse
-            lines = result_text.splitlines(
-                True
-            )  # Garde les caractères de nouvelle ligne
-            for line in lines:
-                await asyncio.sleep(
-                    0.05
-                )  # Délai entre les lignes pour l'effet de streaming
-                await response_msg.stream_token(line)
-
-            # Finaliser le message
-            await response_msg.update()
-
-            logger.info("Traitement terminé avec succès")
-
-            # Retourner l'historique complet pour la session
-            return result.all_messages() if hasattr(result, "all_messages") else []
-
-    except Exception as e:
-        logger.error(f"Erreur lors du traitement avec historique: {e}")
-
-        error_message = cl.Message(
-            content=f"❌ **Erreur lors du traitement de votre demande:**\n\n{str(e)}"
-        )
-        await error_message.send()
-        return message_history or []
-
-
-async def process_agent_stream_with_tools_display(
-    agent: Agent, message: str, message_history: Optional[List[ModelMessage]] = None
-) -> List[ModelMessage]:
-    """
-    Version avec streaming réel selon la documentation pydantic-ai.
-    Utilise agent.run_stream() et crée des Steps individuels pour chaque outil MCP.
+    Cette implémentation utilise:
+    - agent.iter() pour parcourir le graphe d'exécution nœud par nœud
+    - Events streaming de Pydantic-AI pour le temps réel
+    - cl.Step pour afficher les outils MCP de manière transparente
+    - cl.Message.stream_token() pour le streaming des tokens
 
     Args:
-        agent: Instance de l'agent pydantic-ai
+        agent: Instance de l'agent Pydantic-AI
         message: Message de l'utilisateur
-        message_history: Historique des messages
+        message_history: Historique des messages au format Pydantic-AI
 
     Returns:
         Liste mise à jour des messages pour l'historique
     """
     try:
-        logger.info(f"Streaming avec affichage d'outils pour: {message[:50]}...")
+        logger.info(f"🚀 Démarrage du streaming parfait pour: {message[:50]}...")
 
-        # Créer un message pour le streaming
-        streaming_message = cl.Message(content="")
-        await streaming_message.send()
+        # Message principal pour le streaming du texte de réponse
+        response_message = cl.Message(content="")
+        await response_message.send()
 
-        # Variables pour tracker les outils
-        tool_calls_info = []
+        # Dictionnaire pour tracker les outils en cours
+        active_tool_steps: Dict[str, cl.Step] = {}
+        tool_call_counter = 0
 
-        # Utiliser agent.run_stream() comme recommandé par la documentation
-        async with agent.run_stream(
+        # Utiliser agent.iter() comme recommandé dans la documentation
+        async with agent.iter(
             message, message_history=message_history or []
-        ) as result:
-            # Streaming du texte
-            async for text in result.stream_text():
-                await streaming_message.stream_token(text)
+        ) as agent_run:
+            # Parcourir chaque nœud du graphe d'exécution
+            async for node in agent_run:
+                # 1. UserPromptNode - Message utilisateur reçu
+                if Agent.is_user_prompt_node(node):
+                    logger.debug(f"📨 UserPromptNode: {node.user_prompt}")
+                    # Pas d'affichage spécial nécessaire, le message utilisateur est déjà affiché
 
-            # Finaliser le message de streaming
-            await streaming_message.update()
+                # 2. ModelRequestNode - Requête vers le LLM avec streaming des tokens
+                elif Agent.is_model_request_node(node):
+                    logger.debug("🧠 ModelRequestNode: Streaming de la réponse LLM...")
 
-            # Récupérer tous les messages pour analyser les outils
-            all_messages = result.all_messages()
+                    # Streamer la réponse du modèle
+                    async with node.stream(agent_run.ctx) as request_stream:
+                        async for event in request_stream:
+                            # Début d'une nouvelle partie de réponse
+                            if isinstance(event, PartStartEvent):
+                                logger.debug(
+                                    f"🔄 Début partie {event.index}: {type(event.part).__name__}"
+                                )
 
-            # Analyser les messages pour trouver les outils utilisés
-            for msg in all_messages:
-                if hasattr(msg, "parts"):
-                    for part in msg.parts:
-                        # Détection des appels d'outils
-                        if isinstance(part, ToolCallPart):
-                            tool_calls_info.append(
-                                {
-                                    "tool_name": part.tool_name,
-                                    "args": part.args,
-                                    "tool_call_id": getattr(
-                                        part, "tool_call_id", "unknown"
-                                    ),
-                                }
-                            )
+                            # Delta de texte - streaming en temps réel
+                            elif isinstance(event, PartDeltaEvent):
+                                if isinstance(event.delta, TextPartDelta):
+                                    # Streamer chaque token vers Chainlit
+                                    if event.delta.content_delta:
+                                        await response_message.stream_token(
+                                            event.delta.content_delta
+                                        )
 
-                        # Détection des résultats d'outils
-                        elif isinstance(part, ToolReturnPart):
-                            # Associer le résultat à l'appel correspondant
-                            for tool_info in tool_calls_info:
-                                if tool_info.get("tool_call_id") == getattr(
-                                    part, "tool_call_id", None
-                                ):
-                                    tool_info["result"] = part.content
-                                    break
+                                elif isinstance(event.delta, ToolCallPartDelta):
+                                    # Les appels d'outils sont traités dans CallToolsNode
+                                    logger.debug(
+                                        f"🔧 Tool call delta: {event.delta.args_delta}"
+                                    )
 
-            # Créer des Steps individuels pour chaque outil MCP
-            for i, tool_info in enumerate(tool_calls_info, 1):
-                tool_name = tool_info.get("tool_name", "unknown")
-                tool_args = tool_info.get("args", {})
-                tool_result = tool_info.get("result", "")
+                # 3. CallToolsNode - Appels d'outils MCP avec affichage transparent
+                elif Agent.is_call_tools_node(node):
+                    logger.debug("🛠️ CallToolsNode: Traitement des outils MCP...")
 
-                # Step 1: Appel de l'outil avec arguments
-                async with cl.Step(
-                    name=f"🔧 {tool_name}",
-                    type="tool",
-                    show_input="json",
-                    language="json",
-                ) as call_step:
-                    call_step.input = tool_args
-                    call_step.output = f"Outil '{tool_name}' appelé avec succès"
+                    # Streamer les événements des outils
+                    async with node.stream(agent_run.ctx) as tools_stream:
+                        async for event in tools_stream:
+                            # Appel d'un outil MCP
+                            if isinstance(event, FunctionToolCallEvent):
+                                tool_call_counter += 1
+                                tool_name = event.part.tool_name
+                                tool_args = event.part.args
+                                tool_call_id = event.part.tool_call_id
 
-                # Step 2: Résultats de l'outil
-                if tool_result:
-                    async with cl.Step(
-                        name=f"✅ {tool_name} - Résultat",
-                        type="tool",
-                        language="json" if _is_json_like(str(tool_result)) else "text",
-                    ) as result_step:
-                        result_step.input = f"Résultat de l'outil '{tool_name}'"
-                        result_step.output = str(tool_result)[
-                            :1000
-                        ]  # Limiter à 1000 chars pour l'affichage
+                                logger.info(f"🔧 Appel outil: {tool_name}")
 
-                        logger.info(f"Step créé pour outil: {tool_name}")
+                                # Créer un Step pour l'appel d'outil
+                                step = cl.Step(
+                                    name=f"🔧 {tool_name}",
+                                    type="tool",
+                                    show_input="json" if tool_args else False,
+                                    language="json",
+                                )
 
-            logger.info("Streaming terminé avec succès")
-            return all_messages
+                                # Stocker le Step pour récupérer le résultat plus tard
+                                active_tool_steps[tool_call_id] = step
+
+                                # Configurer l'input du step
+                                await step.__aenter__()
+                                if tool_args:
+                                    step.input = tool_args
+
+                            # Résultat d'un outil MCP
+                            elif isinstance(event, FunctionToolResultEvent):
+                                tool_call_id = event.tool_call_id
+                                result_content = event.result.content
+
+                                # Récupérer le Step correspondant
+                                if tool_call_id in active_tool_steps:
+                                    step = active_tool_steps[tool_call_id]
+
+                                    # Configurer l'output du step
+                                    step.output = str(result_content)[
+                                        :1000
+                                    ]  # Limiter pour l'affichage
+
+                                    # Finaliser le step
+                                    await step.__aexit__(None, None, None)
+
+                                    # Nettoyer le dictionnaire
+                                    del active_tool_steps[tool_call_id]
+
+                                    logger.info(
+                                        f"✅ Résultat outil reçu: {len(str(result_content))} chars"
+                                    )
+
+                # 4. EndNode - Fin de l'exécution
+                elif Agent.is_end_node(node):
+                    logger.info("🏁 EndNode: Exécution terminée")
+                    final_output = str(node.data.output)
+
+                    # Si pas encore de contenu dans le message (cas rare), l'ajouter
+                    if not response_message.content.strip():
+                        await response_message.stream_token(final_output)
+
+        # Finaliser le message de réponse
+        await response_message.update()
+
+        # Récupérer l'historique complet (s'assurer que le result n'est pas None)
+        if agent_run.result is not None:
+            all_messages = agent_run.result.all_messages()
+            trimmed_messages = trim_message_history(all_messages)
+        else:
+            logger.warning("agent_run.result est None, retour de l'historique original")
+            trimmed_messages = message_history or []
+
+        logger.info(
+            f"✅ Streaming terminé - Historique: {len(trimmed_messages)} messages"
+        )
+        return trimmed_messages
 
     except Exception as e:
-        logger.error(f"Erreur lors du streaming avec outils: {e}")
+        logger.error(f"❌ Erreur dans le streaming parfait: {e}", exc_info=True)
 
-        # Fallback : essayer sans streaming
-        try:
-            logger.info("Fallback vers exécution simple...")
-            result = await agent.run(message, message_history=message_history or [])
+        # Nettoyage des steps ouverts en cas d'erreur
+        for step in active_tool_steps.values():
+            try:
+                await step.__aexit__(None, None, None)
+            except Exception:
+                pass
 
-            # Afficher la réponse
-            response_message = cl.Message(content=str(result.output))
-            await response_message.send()
+        # Message d'erreur à l'utilisateur
+        error_msg = cl.Message(
+            content=f"❌ **Erreur lors du traitement:**\n\n{str(e)}\n\n"
+            "Veuillez réessayer ou reformuler votre question."
+        )
+        await error_msg.send()
 
-            return result.all_messages()
-
-        except Exception as fallback_error:
-            logger.error(f"Erreur même en fallback: {fallback_error}")
-
-            error_message = cl.Message(
-                content=f"❌ **Erreur lors du traitement de votre demande:**\n\n{str(e)}"
-            )
-            await error_message.send()
-            return message_history or []
+        return message_history or []
 
 
-def _is_json_like(text: str) -> bool:
+async def process_agent_fallback_simple(
+    agent: Agent, message: str, message_history: Optional[List[ModelMessage]] = None
+) -> List[ModelMessage]:
     """
-    Détermine si le texte ressemble à du JSON pour choisir la coloration syntaxique.
+    Version de fallback simple sans streaming pour la robustesse.
 
     Args:
-        text: Le texte à analyser
+        agent: Instance de l'agent Pydantic-AI
+        message: Message de l'utilisateur
+        message_history: Historique des messages
 
     Returns:
-        True si le texte ressemble à du JSON
+        Liste mise à jour des messages
     """
-    if not text:
-        return False
+    try:
+        logger.info("🔄 Utilisation du fallback simple...")
 
-    text = text.strip()
-    return (
-        (text.startswith("{") and text.endswith("}"))
-        or (text.startswith("[") and text.endswith("]"))
-        or '"' in text
-        or text.lower() in ["true", "false", "null"]
-    )
+        # Exécution simple sans streaming
+        result = await agent.run(message, message_history=message_history or [])
+
+        if result is None:
+            raise Exception("L'agent a retourné un résultat null")
+
+        # Afficher la réponse
+        response_content = str(result.output)
+        response_message = cl.Message(content=response_content)
+        await response_message.send()
+
+        # Retourner l'historique
+        if hasattr(result, "all_messages"):
+            return result.all_messages()
+        else:
+            logger.warning(
+                "Result n'a pas d'attribut all_messages, retour historique original"
+            )
+            return message_history or []
+
+    except Exception as e:
+        logger.error(f"❌ Erreur même en fallback: {e}")
+
+        error_message = cl.Message(
+            content=f"❌ **Erreur système:**\n\n{str(e)}\n\n"
+            "Veuillez contacter l'administrateur si le problème persiste."
+        )
+        await error_message.send()
+
+        return message_history or []
 
 
 async def process_agent_modern_with_history(
     agent: Agent, message: str, message_history: Optional[List[ModelMessage]] = None
 ) -> List[ModelMessage]:
     """
-    Version moderne principale qui combine streaming, historique et affichage d'outils.
+    Point d'entrée principal pour le traitement moderne avec streaming parfait.
 
-    Cette fonction est le point d'entrée principal pour le traitement moderne des agents.
+    Cette fonction est le point d'entrée recommandé qui utilise la meilleure
+    implémentation disponible avec fallback automatique en cas d'erreur.
 
     Args:
-        agent: Instance de l'agent pydantic-ai
+        agent: Instance de l'agent Pydantic-AI
         message: Message de l'utilisateur
-        message_history: Historique des messages au format pydantic-ai
+        message_history: Historique des messages au format Pydantic-AI
 
     Returns:
         Liste mise à jour des messages pour l'historique de session
     """
-    logger.info("Début du traitement moderne avec historique")
+    logger.info("🎯 Traitement moderne avec streaming parfait")
 
     try:
-        # Tenter le streaming avec affichage d'outils
-        updated_messages = await process_agent_stream_with_tools_display(
+        # Tenter le streaming parfait
+        return await process_agent_with_perfect_streaming(
             agent, message, message_history
         )
 
-        # Limiter l'historique pour éviter les problèmes de mémoire
-        trimmed_messages = trim_message_history(updated_messages)
-
-        logger.info(f"Historique mis à jour avec {len(trimmed_messages)} messages")
-        return trimmed_messages
-
     except Exception as e:
-        logger.error(f"Erreur dans le traitement moderne: {e}")
+        logger.warning(f"⚠️ Échec du streaming parfait, fallback: {e}")
 
-        # En cas d'échec complet, essayer le traitement simple
-        try:
-            fallback_messages = await process_agent_with_history_and_tools(
-                agent, message, message_history
-            )
-            return fallback_messages
-        except Exception as fallback_error:
-            logger.error(f"Échec du fallback: {fallback_error}")
-            return message_history or []
+        # En cas d'échec, utiliser le fallback simple
+        return await process_agent_fallback_simple(agent, message, message_history)
 
 
-# Fonctions de compatibilité avec l'ancien code
+# ================================
+# Fonctions de compatibilité
+# ================================
+
+
 async def process_agent_stream_modern(
     agent: Agent, message: str, history: Optional[List[Any]] = None
 ) -> None:
     """
-    Fonction de compatibilité qui utilise la nouvelle approche moderne.
-    Convertit l'ancien format d'historique vers le nouveau.
+    Fonction de compatibilité avec l'ancien code.
+    Utilise la nouvelle approche moderne en arrière-plan.
     """
-    # Convertir l'historique si nécessaire
+    # Conversion de l'historique si nécessaire
     message_history: Optional[List[ModelMessage]] = None
-    if history:
-        # Si c'est déjà au bon format, on l'utilise directement
-        if isinstance(history, list) and history and hasattr(history[0], "__class__"):
-            # Vérifier si c'est déjà des ModelMessage
-            if hasattr(history[0], "parts"):
-                message_history = history
+    if history and isinstance(history, list) and history:
+        # Si c'est déjà des ModelMessage, on les utilise
+        if hasattr(history[0], "parts"):
+            message_history = history
 
-    # Traitement moderne - ignore la valeur de retour pour la compatibilité
+    # Appel de la fonction moderne (ignore le retour pour compatibilité)
     await process_agent_modern_with_history(agent, message, message_history)
 
 
 async def process_agent_stream_chainlit(
     agent: Agent, message: str, history: Optional[List[Any]] = None
 ) -> None:
-    """
-    Fonction de compatibilité avec l'ancien nom.
-    """
+    """Alias de compatibilité."""
     await process_agent_stream_modern(agent, message, history)
 
 
 async def create_simple_response_message(content: str) -> None:
-    """
-    Crée et envoie un message de réponse simple.
-
-    Args:
-        content: Contenu du message
-    """
+    """Crée et envoie un message de réponse simple."""
     message = cl.Message(content=content)
     await message.send()

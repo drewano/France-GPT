@@ -50,7 +50,7 @@ class AgentSettings(BaseSettings):
 
     # Configuration de connexion au serveur MCP
     # Utilise le nom du service Docker pour la communication inter-conteneurs
-    MCP_SERVER_URL: str = "http://mcp_server:8000/mcp"
+    MCP_SERVER_URL: str = "http://mcp_server:8000/mcp/"
 
     # Port du serveur agent
     AGENT_PORT: int = 8001
@@ -69,6 +69,9 @@ class AgentSettings(BaseSettings):
     CORS_ORIGINS: list[str] = ["*"]  # En production, spécifier les domaines autorisés
     SECRET_KEY: str = "your-secret-key-here-change-in-production"
 
+    # Configuration de la base de données
+    DATABASE_URL: str = "postgresql+asyncpg://user:password@postgres:5432/datainclusion"
+
 
 class MCPSettings(BaseSettings):
     """
@@ -85,7 +88,7 @@ class MCPSettings(BaseSettings):
     MCP_SERVER_NAME: str = "DataInclusionAPI"
     MCP_HOST: str = "0.0.0.0"
     MCP_PORT: int = 8000
-    MCP_API_PATH: str = "/mcp"
+    MCP_API_PATH: str = "/mcp/"
 
     # Clés d'API et authentification
     DATA_INCLUSION_API_KEY: str = ""

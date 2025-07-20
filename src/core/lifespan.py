@@ -15,6 +15,7 @@ from pydantic_ai.mcp import MCPServerStreamableHTTP
 # Imports locaux
 from .config import settings
 from ..agent.agent import create_inclusion_agent
+from ..ui.db_init import initialize_database
 
 # Configuration du logging
 logger = logging.getLogger("datainclusion.agent")
@@ -72,6 +73,16 @@ async def lifespan(app: FastAPI):
 
     # Configuration de l'environnement
     setup_environment()
+
+    # Initialisation de la base de données
+    try:
+        await initialize_database()
+        logger.info("✅ Base de données initialisée avec succès")
+    except Exception as e:
+        logger.critical(f"❌ Échec de l'initialisation de la base de données: {e}")
+        raise RuntimeError(
+            f"L'application ne peut pas démarrer sans base de données: {e}"
+        )
 
     # Initialisation du serveur MCP
     mcp_server = MCPServerStreamableHTTP(settings.agent.MCP_SERVER_URL)

@@ -132,8 +132,30 @@ graph TD
     MCP_SERVER_SECRET_KEY=une-cle-secrete-aleatoire
     ```
 
-3. **Lancez l'application avec Docker Compose :**
-    Cette commande va construire les images Docker et démarrer les deux services.
+### Initialisation de la base de données
+
+Cette étape est nécessaire **une seule fois** après le premier lancement pour créer les tables de la base de données PostgreSQL requises par Chainlit.
+
+1. **Lancez tous les services en arrière-plan :**
+    ```bash
+    # 1. Lancez tous les services en arrière-plan
+    docker-compose up -d --build
+    ```
+
+2. **Créez les tables de la base de données :**
+    ```bash
+    # 2. Une fois les conteneurs démarrés, exécutez la commande de création de la base de données
+    docker-compose exec agent chainlit create-db -y
+    ```
+
+3. **Vérifiez le bon fonctionnement :**
+    ```bash
+    # 3. Vous pouvez maintenant consulter les logs pour vérifier que tout fonctionne
+    docker-compose logs -f
+    ```
+
+4. **Pour les lancements suivants :**
+    Une fois l'initialisation terminée, vous pouvez utiliser la commande standard :
 
     ```bash
     docker-compose up --build

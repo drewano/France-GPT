@@ -43,9 +43,13 @@ services:
       # Port sur lequel l'interface Gradio et l'API de l'agent seront accessibles
       - AGENT_PORT=8001
       # URL pour que l'agent puisse trouver le serveur MCP. 'mcp_server' est le nom du service.
-      - MCP_SERVER_URL=http://mcp_server:8000/mcp
+      - MCP_SERVER_URL=http://mcp_server:8000/mcp/
+      # URL de connexion à la base de données PostgreSQL
+      - DATABASE_URL=postgresql+asyncpg://user:password@postgres:5432/datainclusion
       # Mode de fonctionnement pour la journalisation et les configurations
       - ENVIRONMENT=production
+      # Secret JWT pour l'authentification Chainlit (requis quand l'authentification est activée)
+      - CHAINLIT_AUTH_SECRET=${CHAINLIT_AUTH_SECRET}
     networks:
       - datainclusion-net
     ports:
@@ -56,9 +60,11 @@ services:
       - ./logs:/app/logs
       - ./feedback_data:/app/feedback_data
       - ./exports:/app/exports
-    # S'assure que le serveur MCP est démarré et sain avant de lancer l'agent
+    # S'assure que le serveur MCP et la base de données sont démarrés et sains avant de lancer l'agent
     depends_on:
       mcp_server:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
@@ -68,6 +74,38 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  # --- Service 3: Base de données PostgreSQL ---
+  # Ce service héberge la base de données pour la persistance des conversations et utilisateurs.
+  postgres:
+    image: postgres:15-alpine
+    container_name: datainclusion-postgres-db
+    environment:
+      # Configuration de la base de données PostgreSQL pour le développement
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=datainclusion
+    volumes:
+      # Persistance des données de la base de données sur un volume Docker
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - datainclusion-net
+    ports:
+      # Expose le port PostgreSQL pour connexion locale si nécessaire
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      # Vérifie que PostgreSQL est prêt à accepter des connexions
+      test: ["CMD-SHELL", "pg_isready -U user -d datainclusion"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# Définition des volumes persistants
+volumes:
+  postgres_data:
+    driver: local
 
 # Définition du réseau partagé pour permettre la communication entre les conteneurs
 networks:

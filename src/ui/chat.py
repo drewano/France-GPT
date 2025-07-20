@@ -1,10 +1,32 @@
 import chainlit as cl
-from src.ui.streaming import process_agent_modern_with_history, trim_message_history
+from src.ui.streaming import process_agent_modern_with_history
+from src.ui import data_layer
 from src.agent.agent import create_inclusion_agent
 from src.core.config import settings
 from pydantic_ai.mcp import MCPServerStreamableHTTP
-from pydantic_ai.messages import ModelMessage
-from typing import List, Dict, Any
+from typing import Optional
+from chainlit.types import ThreadDict
+
+
+@cl.password_auth_callback
+async def auth_callback(username: str, password: str) -> Optional[cl.User]:
+    """
+    Fonction d'authentification par mot de passe pour Chainlit.
+
+    Args:
+        username: Le nom d'utilisateur fourni
+        password: Le mot de passe fourni
+
+    Returns:
+        Un objet cl.User si l'authentification réussit, None sinon
+    """
+    # Pour les besoins du développement, utiliser des credentials codés en dur
+    if (username, password) == ("admin", "admin"):
+        return cl.User(
+            identifier="admin", metadata={"role": "admin", "provider": "credentials"}
+        )
+    else:
+        return None
 
 
 @cl.on_chat_start
@@ -23,9 +45,6 @@ async def on_chat_start():
         # Stocker l'agent dans la session utilisateur
         cl.user_session.set("agent", agent)
 
-        # Initialiser l'historique vide des messages pydantic-ai
-        cl.user_session.set("messages", [])
-
         # Envoyer un message de bienvenue
         await cl.Message(
             content="👋 **Bienvenue !** Je suis votre assistant IA d'inclusion sociale. "
@@ -39,49 +58,34 @@ async def on_chat_start():
         ).send()
 
 
-def filter_conversation_history(
-    chat_history: List[Dict[str, Any]],
-) -> List[Dict[str, Any]]:
+@cl.on_chat_resume
+async def on_chat_resume(thread: ThreadDict):
     """
-    Filtre l'historique pour pydantic-ai en s'assurant que :
-    1. La conversation commence par un message utilisateur
-    2. Les messages de bienvenue sont exclus
-    3. Seuls les vrais échanges conversationnels sont inclus
+    Fonction appelée lorsqu'un utilisateur reprend une conversation précédente.
+
+    Cette fonction est automatiquement déclenchée par Chainlit quand :
+    - L'authentification est activée
+    - La persistance des données est configurée
+    - L'utilisateur revient sur une conversation existante
 
     Args:
-        chat_history: Historique brut du chat
-
-    Returns:
-        Historique filtré compatible avec pydantic-ai
+        thread: Dictionnaire contenant les informations du fil de discussion repris
     """
-    filtered_history = []
-    found_first_user_message = False
+    print(f"Reprise du fil de discussion (thread) : {thread['id']}")
 
-    for msg in chat_history:
-        if not isinstance(msg, dict):
-            continue
+    # Réinitialiser l'agent pour la session reprise
+    try:
+        # Initialisation du serveur MCP
+        mcp_server = MCPServerStreamableHTTP(settings.agent.MCP_SERVER_URL)
 
-        role = msg.get("role", "")
-        content = msg.get("content", "")
+        # Création de l'agent avec le serveur MCP
+        agent = create_inclusion_agent(mcp_server)
 
-        # Ignorer les messages sans contenu
-        if not content:
-            continue
+        # Stocker l'agent dans la session utilisateur
+        cl.user_session.set("agent", agent)
 
-        # Ignorer le message de bienvenue (commence par 👋)
-        if role == "assistant" and content.strip().startswith("👋"):
-            continue
-
-        # Une fois qu'on a trouvé le premier message utilisateur,
-        # on peut inclure les messages suivants
-        if role == "user":
-            found_first_user_message = True
-
-        # N'inclure les messages qu'après avoir trouvé le premier message utilisateur
-        if found_first_user_message and role in ["user", "assistant"]:
-            filtered_history.append({"role": role, "content": content})
-
-    return filtered_history
+    except Exception as e:
+        print(f"Erreur lors de la reprise de session : {str(e)}")
 
 
 @cl.on_message
@@ -104,20 +108,9 @@ async def on_message(message: cl.Message):
             ).send()
             return
 
-        # Récupérer l'historique des messages pydantic-ai depuis la session utilisateur
-        messages_raw = cl.user_session.get("messages", [])
-        messages: List[ModelMessage] = (
-            messages_raw if isinstance(messages_raw, list) else []
-        )
-
-        # Traiter le message avec l'agent moderne
-        updated_messages = await process_agent_modern_with_history(
-            agent, message.content, messages
-        )
-
-        # Limiter l'historique et le sauvegarder dans la session
-        trimmed_messages = trim_message_history(updated_messages)
-        cl.user_session.set("messages", trimmed_messages)
+        # Traiter le message avec l'agent moderne et streaming parfait
+        # L'historique est maintenant géré automatiquement par la couche de persistance
+        await process_agent_modern_with_history(agent, message.content, None)
 
     except Exception as e:
         # Gestion des erreurs générales
