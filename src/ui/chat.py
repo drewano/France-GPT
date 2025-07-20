@@ -45,6 +45,9 @@ async def on_chat_start():
         # Stocker l'agent dans la session utilisateur
         cl.user_session.set("agent", agent)
 
+        # Initialiser l'historique des messages vide
+        cl.user_session.set("message_history", [])
+
         # Envoyer un message de bienvenue
         await cl.Message(
             content="👋 **Bienvenue !** Je suis votre assistant IA d'inclusion sociale. "
@@ -84,6 +87,10 @@ async def on_chat_resume(thread: ThreadDict):
         # Stocker l'agent dans la session utilisateur
         cl.user_session.set("agent", agent)
 
+        # Réinitialiser l'historique des messages (Chainlit gère la persistance des messages UI)
+        # L'historique Pydantic-AI est séparé de l'historique UI de Chainlit
+        cl.user_session.set("message_history", [])
+
     except Exception as e:
         print(f"Erreur lors de la reprise de session : {str(e)}")
 
@@ -108,9 +115,16 @@ async def on_message(message: cl.Message):
             ).send()
             return
 
+        # Récupérer l'historique existant depuis la session
+        message_history = cl.user_session.get("message_history", [])
+
         # Traiter le message avec l'agent moderne et streaming parfait
-        # L'historique est maintenant géré automatiquement par la couche de persistance
-        await process_agent_modern_with_history(agent, message.content, None)
+        updated_history = await process_agent_modern_with_history(
+            agent, message.content, message_history
+        )
+
+        # Sauvegarder l'historique mis à jour dans la session
+        cl.user_session.set("message_history", updated_history)
 
     except Exception as e:
         # Gestion des erreurs générales

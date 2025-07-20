@@ -107,10 +107,13 @@ async def process_agent_with_perfect_streaming(
                             elif isinstance(event, PartDeltaEvent):
                                 if isinstance(event.delta, TextPartDelta):
                                     # Créer le message de réponse maintenant, quand on a du contenu
-                                    if response_message is None and event.delta.content_delta:
+                                    if (
+                                        response_message is None
+                                        and event.delta.content_delta
+                                    ):
                                         response_message = cl.Message(content="")
                                         await response_message.send()
-                                    
+
                                     # Streamer chaque token vers Chainlit
                                     if event.delta.content_delta and response_message:
                                         await response_message.stream_token(
