@@ -27,7 +27,7 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
         id="social_agent",
         name="Agent Social",
         description="Un assistant expert de l'inclusion sociale en France.",
-        icon="/public/icons/help-circle.svg",
+        icon="/public/icons/agent-social.svg",
         system_prompt=(
             "Tu es un assistant expert de l'inclusion sociale en France. "
             "Utilise les outils disponibles pour répondre aux questions sur les "
