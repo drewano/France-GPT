@@ -134,7 +134,3 @@ class Feedback(Base):
 
     # Relations
     thread = relationship("Thread", back_populates="feedbacks")
-
-
-# Export des modèles pour utilisation dans d'autres modules
-__all__ = ["Base", "User", "Thread", "Step", "Element", "Feedback"]

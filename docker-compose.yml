@@ -29,7 +29,7 @@ services:
       retries: 3
       start_period: 20s
 
-  # --- Service 2: L'Agent IA et l'interface Gradio/FastAPI ---
+  # --- Service 2: L'Agent IA et l'interface Chainlit/FastAPI ---
   # C'est le service principal, qui fournit l'interface utilisateur et l'API de chat.
   agent:
     container_name: datainclusion-agent-ui
@@ -40,7 +40,7 @@ services:
     env_file:
       - .env
     environment:
-      # Port sur lequel l'interface Gradio et l'API de l'agent seront accessibles
+      # Port sur lequel l'interface Chainlit et l'API de l'agent seront accessibles
       - AGENT_PORT=8001
       # URL pour que l'agent puisse trouver le serveur MCP. 'mcp_server' est le nom du service.
       - MCP_SERVER_URL=http://mcp_server:8000/mcp/
@@ -53,7 +53,7 @@ services:
     networks:
       - datainclusion-net
     ports:
-      # Expose le port 8001 pour accéder à l'interface Gradio via http://localhost:8001
+      # Expose le port 8001 pour accéder à l'interface Chainlit via http://localhost:8001
       - "8001:8001"
     # S'assure que le serveur MCP et la base de données sont démarrés et sains avant de lancer l'agent
     depends_on:
@@ -63,7 +63,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      # Vérifie que l'interface Gradio/FastAPI est bien démarrée
+      # Vérifie que l'interface Chainlit/FastAPI est bien démarrée
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
       timeout: 10s

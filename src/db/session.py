@@ -84,7 +84,3 @@ async def initialize_database():
             "💡 Assurez-vous que l'utilisateur a les permissions CREATE sur la base de données"
         )
         raise e
-
-
-# Export de la fonction d'initialisation
-__all__ = ["initialize_database"]

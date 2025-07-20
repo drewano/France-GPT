@@ -311,39 +311,3 @@ async def process_agent_modern_with_history(
 
         # En cas d'échec, utiliser le fallback simple
         return await process_agent_fallback_simple(agent, message, message_history)
-
-
-# ================================
-# Fonctions de compatibilité
-# ================================
-
-
-async def process_agent_stream_modern(
-    agent: Agent, message: str, history: Optional[List[Any]] = None
-) -> None:
-    """
-    Fonction de compatibilité avec l'ancien code.
-    Utilise la nouvelle approche moderne en arrière-plan.
-    """
-    # Conversion de l'historique si nécessaire
-    message_history: Optional[List[ModelMessage]] = None
-    if history and isinstance(history, list) and history:
-        # Si c'est déjà des ModelMessage, on les utilise
-        if hasattr(history[0], "parts"):
-            message_history = history
-
-    # Appel de la fonction moderne (ignore le retour pour compatibilité)
-    await process_agent_modern_with_history(agent, message, message_history)
-
-
-async def process_agent_stream_chainlit(
-    agent: Agent, message: str, history: Optional[List[Any]] = None
-) -> None:
-    """Alias de compatibilité."""
-    await process_agent_stream_modern(agent, message, history)
-
-
-async def create_simple_response_message(content: str) -> None:
-    """Crée et envoie un message de réponse simple."""
-    message = cl.Message(content=content)
-    await message.send()

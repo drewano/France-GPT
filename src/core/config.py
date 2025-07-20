@@ -45,9 +45,6 @@ class AgentSettings(BaseSettings):
     # Nom du modèle OpenAI à utiliser pour l'agent
     AGENT_MODEL_NAME: str = "gpt-4.1"
 
-    # Configuration de l'API Gemini (optionnel, peut causer des problèmes avec les schémas $ref)
-    GEMINI_API_KEY: str | None = None
-
     # Configuration de connexion au serveur MCP
     # Utilise le nom du service Docker pour la communication inter-conteneurs
     MCP_SERVER_URL: str = "http://mcp_server:8000/mcp/"
@@ -65,7 +62,7 @@ class AgentSettings(BaseSettings):
     # Multiplicateur pour le backoff exponentiel entre les tentatives
     AGENT_MCP_CONNECTION_BACKOFF_MULTIPLIER: float = 2.0
 
-    # Configuration pour FastAPI + Gradio
+    # Configuration pour FastAPI + Chainlit
     CORS_ORIGINS: list[str] = ["*"]  # En production, spécifier les domaines autorisés
     SECRET_KEY: str = "your-secret-key-here-change-in-production"
 

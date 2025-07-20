@@ -17,7 +17,6 @@ from fastapi.staticfiles import StaticFiles
 from src.core.config import settings
 from src.core.lifespan import lifespan
 from src.core.logging import setup_logging
-from src.api.router import api_router
 from chainlit.utils import mount_chainlit
 
 # Configuration du logging unifié
@@ -26,7 +25,7 @@ logger = setup_logging(name="datainclusion.agent")
 
 def create_app() -> FastAPI:
     """
-    Crée l'application FastAPI configurée complète avec l'interface Gradio.
+    Crée l'application FastAPI configurée complète avec l'interface Chainlit.
 
     Cette fonction centralise la création et la configuration de l'instance
     FastAPI, incluant :
@@ -35,10 +34,10 @@ def create_app() -> FastAPI:
     - Montage des fichiers statiques
     - Routes de base (/, /health)
     - Inclusion du routeur API
-    - Montage de l'interface Gradio
+    - Montage de l'interface Chainlit
 
     Returns:
-        Instance FastAPI configurée complète avec l'interface Gradio montée
+        Instance FastAPI configurée complète avec l'interface Chainlit montée
     """
     # Application principale
     app = FastAPI(
@@ -66,40 +65,10 @@ def create_app() -> FastAPI:
 
     # Routes de l'application principale
 
-    @app.get("/api-info")
-    async def api_info():
-        """Information sur l'API - Chainlit gère maintenant la racine."""
-        return {"message": "API is running. Access the chat at /", "api_docs": "/docs"}
-
     @app.get("/health")
     async def health_check():
         """Health check global de l'application."""
-        try:
-            return JSONResponse(
-                status_code=200,
-                content={
-                    "status": "healthy",
-                    "timestamp": datetime.now().isoformat(),
-                    "services": {
-                        "agent": {"healthy": True},
-                        "interface": {"healthy": True},
-                    },
-                },
-            )
-
-        except Exception as e:
-            logger.error(f"Erreur lors du health check: {e}")
-            return JSONResponse(
-                status_code=503,
-                content={
-                    "status": "unhealthy",
-                    "error": str(e),
-                    "timestamp": datetime.now().isoformat(),
-                },
-            )
-
-    # Monter l'APIRouter sous /api
-    app.include_router(api_router, prefix="/api")
+        return JSONResponse(status_code=200, content={"status": "healthy"})
 
     # Monter l'interface Chainlit à la racine
     mount_chainlit(app=app, target="src/ui/chat.py", path="/")

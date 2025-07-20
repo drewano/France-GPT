@@ -12,7 +12,7 @@ dependencies = [
     "fastmcp",
     "httpx",
     "python-dotenv",
-    "pydantic-ai-slim[mcp,google,openai,cli,logfire]",
+    "pydantic-ai-slim[mcp,openai,cli,logfire]",
     "pydantic-settings",
     "fastapi",
     "uvicorn",
@@ -21,6 +21,10 @@ dependencies = [
     "SQLAlchemy",
     "greenlet",
     "aiohttp",
+]
+
+[project.optional-dependencies]
+dev = [
     "ruff",
     "pylint"
 ]

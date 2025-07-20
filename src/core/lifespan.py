@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
     Args:
         app: Instance FastAPI
     """
-    logger.info("🚀 Démarrage de l'application Gradio + FastAPI...")
+    logger.info("🚀 Démarrage de l'application Chainlit + FastAPI...")
 
     # Configuration de l'environnement
     setup_environment()
