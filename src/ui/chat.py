@@ -7,6 +7,27 @@ from pydantic_ai.mcp import MCPServerStreamableHTTP
 from typing import Optional
 from chainlit.types import ThreadDict
 from src.core.profiles import AGENT_PROFILES
+from pydantic_ai.messages import ModelRequest, ModelResponse, UserPromptPart, TextPart
+
+
+async def _setup_agent():
+    """
+    Fonction d'assistance pour configurer l'agent basé sur le profil sélectionné.
+    Déplace la logique de sélection de profil et de création d'agent ici.
+    """
+    profile_name = cl.user_session.get("chat_profile")
+
+    if profile_name:
+        profile = next((p for p in AGENT_PROFILES.values() if p.name == profile_name), None)
+    else:
+        profile = AGENT_PROFILES.get("social_agent")
+
+    if not profile:
+        raise ValueError(f"Profil de chat '{profile_name}' non trouvé.")
+
+    agent = create_agent_from_profile(profile)
+    cl.user_session.set("agent", agent)
+    cl.user_session.set("selected_profile_id", profile.id)
 
 
 @cl.set_chat_profiles
@@ -47,36 +68,9 @@ async def on_chat_start():
     """
     Initialise la session de chat en créant un agent basé sur le profil sélectionné.
     """
-    try:
-        # Récupère le nom du profil de chat sélectionné par l'utilisateur.
-        profile_name = cl.user_session.get("chat_profile")
-
-        # Trouve le profil correspondant dans le dictionnaire par son nom.
-        if profile_name:
-            profile = next((p for p in AGENT_PROFILES.values() if p.name == profile_name), None)
-        else:
-            # Si aucun profil n'est sélectionné, utilise le profil par défaut.
-            profile = AGENT_PROFILES.get("social_agent")
-
-        # Si aucun profil correspondant n'est trouvé, lève une exception.
-        if not profile:
-            raise ValueError(f"Profil de chat '{profile_name}' non trouvé.")
-
-        # Crée une instance de l'agent en utilisant la factory et le profil chargé.
-        agent = create_agent_from_profile(profile)
-
-        # Stocke l'agent et l'ID du profil dans la session pour un accès ultérieur.
-        cl.user_session.set("agent", agent)
-        cl.user_session.set("selected_profile_id", profile.id)
-
-        # Initialise un historique de messages vide pour cette nouvelle session.
-        cl.user_session.set("message_history", [])
-
-    except Exception as e:
-        await cl.Message(
-            content="❌ **Erreur d'initialisation**: Impossible d'initialiser l'agent IA. "
-            f"Détails: {str(e)}"
-        ).send()
+    await _setup_agent()
+    # Initialise un historique de messages vide pour cette nouvelle session.
+    cl.user_session.set("message_history", [])
 
 
 @cl.on_chat_resume
@@ -88,22 +82,20 @@ async def on_chat_resume(thread: ThreadDict):
     """
     print(f"Reprise du fil de discussion (thread) : {thread['id']}")
 
-    # TODO: Pour une reprise multi-profils complète, il faudra stocker l'ID du profil
-    # dans les métadonnées du thread (`thread['metadata']`) et le lire ici pour
-    # recréer l'agent avec le bon profil.
     try:
-        # Pour l'instant, la reprise se fait systématiquement avec le profil par défaut.
-        profile = AGENT_PROFILES["social_agent"]
-
-        # Recrée l'agent pour la session reprise.
-        agent = create_agent_from_profile(profile)
-
-        # Met à jour l'agent dans la session utilisateur.
-        cl.user_session.set("agent", agent)
+        await _setup_agent() # Call the new setup function
+        reconstructed_history = []
+        for step in thread["steps"]:
+            step_type = step.get("type")
+            step_output = step.get("output")
+            if step_type == "user_message" and step_output:
+                reconstructed_history.append(ModelRequest(parts=[UserPromptPart(content=step_output)]))
+            elif step_type == "assistant_message" and step_output:
+                reconstructed_history.append(ModelResponse(parts=[TextPart(content=step_output)]))
 
         # L'historique des messages de l'UI est géré par Chainlit.
         # On réinitialise ici l'historique de l'agent Pydantic-AI pour cette session.
-        cl.user_session.set("message_history", [])
+        cl.user_session.set("message_history", reconstructed_history)
 
     except Exception as e:
         print(f"Erreur lors de la reprise de session : {str(e)}")
@@ -149,7 +141,7 @@ async def on_message(message: cl.Message):
 
 
 @cl.on_chat_end
-async def on_chat_end():
+def on_chat_end():
     """
     Fonction appelée à la fin d'une session de chat.
     Nettoie les ressources si nécessaire.
