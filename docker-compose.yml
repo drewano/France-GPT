@@ -55,11 +55,6 @@ services:
     ports:
       # Expose le port 8001 pour accéder à l'interface Gradio via http://localhost:8001
       - "8001:8001"
-    volumes:
-      # Persiste les données générées (logs, feedback, exports) sur la machine hôte
-      - ./logs:/app/logs
-      - ./feedback_data:/app/feedback_data
-      - ./exports:/app/exports
     # S'assure que le serveur MCP et la base de données sont démarrés et sains avant de lancer l'agent
     depends_on:
       mcp_server:

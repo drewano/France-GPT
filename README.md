@@ -1,217 +1,165 @@
-# Agent IA pour l'Inclusion Sociale
+---
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+# Agent IA pour l'API Data Inclusion
+
 [![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
-[![Frameworks](https://img.shields.io/badge/frameworks-FastAPI%20%7C%20Gradio%20%7C%20FastMCP-orange)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/docker-ready-blue.svg?logo=docker)](https://www.docker.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Chainlit](https://img.shields.io/badge/Chainlit-4B5563?style=for-the-badge)](https://chainlit.io/)
 
-Cet agent conversationnel intelligent est conçu pour aider les utilisateurs à naviguer dans l'écosystème de l'inclusion sociale en France. Il se connecte à l'API [data.inclusion.beta.gouv.fr](https://data.inclusion.beta.gouv.fr/) pour fournir des informations précises et à jour sur les structures d'aide, les services disponibles et les ressources sur tout le territoire.
+Ce projet fournit un agent conversationnel intelligent conçu pour interagir avec l'API [data.inclusion.beta.gouv.fr](https://data.inclusion.beta.gouv.fr/). Grâce à une interface de chat moderne, il permet aux utilisateurs (travailleurs sociaux, citoyens, etc.) de poser des questions en langage naturel pour trouver des structures et services d'aide sociale en France.
 
-L'interface de chat offre une expérience utilisateur transparente, montrant en temps réel les outils que l'agent utilise pour trouver des réponses, ce qui permet de comprendre son "raisonnement".
+L'agent est capable de comprendre des requêtes complexes, d'utiliser les outils d'API appropriés et de fournir des réponses précises et contextualisées en temps réel.
 
-### Aperçu de l'interface
+## ✨ Fonctionnalités Clés
 
-*(Image d'exemple montrant le chat, les questions suggérées et la visualisation d'un appel d'outil)*
+- **Interface de Chat Intuitive** : Une interface utilisateur propre et réactive construite avec [Chainlit](https://chainlit.io/) pour une expérience conversationnelle fluide.
+- **Requêtes en Langage Naturel** : Posez des questions comme "Trouve-moi des services d'aide alimentaire près de Lyon" ou "Quelles structures proposent un accompagnement numérique pour les seniors ?".
+- **Génération d'Outils Automatisée** : Le serveur [FastMCP](https://github.com/mcp-ai/fastmcp) transforme dynamiquement la spécification OpenAPI de Data Inclusion en outils utilisables par le LLM.
+- **Réponses en Streaming** : Les réponses de l'agent s'affichent en temps réel, token par token, pour une meilleure interactivité.
+- **Historique de Conversation** : Les conversations sont sauvegardées dans une base de données PostgreSQL, permettant aux utilisateurs de reprendre leurs sessions.
+- **Architecture Robuste et Modulaire** : Entièrement conteneurisé avec Docker et Docker Compose, séparant l'agent, le serveur d'outils (MCP) et la base de données.
+- **Authentification Sécurisée** : Support de l'authentification par mot de passe pour l'interface de chat et par jeton Bearer pour le serveur MCP.
 
-## ✨ Fonctionnalités Principales
+## 🏛️ Architecture
 
-* **🤖 Agent Expert :** Un assistant basé sur un LLM (GPT-4) spécialisé dans les questions d'inclusion sociale.
-* **🔌 Conversion d'API en Outils :** Utilise **FastMCP** pour transformer dynamiquement la spécification OpenAPI de `data.inclusion` en outils utilisables par l'agent IA.
-* **🔍 Transparence Totale :** L'interface **Gradio** affiche en temps réel les appels aux outils (`search_services`, `get_structure_details`, etc.), permettant de voir exactement comment l'agent obtient ses informations.
-* **💬 Interface de Chat Moderne :** Une interface utilisateur réactive et conviviale construite avec Gradio 4.
-* **🚀 Architecture Robuste :** Déploiement via **Docker Compose** avec deux services découplés :
-    1. Un serveur MCP dédié à la gestion des outils.
-    2. Un serveur pour l'agent IA et l'interface utilisateur.
-* **⚙️ Configuration Centralisée :** Gestion simple des configurations via un fichier `.env` et Pydantic Settings.
-* **✅ Prêt pour la Production :** Inclut des health-checks, une journalisation structurée et une configuration pour le déploiement.
-* **📖 API Documentée :** L'agent expose sa propre API FastAPI avec une documentation Swagger UI (`/docs`).
+Le projet est composé de trois services principaux orchestrés par Docker Compose :
 
-## 🏗️ Architecture
+1.  **Agent & UI (Service `agent`)** : Une application FastAPI qui héberge l'interface de chat Chainlit. Elle contient la logique de l'agent (basée sur `pydantic-ai`) qui reçoit les prompts de l'utilisateur, dialogue avec le LLM, et appelle les outils du serveur MCP pour obtenir des données.
+2.  **Serveur d'Outils (Service `mcp_server`)** : Un serveur FastMCP qui lit la spécification `openapi.json` de l'API Data Inclusion, la transforme en un ensemble d'outils (ex: `search_services`, `get_structure_details`) et les expose via le *Model Context Protocol* (MCP). Il agit comme un pont sécurisé et structuré entre l'agent et l'API réelle.
+3.  **Base de Données (Service `postgres`)** : Une instance PostgreSQL utilisée par Chainlit pour persister les utilisateurs, les conversations et les messages, offrant une expérience utilisateur continue.
 
-Le projet est divisé en deux services Docker communiquant entre eux, assurant une séparation claire des responsabilités et une meilleure modularité.
-
-1. **`mcp_server` (Serveur d'Outils)** :
-    * Charge la spécification OpenAPI de `data.inclusion`.
-    * La transforme en "outils" (fonctions) MCP (Model-Controlled Proxy).
-    * Expose ces outils sur un port interne (`8000`) pour que l'agent puisse les consommer.
-    * Gère l'authentification avec l'API `data.inclusion`.
-
-2. **`agent` (Agent & Interface Utilisateur)** :
-    * Contient l'agent IA (`pydantic-ai`) qui utilise le modèle GPT.
-    * Se connecte au `mcp_server` pour découvrir et utiliser les outils disponibles.
-    * Expose une interface de chat Gradio sur le port `8001`.
-    * Fournit une API FastAPI pour une intégration programmatique.
+Voici un diagramme illustrant le flux des informations :
 
 ```mermaid
 graph TD
-    subgraph "Utilisateur"
-        User[👤 Utilisateur] --> Browser[🌐 Navigateur Web]
+    subgraph "Navigateur de l'Utilisateur"
+        A[Interface Chainlit]
+    end
+
+    subgraph "Service Agent (FastAPI)"
+        B[Logique de l'Agent - Pydantic-AI]
+        C[API de Chat - /api/chat]
+    end
+
+    subgraph "Service MCP Server"
+        D[Serveur d'Outils FastMCP]
     end
 
     subgraph "Services Externes"
-        DataInclusionAPI["API data.inclusion.beta.gouv.fr"]
-        OpenAI_API["API OpenAI (GPT-4)"]
+        E[API LLM - ex: OpenAI]
+        F[API Data Inclusion]
     end
 
-    subgraph "Environnement Docker (datainclusion-net)"
-        Browser -- "HTTP/S sur Port 8001" --> AgentService
-        
-        AgentService -- "1. Requête de l'agent (Pydantic-AI)" --> OpenAI_API
-        AgentService -- "3. Appel d'outil (MCP)" --> MCPServer
-
-        MCPServer -- "4. Appel API REST" --> DataInclusionAPI
-        MCPServer -- "2. Charge la spec OpenAPI au démarrage" --> DataInclusionAPI
-
-        subgraph "Service 'agent' (Port 8001)"
-            AgentService["Agent & UI Service
-            Interface Gradio
-            API FastAPI (/api)
-            Agent Pydantic-AI
-            main.py"]
-        end
-        
-        subgraph "Service 'mcp_server' (Port 8000)"
-            MCPServer["MCP Tool Server 
-            FastMCP
-            Transforme OpenAPI en outils
-            Gère l'authentification API
-            src/mcp_server/server.py"]
-        end
+    subgraph "Base de données"
+        G[PostgreSQL]
     end
 
-    style User fill:#cde4ff,stroke:#333
-    style AgentService fill:#d5f5e3,stroke:#27ae60
-    style MCPServer fill:#fdebd0,stroke:#f39c12
-    style DataInclusionAPI fill:#e8daef,stroke:#8e44ad
-    style OpenAI_API fill:#d6eaf8,stroke:#3498db
+    A -- Prompt utilisateur --> B
+    B -- Requête formatée --> E
+    E -- Raisonnement et Appel d'outil --> B
+    B -- Appel d'outil MCP --> D
+    D -- Requête API --> F
+    F -- Données --> D
+    D -- Résultat de l'outil --> B
+    B -- Formate la réponse --> E
+    E -- Réponse en langage naturel --> B
+    B -- Réponse en streaming --> A
+    A <-->|Historique des chats| G
+
 ```
-
-## 🛠️ Technologies Utilisées
-
-* **Backend & IA :** Python 3.12, FastAPI, Pydantic-AI, FastMCP
-* **Frontend :** Gradio
-* **Déploiement :** Docker, Docker Compose
-* **Dépendances :** Uvicorn, HTTPX, python-dotenv
 
 ## 🚀 Démarrage Rapide
 
-### Prérequis
+Pour lancer le projet, vous aurez besoin de Docker et Docker Compose.
 
-* [Docker](https://www.docker.com/get-started)
-* [Docker Compose](https://docs.docker.com/compose/install/) (généralement inclus avec Docker Desktop)
+### 1. Prérequis
 
-### Installation
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
-1. **Clonez le dépôt :**
+### 2. Configuration
 
+1.  Clonez ce dépôt :
     ```bash
     git clone https://github.com/votre-user/datainclusion-mcp-server.git
     cd datainclusion-mcp-server
     ```
 
-2. **Configurez les variables d'environnement :**
-    Copiez le fichier d'exemple et modifiez-le pour y ajouter vos clés d'API.
-
+2.  Créez un fichier `.env` à partir de l'exemple fourni :
     ```bash
     cp .env.example .env
     ```
 
-    Ouvrez le fichier `.env` et remplissez les valeurs suivantes :
+3.  Modifiez le fichier `.env` pour y ajouter vos clés d'API :
+    ```dotenv
+    # Clé API OpenAI (ou d'un service compatible comme Ollama via OPENAI_API_BASE_URL)
+    OPENAI_API_KEY="sk-..."
 
-    ```ini
-    # Clé API pour l'API data.inclusion (obligatoire)
-    # Contactez l'équipe data.inclusion pour en obtenir une.
-    DATA_INCLUSION_API_KEY=VOTRE_CLE_ICI
+    # Clé API pour data.inclusion.beta.gouv.fr (si vous en avez une)
+    DATA_INCLUSION_API_KEY="di_api_..."
+    
+    # Secret pour l'authentification Chainlit (changez cette valeur)
+    CHAINLIT_AUTH_SECRET="votre_secret_aleatoire_tres_long"
 
-    # Clé API pour le modèle de langage (obligatoire)
-    # Le projet est configuré pour OpenAI par défaut.
-    OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-    # (Optionnel) Clé pour sécuriser le serveur MCP.
-    # Si non définie, le serveur MCP sera accessible sans authentification sur le réseau Docker.
-    MCP_SERVER_SECRET_KEY=une-cle-secrete-aleatoire
+    # Les autres valeurs par défaut sont configurées pour fonctionner avec Docker Compose.
     ```
 
-### Initialisation de la base de données
+### 3. Lancement de l'application
 
-Cette étape est nécessaire **une seule fois** après le premier lancement pour créer les tables de la base de données PostgreSQL requises par Chainlit.
+Lancez l'ensemble des services avec Docker Compose :
 
-1. **Lancez tous les services en arrière-plan :**
-    ```bash
-    # 1. Lancez tous les services en arrière-plan
-    docker-compose up -d --build
-    ```
+```bash
+docker-compose up --build
+```
 
-2. **Créez les tables de la base de données :**
-    ```bash
-    # 2. Une fois les conteneurs démarrés, exécutez la commande de création de la base de données
-    docker-compose exec agent chainlit create-db -y
-    ```
+Cette commande va :
+- Construire les images Docker pour les services `agent` et `mcp_server`.
+- Démarrer les trois conteneurs (`agent`, `mcp_server`, `postgres`).
+- Établir un réseau commun pour qu'ils puissent communiquer entre eux.
 
-3. **Vérifiez le bon fonctionnement :**
-    ```bash
-    # 3. Vous pouvez maintenant consulter les logs pour vérifier que tout fonctionne
-    docker-compose logs -f
-    ```
+Le démarrage peut prendre une minute, le temps que les healthchecks (vérifications de santé) valident que chaque service est prêt.
 
-4. **Pour les lancements suivants :**
-    Une fois l'initialisation terminée, vous pouvez utiliser la commande standard :
+## 💬 Utilisation
 
-    ```bash
-    docker-compose up --build
-    ```
+1.  **Accéder à l'interface de chat** :
+    Ouvrez votre navigateur et allez à l'adresse [**http://localhost:8001**](http://localhost:8001).
 
-### Accès à l'application
+2.  **Authentification** :
+    Utilisez les identifiants par défaut pour vous connecter :
+    - **Nom d'utilisateur** : `admin`
+    - **Mot de passe** : `admin`
 
-* **Interface de Chat :** Ouvrez votre navigateur et allez à [**http://localhost:8001/chat**](http://localhost:8001/chat)
-* **API de l'agent :** La documentation est disponible sur [http://localhost:8001/docs](http://localhost:8001/docs)
-* **Health Check :** [http://localhost:8001/health](http://localhost:8001/health)
+3.  **Discutez avec l'agent** :
+    Vous pouvez maintenant poser vos questions. Voici quelques exemples :
+    - "Quels sont les différents types de services disponibles ?"
+    - "Trouve-moi des points d'accès au numérique à Bordeaux."
+    - "Je cherche une aide alimentaire d'urgence à Paris 18ème."
+    - "Donne-moi les détails de la structure 'PIMMS Médiation Lyon Métropole'."
 
-## 🔧 Configuration (Variables d'environnement)
+### Accès aux services pour les développeurs
 
-Toutes les configurations sont gérées via le fichier `.env`.
+- **Serveur MCP** : L'endpoint du serveur d'outils est accessible à [http://localhost:8000/mcp/](http://localhost:8000/mcp/).
+- **API de l'agent** : La documentation de l'API FastAPI de l'agent est disponible sur [http://localhost:8001/docs](http://localhost:8001/docs).
+- **Base de données** : Le service PostgreSQL est exposé sur le port `5432` de votre machine hôte.
 
-| Variable                               | Description                                                                                             | Service Concerné |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------- |
-| `OPENAPI_URL`                          | URL de la spécification OpenAPI à utiliser pour générer les outils.                                     | `mcp_server`     |
-| `DATA_INCLUSION_API_KEY`               | **(Requis)** Clé API pour s'authentifier auprès de l'API `data.inclusion`.                                  | `mcp_server`     |
-| `MCP_SERVER_SECRET_KEY`                | Clé secrète pour signer les tokens d'accès au serveur MCP. Si vide, l'authentification est désactivée. | `mcp_server`     |
-| `OPENAI_API_KEY`                       | **(Requis)** Votre clé API OpenAI pour le modèle de langage.                                              | `agent`          |
-| `AGENT_MODEL_NAME`                     | Nom du modèle OpenAI à utiliser (ex: `gpt-4.1`, `gpt-4-turbo`).                                           | `agent`          |
-| `AGENT_PORT`                           | Port sur lequel l'interface Gradio et l'API de l'agent seront exposées.                                   | `agent`          |
-| `MCP_SERVER_URL`                       | URL interne pour que l'agent se connecte au serveur MCP. Ne pas modifier si vous utilisez Docker.       | `agent`          |
-| `ENVIRONMENT`                          | Mode de l'application (`production` ou `development`).                                                  | `agent`          |
+## 🛠️ Configuration des Variables d'Environnement
 
-## 🧑‍💻 Développement Local (Sans Docker)
+Voici les principales variables que vous pouvez configurer dans votre fichier `.env` :
 
-Si vous souhaitez exécuter les services localement pour le développement :
+| Variable                               | Description                                                                                              | Exemple                                                        |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `OPENAI_API_KEY`                       | **Requis.** Votre clé d'API pour OpenAI.                                                                 | `sk-...`                                                       |
+| `AGENT_MODEL_NAME`                     | Le modèle de langage à utiliser pour l'agent.                                                            | `gpt-4.1`                                                      |
+| `DATA_INCLUSION_API_KEY`               | Clé d'API pour accéder aux endpoints authentifiés de Data Inclusion.                                     | `di_api_...`                                                   |
+| `DATABASE_URL`                         | URL de connexion à la base de données PostgreSQL. La valeur par défaut est correcte pour Docker Compose. | `postgresql+asyncpg://user:password@postgres:5432/datainclusion` |
+| `CHAINLIT_AUTH_SECRET`                 | Clé secrète pour signer les jetons d'authentification de Chainlit. **À changer pour la production.**      | `un_secret_complexe_et_aleatoire`                              |
+| `AGENT_PORT`                           | Port sur lequel l'interface de chat et l'API de l'agent sont exposées.                                   | `8001`                                                         |
+| `MCP_PORT`                             | Port sur lequel le serveur d'outils MCP est exposé.                                                      | `8000`                                                         |
+| `MCP_SERVER_SECRET_KEY`                | Clé secrète pour sécuriser le serveur MCP avec des jetons Bearer. Si vide, l'authentification est désactivée. | `un_autre_secret_complexe`                                     |
+| `OPENAI_API_BASE_URL`                  | Optionnel. URL pour utiliser une API compatible OpenAI (ex: Ollama, vLLM).                                 | `http://host.docker.internal:11434/v1`                         |
 
-1. **Installez les dépendances :**
+## ⚖️ Licence
 
-    ```bash
-    pip install uv  # Installer le gestionnaire de paquets rapide
-    uv pip install -r pyproject.toml
-    ```
-
-2. **Configurez votre fichier `.env`.**
-
-3. **Lancez le serveur MCP :**
-    Dans un premier terminal :
-
-    ```bash
-    python -m src.mcp_server.server
-    ```
-
-    Il tournera par défaut sur `http://localhost:8000`.
-
-4. **Lancez l'agent et l'UI :**
-    Dans un second terminal, assurez-vous que `MCP_SERVER_URL` dans votre `.env` pointe vers `http://localhost:8000/mcp` et que `AGENT_PORT` est différent (ex: `8001`).
-
-    ```bash
-    # Pour le mode développement avec rechargement automatique
-    python main.py
-    ```
-
-## 📜 Licence
-
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+Ce projet est distribué sous la licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.

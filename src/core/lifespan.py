@@ -8,14 +8,13 @@ et la finalisation de l'application FastAPI avec l'agent IA.
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from pathlib import Path
 from fastapi import FastAPI
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 
 # Imports locaux
 from .config import settings
 from ..agent.agent import create_inclusion_agent
-from ..ui.db_init import initialize_database
+from ..db.session import initialize_database
 
 # Configuration du logging
 logger = logging.getLogger("datainclusion.agent")
@@ -26,18 +25,10 @@ def setup_environment():
     Configure l'environnement d'exécution de l'application.
 
     Cette fonction :
-    - Crée les répertoires nécessaires
     - Affiche les avertissements de configuration
     - Valide les paramètres critiques
     """
     logger.info("🔧 Configuration de l'environnement...")
-
-    # Créer les répertoires nécessaires
-    directories = ["logs", "feedback_data", "exports", "static"]
-
-    for directory in directories:
-        Path(directory).mkdir(exist_ok=True)
-        logger.info(f"📁 Répertoire créé/vérifié: {directory}")
 
     # Avertissements pour la configuration
     if settings.agent.SECRET_KEY == "your-secret-key-here-change-in-production":
