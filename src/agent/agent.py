@@ -11,17 +11,23 @@ from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from src.core.config import settings
+from src.core.profiles import AgentProfile
 
 
-def create_inclusion_agent(mcp_server: MCPServerStreamableHTTP) -> Agent:
+def create_agent_from_profile(profile: AgentProfile) -> Agent:
     """
-    Crée et configure l'agent IA spécialisé dans l'inclusion sociale en France.
+    Crée et configure un agent IA à partir d'un profil donné.
+
+    Cette factory utilise un objet `AgentProfile` pour configurer entièrement
+    un agent, y compris son modèle, son prompt système et sa connexion au
+    serveur MCP. Elle est générique et peut créer n'importe quel agent
+    défini dans `src.core.profiles`.
 
     Args:
-        mcp_server: Instance du serveur MCP pour accéder aux données d'inclusion
+        profile: Le profil d'agent à utiliser pour la configuration.
 
     Returns:
-        Agent configuré pour répondre aux questions sur l'inclusion sociale
+        Un agent PydanticAI configuré et prêt à l'emploi.
     """
 
     # Configuration du provider OpenAI avec support des URLs personnalisées
@@ -47,18 +53,13 @@ def create_inclusion_agent(mcp_server: MCPServerStreamableHTTP) -> Agent:
         # Utiliser le comportement par défaut sans provider personnalisé
         model = OpenAIModel(model_name=settings.agent.AGENT_MODEL_NAME)
 
+    mcp_server = MCPServerStreamableHTTP(profile.mcp_server_url)
+
     return Agent(
         # Modèle OpenAI qui supporte mieux les schémas JSON complexes
         model=model,
         # Prompt système définissant le rôle et les instructions de l'agent
-        system_prompt=(
-            "Tu es un assistant expert de l'inclusion sociale en France. "
-            "Utilise les outils disponibles pour répondre aux questions sur les "
-            "structures et services d'aide. Sois précis et factuel. "
-            "Ton rôle est d'aider les utilisateurs à trouver des informations "
-            "sur les services d'inclusion, les structures d'aide, et les "
-            "ressources disponibles sur le territoire français."
-        ),
+        system_prompt=profile.system_prompt,
         # Configuration des serveurs MCP pour accéder aux données
         mcp_servers=[mcp_server],
     )

@@ -1,37 +1,23 @@
 import chainlit as cl
-from chainlit import Starter
 from src.ui.streaming import process_agent_modern_with_history
 from src.ui import data_layer
-from src.agent.agent import create_inclusion_agent
+from src.agent.agent import create_agent_from_profile
 from src.core.config import settings
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 from typing import Optional
 from chainlit.types import ThreadDict
+from src.core.profiles import AGENT_PROFILES
 
 
-@cl.set_starters
-async def set_starters(user: Optional[cl.User]):
+@cl.set_chat_profiles
+async def chat_profile(user: Optional[cl.User]):
     return [
-        cl.Starter(
-            label="Rechercher des services",
-            message="Je cherche des services d'aide alimentaire d'urgence à Paris 18ème.",
-            icon="/public/icons/search.svg",
-        ),
-        cl.Starter(
-            label="Comprendre les structures",
-            message="Quels sont les différents types de structures d'aide disponibles en France ?",
-            icon="/public/icons/help-circle.svg",
-        ),
-        cl.Starter(
-            label="Explorer les données",
-            message="Liste-moi tous les services disponibles près de Bordeaux.",
-            icon="/public/icons/list.svg",
-        ),
-        cl.Starter(
-            label="Découvrir les typologies",
-            message="Donne-moi la liste des différentes typologies de services.",
-            icon="/public/icons/info.svg",
-        ),
+        cl.ChatProfile(
+            name=profile.name,
+            markdown_description=profile.description,
+            icon=profile.icon,
+        )
+        for profile in AGENT_PROFILES.values()
     ]
 
 
@@ -59,20 +45,31 @@ async def auth_callback(username: str, password: str) -> Optional[cl.User]:
 @cl.on_chat_start
 async def on_chat_start():
     """
-    Fonction appelée au démarrage d'une nouvelle session de chat.
-    Initialise l'agent avec le serveur MCP et l'historique de session.
+    Initialise la session de chat en créant un agent basé sur le profil sélectionné.
     """
     try:
-        # Initialisation du serveur MCP
-        mcp_server = MCPServerStreamableHTTP(settings.agent.MCP_SERVER_URL)
+        # Récupère le nom du profil de chat sélectionné par l'utilisateur.
+        profile_name = cl.user_session.get("chat_profile")
 
-        # Création de l'agent avec le serveur MCP
-        agent = create_inclusion_agent(mcp_server)
+        # Trouve le profil correspondant dans le dictionnaire par son nom.
+        if profile_name:
+            profile = next((p for p in AGENT_PROFILES.values() if p.name == profile_name), None)
+        else:
+            # Si aucun profil n'est sélectionné, utilise le profil par défaut.
+            profile = AGENT_PROFILES.get("social_agent")
 
-        # Stocker l'agent dans la session utilisateur
+        # Si aucun profil correspondant n'est trouvé, lève une exception.
+        if not profile:
+            raise ValueError(f"Profil de chat '{profile_name}' non trouvé.")
+
+        # Crée une instance de l'agent en utilisant la factory et le profil chargé.
+        agent = create_agent_from_profile(profile)
+
+        # Stocke l'agent et l'ID du profil dans la session pour un accès ultérieur.
         cl.user_session.set("agent", agent)
+        cl.user_session.set("selected_profile_id", profile.id)
 
-        # Initialiser l'historique des messages vide
+        # Initialise un historique de messages vide pour cette nouvelle session.
         cl.user_session.set("message_history", [])
 
     except Exception as e:
@@ -85,31 +82,27 @@ async def on_chat_start():
 @cl.on_chat_resume
 async def on_chat_resume(thread: ThreadDict):
     """
-    Fonction appelée lorsqu'un utilisateur reprend une conversation précédente.
+    Gère la reprise d'une session de chat existante.
 
-    Cette fonction est automatiquement déclenchée par Chainlit quand :
-    - L'authentification est activée
-    - La persistance des données est configurée
-    - L'utilisateur revient sur une conversation existante
-
-    Args:
-        thread: Dictionnaire contenant les informations du fil de discussion repris
+    Recrée l'agent pour assurer la cohérence de l'état et de la configuration.
     """
     print(f"Reprise du fil de discussion (thread) : {thread['id']}")
 
-    # Réinitialiser l'agent pour la session reprise
+    # TODO: Pour une reprise multi-profils complète, il faudra stocker l'ID du profil
+    # dans les métadonnées du thread (`thread['metadata']`) et le lire ici pour
+    # recréer l'agent avec le bon profil.
     try:
-        # Initialisation du serveur MCP
-        mcp_server = MCPServerStreamableHTTP(settings.agent.MCP_SERVER_URL)
+        # Pour l'instant, la reprise se fait systématiquement avec le profil par défaut.
+        profile = AGENT_PROFILES["social_agent"]
 
-        # Création de l'agent avec le serveur MCP
-        agent = create_inclusion_agent(mcp_server)
+        # Recrée l'agent pour la session reprise.
+        agent = create_agent_from_profile(profile)
 
-        # Stocker l'agent dans la session utilisateur
+        # Met à jour l'agent dans la session utilisateur.
         cl.user_session.set("agent", agent)
 
-        # Réinitialiser l'historique des messages (Chainlit gère la persistance des messages UI)
-        # L'historique Pydantic-AI est séparé de l'historique UI de Chainlit
+        # L'historique des messages de l'UI est géré par Chainlit.
+        # On réinitialise ici l'historique de l'agent Pydantic-AI pour cette session.
         cl.user_session.set("message_history", [])
 
     except Exception as e:

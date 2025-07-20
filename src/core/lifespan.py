@@ -13,7 +13,8 @@ from pydantic_ai.mcp import MCPServerStreamableHTTP
 
 # Imports locaux
 from .config import settings
-from ..agent.agent import create_inclusion_agent
+from src.agent.agent import create_agent_from_profile
+from src.core.profiles import AGENT_PROFILES
 from ..db.session import initialize_database
 
 # Configuration du logging
@@ -75,11 +76,9 @@ async def lifespan(app: FastAPI):
             f"L'application ne peut pas démarrer sans base de données: {e}"
         )
 
-    # Initialisation du serveur MCP
-    mcp_server = MCPServerStreamableHTTP(settings.agent.MCP_SERVER_URL)
-
-    # Création de l'agent avec le serveur MCP
-    agent = create_inclusion_agent(mcp_server)
+    # Création de l'agent avec le profil par défaut
+    profile = AGENT_PROFILES["social_agent"]
+    agent = create_agent_from_profile(profile)
 
     # Logique de connexion au MCP avec retry et backoff exponentiel
     max_retries = settings.agent.AGENT_MCP_CONNECTION_MAX_RETRIES
