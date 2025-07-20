@@ -21,6 +21,7 @@ dependencies = [
     "SQLAlchemy",
     "greenlet",
     "aiohttp",
+    "boto3"
 ]
 
 [project.optional-dependencies]

@@ -69,6 +69,13 @@ class AgentSettings(BaseSettings):
     # Configuration de la base de données
     DATABASE_URL: str = "postgresql+asyncpg://user:password@postgres:5432/datainclusion"
 
+    # Configuration S3 pour le stockage local (Localstack)
+    BUCKET_NAME: str = "datainclusion-elements"
+    APP_AWS_ACCESS_KEY: str = "test-key"
+    APP_AWS_SECRET_KEY: str = "test-secret"
+    APP_AWS_REGION: str = "eu-central-1"
+    DEV_AWS_ENDPOINT: str | None = None
+
 
 class MCPSettings(BaseSettings):
     """

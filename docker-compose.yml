@@ -50,6 +50,11 @@ services:
       - ENVIRONMENT=production
       # Secret JWT pour l'authentification Chainlit (requis quand l'authentification est activée)
       - CHAINLIT_AUTH_SECRET=${CHAINLIT_AUTH_SECRET}
+      # Configuration AWS pour Localstack S3
+      - AWS_ACCESS_KEY_ID=${APP_AWS_ACCESS_KEY}
+      - AWS_SECRET_ACCESS_KEY=${APP_AWS_SECRET_KEY}
+      - AWS_DEFAULT_REGION=${APP_AWS_REGION}
+      - AWS_ENDPOINT_URL=${DEV_AWS_ENDPOINT}
     networks:
       - datainclusion-net
     ports:
@@ -60,6 +65,8 @@ services:
       mcp_server:
         condition: service_healthy
       postgres:
+        condition: service_healthy
+      localstack:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
@@ -96,6 +103,29 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  # --- Service 4: Localstack (simulation S3) ---
+  # Ce service simule les services AWS S3 localement pour le développement et les tests.
+  localstack:
+    image: localstack/localstack:latest
+    container_name: datainclusion-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - AWS_DEFAULT_REGION=eu-central-1 # Optionnel: Définir la région par défaut si nécessaire
+    volumes:
+      - ./localstack-script.sh:/etc/localstack/init/ready.d/script.sh
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - datainclusion-net
+    healthcheck:
+      test: ["CMD", "awslocal", "s3", "ls"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
 
 # Définition des volumes persistants
 volumes:
