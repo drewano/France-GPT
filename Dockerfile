@@ -28,6 +28,7 @@ RUN uv pip install --system -r pyproject.toml
 
 # Étape 8: Copier le reste du code de l'application
 COPY src/ ./src/
+COPY public/ ./public/
 COPY main.py ./
 
 # Étape 8.5: Configurer le PYTHONPATH pour que Python trouve les modules src

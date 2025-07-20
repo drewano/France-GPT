@@ -1,4 +1,5 @@
 import chainlit as cl
+from chainlit import Starter
 from src.ui.streaming import process_agent_modern_with_history
 from src.ui import data_layer
 from src.agent.agent import create_inclusion_agent
@@ -6,6 +7,32 @@ from src.core.config import settings
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 from typing import Optional
 from chainlit.types import ThreadDict
+
+
+@cl.set_starters
+async def set_starters(user: Optional[cl.User]):
+    return [
+        cl.Starter(
+            label="Rechercher des services",
+            message="Je cherche des services d'aide alimentaire d'urgence à Paris 18ème.",
+            icon="/public/icons/search.svg",
+        ),
+        cl.Starter(
+            label="Comprendre les structures",
+            message="Quels sont les différents types de structures d'aide disponibles en France ?",
+            icon="/public/icons/help-circle.svg",
+        ),
+        cl.Starter(
+            label="Explorer les données",
+            message="Liste-moi tous les services disponibles près de Bordeaux.",
+            icon="/public/icons/list.svg",
+        ),
+        cl.Starter(
+            label="Découvrir les typologies",
+            message="Donne-moi la liste des différentes typologies de services.",
+            icon="/public/icons/info.svg",
+        ),
+    ]
 
 
 @cl.password_auth_callback
@@ -47,12 +74,6 @@ async def on_chat_start():
 
         # Initialiser l'historique des messages vide
         cl.user_session.set("message_history", [])
-
-        # Envoyer un message de bienvenue
-        await cl.Message(
-            content="👋 **Bienvenue !** Je suis votre assistant IA d'inclusion sociale. "
-            "Posez-moi vos questions sur les structures et services d'inclusion."
-        ).send()
 
     except Exception as e:
         await cl.Message(
