@@ -71,9 +71,9 @@ async def process_agent_with_perfect_streaming(
     try:
         logger.info(f"🚀 Démarrage du streaming parfait pour: {message[:50]}...")
 
-        # Message principal pour le streaming du texte de réponse
-        response_message = cl.Message(content="")
-        await response_message.send()
+        # Ne pas créer le message de réponse tout de suite
+        # Il sera créé seulement quand on commence à streamer du texte
+        response_message: Optional[cl.Message] = None
 
         # Dictionnaire pour tracker les outils en cours
         active_tool_steps: Dict[str, cl.Step] = {}
@@ -106,8 +106,13 @@ async def process_agent_with_perfect_streaming(
                             # Delta de texte - streaming en temps réel
                             elif isinstance(event, PartDeltaEvent):
                                 if isinstance(event.delta, TextPartDelta):
+                                    # Créer le message de réponse maintenant, quand on a du contenu
+                                    if response_message is None and event.delta.content_delta:
+                                        response_message = cl.Message(content="")
+                                        await response_message.send()
+                                    
                                     # Streamer chaque token vers Chainlit
-                                    if event.delta.content_delta:
+                                    if event.delta.content_delta and response_message:
                                         await response_message.stream_token(
                                             event.delta.content_delta
                                         )
@@ -179,12 +184,17 @@ async def process_agent_with_perfect_streaming(
                     logger.info("🏁 EndNode: Exécution terminée")
                     final_output = str(node.data.output)
 
+                    # Si pas encore de message de réponse créé, le créer maintenant
+                    if response_message is None:
+                        response_message = cl.Message(content=final_output)
+                        await response_message.send()
                     # Si pas encore de contenu dans le message (cas rare), l'ajouter
-                    if not response_message.content.strip():
+                    elif not response_message.content.strip():
                         await response_message.stream_token(final_output)
 
-        # Finaliser le message de réponse
-        await response_message.update()
+        # Finaliser le message de réponse s'il existe
+        if response_message is not None:
+            await response_message.update()
 
         # Récupérer l'historique complet (s'assurer que le result n'est pas None)
         if agent_run.result is not None:
