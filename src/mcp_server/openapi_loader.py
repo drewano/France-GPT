@@ -26,14 +26,15 @@ class OpenAPILoader:
 
     def __init__(self, logger: logging.Logger):
         """
-        Initialise le loader avec le logger.
+        Initialise le loader avec le logger et l'URL OpenAPI.
 
         Args:
             logger: Instance du logger pour enregistrer les messages
+            openapi_url: L'URL de la spécification OpenAPI à charger
         """
         self.logger = logger
 
-    async def load(self) -> Tuple[Dict, List[HTTPRoute]]:
+    async def load(self, openapi_url: str) -> Tuple[Dict, List[HTTPRoute]]:
         """
         Charge et pré-traite la spécification OpenAPI.
 
@@ -51,13 +52,13 @@ class OpenAPILoader:
             json.JSONDecodeError: Si la réponse n'est pas un JSON valide
         """
         self.logger.info(
-            f"Loading OpenAPI specification from URL: '{settings.mcp.OPENAPI_URL}'..."
+            f"Loading OpenAPI specification from URL: '{openapi_url}'..."
         )
 
         try:
             # === CHARGEMENT DE LA SPÉCIFICATION OPENAPI ===
             async with httpx.AsyncClient() as client:
-                response = await client.get(settings.mcp.OPENAPI_URL)
+                response = await client.get(openapi_url)
                 response.raise_for_status()  # Lève une exception si le statut n'est pas 2xx
                 openapi_spec = response.json()
 
@@ -81,14 +82,14 @@ class OpenAPILoader:
 
         except httpx.RequestError as e:
             self.logger.error(
-                f"Failed to fetch OpenAPI specification from '{settings.mcp.OPENAPI_URL}'."
+                f"Failed to fetch OpenAPI specification from '{openapi_url}'."
             )
             self.logger.error(f"Details: {e}")
             raise
 
         except json.JSONDecodeError as e:
             self.logger.error(
-                f"Invalid JSON in the response from '{settings.mcp.OPENAPI_URL}'."
+                f"Invalid JSON in the response from '{openapi_url}'."
             )
             self.logger.error(f"Details: {e}")
             raise

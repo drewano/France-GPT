@@ -43,7 +43,7 @@ services:
       # Port sur lequel l'interface Chainlit et l'API de l'agent seront accessibles
       - AGENT_PORT=8001
       # URL pour que l'agent puisse trouver le serveur MCP. 'mcp_server' est le nom du service.
-      - MCP_SERVER_URL=http://mcp_server:8000/mcp/
+      - MCP_GATEWAY_BASE_URL=http://mcp_server:8000/mcp/
       # URL de connexion à la base de données PostgreSQL
       - DATABASE_URL=postgresql+asyncpg://user:password@postgres:5432/datainclusion
       # Mode de fonctionnement pour la journalisation et les configurations

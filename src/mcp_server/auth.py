@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives import serialization
 from ..core.config import settings
 
 
-def setup_authentication(logger: logging.Logger) -> BearerAuthProvider | None:
+def setup_authentication(logger: logging.Logger, audience: str) -> BearerAuthProvider | None:
     """
     Configure l'authentification Bearer pour le serveur MCP.
 
@@ -24,6 +24,7 @@ def setup_authentication(logger: logging.Logger) -> BearerAuthProvider | None:
 
     Args:
         logger: Instance du logger pour enregistrer les messages
+        audience: The audience for the Bearer token.
 
     Returns:
         BearerAuthProvider | None: Le provider d'authentification ou None
@@ -31,7 +32,7 @@ def setup_authentication(logger: logging.Logger) -> BearerAuthProvider | None:
     logger.info("Configuring server authentication...")
 
     # Lecture de la clé secrète depuis la configuration
-    secret_key = settings.mcp.MCP_SERVER_SECRET_KEY
+    secret_key = settings.agent.SECRET_KEY
 
     if secret_key and secret_key.strip():
         logger.info("Secret key found - configuring Bearer Token authentication...")
@@ -54,7 +55,7 @@ def setup_authentication(logger: logging.Logger) -> BearerAuthProvider | None:
                 )
 
                 auth_provider = BearerAuthProvider(
-                    public_key=public_key_pem, audience="datainclusion-mcp-client"
+                    public_key=public_key_pem, audience=audience
                 )
             else:
                 # Utiliser la clé comme seed pour générer une paire de clés déterministe
@@ -63,19 +64,19 @@ def setup_authentication(logger: logging.Logger) -> BearerAuthProvider | None:
 
                 auth_provider = BearerAuthProvider(
                     public_key=key_pair.public_key,
-                    audience="datainclusion-mcp-client",
+                    audience=audience,
                 )
 
                 # Log du token de test (UNIQUEMENT pour le développement)
                 test_token = key_pair.create_token(
-                    audience="datainclusion-mcp-client",
+                    audience=audience,
                     subject="test-user",
                     expires_in_seconds=3600,
                 )
                 logger.info(f"🔑 Test Bearer Token (for development): {test_token}")
 
             logger.info("✓ Bearer Token authentication configured successfully")
-            logger.info("   - Audience: datainclusion-mcp-client")
+            logger.info(f"   - Audience: {audience}")
             logger.info("   - Server will require valid Bearer tokens for access")
             return auth_provider
 

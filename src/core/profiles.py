@@ -16,7 +16,7 @@ class AgentProfile(BaseModel):
     description: str
     icon: str
     system_prompt: str
-    mcp_server_url: str
+    mcp_service_name: str
 
 
 # Base de données centrale des profils d'agents disponibles dans l'application.
@@ -36,7 +36,7 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "sur les services d'inclusion, les structures d'aide, et les "
             "ressources disponibles sur le territoire français."
         ),
-        mcp_server_url=settings.agent.MCP_SERVER_URL,
+        mcp_service_name="datainclusion",
     ),
     "job_search_agent": AgentProfile(
         id="job_search_agent",
@@ -51,6 +51,6 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "d'accès numérique pour postuler en ligne, les services d'aide à la rédaction "
             "de CV, ou les formations. Sois encourageant, précis et factuel."
         ),
-        mcp_server_url=settings.agent.MCP_SERVER_URL,
+        mcp_service_name="datainclusion",
     ),
 }

@@ -53,7 +53,10 @@ def create_agent_from_profile(profile: AgentProfile) -> Agent:
         # Utiliser le comportement par défaut sans provider personnalisé
         model = OpenAIModel(model_name=settings.agent.AGENT_MODEL_NAME)
 
-    mcp_server = MCPServerStreamableHTTP(profile.mcp_server_url)
+    # Construire l'URL complète du sous-serveur MCP
+    mcp_url = f"{settings.agent.MCP_GATEWAY_BASE_URL.rstrip('/')}/{profile.mcp_service_name}/"
+
+    mcp_server = MCPServerStreamableHTTP(mcp_url)
 
     return Agent(
         # Modèle OpenAI qui supporte mieux les schémas JSON complexes

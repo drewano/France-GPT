@@ -9,7 +9,7 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from pydantic_ai.mcp import MCPServerStreamableHTTP
+import httpx # Import httpx
 
 # Imports locaux
 from .config import settings
@@ -76,10 +76,6 @@ async def lifespan(app: FastAPI):
             f"L'application ne peut pas démarrer sans base de données: {e}"
         )
 
-    # Création de l'agent avec le profil par défaut
-    profile = AGENT_PROFILES["social_agent"]
-    agent = create_agent_from_profile(profile)
-
     # Logique de connexion au MCP avec retry et backoff exponentiel
     max_retries = settings.agent.AGENT_MCP_CONNECTION_MAX_RETRIES
     base_delay = settings.agent.AGENT_MCP_CONNECTION_BASE_DELAY
@@ -87,18 +83,43 @@ async def lifespan(app: FastAPI):
 
     for attempt in range(max_retries):
         try:
-            async with agent.run_mcp_servers():
-                # Stocker l'instance de l'agent dans l'état de l'application
-                app.state.agent = agent
+            health_check_url = (
+                f"http://mcp_server:{settings.mcp_gateway.MCP_PORT}/health"
+            )
+            async with httpx.AsyncClient() as client:
+                response = await client.get(health_check_url)
+                response.raise_for_status()  # Lève une exception pour les codes d'état 4xx/5xx
 
-                logger.info("✅ Application initialisée avec succès")
+            logger.info("✅ MCP Gateway is healthy and reachable.")
 
-                # Application prête
-                yield
+            # Application prête
+            yield
 
-                # Code après yield s'exécute lors du shutdown
-                break
+            # Code après yield s'exécute lors du shutdown
+            break
 
+        except httpx.HTTPStatusError as e:
+            if attempt == max_retries - 1:
+                raise RuntimeError(
+                    f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e.response.status_code} - {e.response.text}"
+                )
+            delay = base_delay * (backoff_multiplier**attempt)
+            logger.warning(
+                f"Tentative {attempt + 1}/{max_retries} échouée (HTTP Status: {e.response.status_code}). "
+                f"Nouvelle tentative dans {delay:.2f}s..."
+            )
+            await asyncio.sleep(delay)
+        except httpx.RequestError as e:
+            if attempt == max_retries - 1:
+                raise RuntimeError(
+                    f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e}"
+                )
+            delay = base_delay * (backoff_multiplier**attempt)
+            logger.warning(
+                f"Tentative {attempt + 1}/{max_retries} échouée (Request Error: {e}). "
+                f"Nouvelle tentative dans {delay:.2f}s..."
+            )
+            await asyncio.sleep(delay)
         except Exception as e:
             if attempt == max_retries - 1:
                 # Dernière tentative échouée

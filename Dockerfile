@@ -46,8 +46,6 @@ ENV TRANSPORT=http
 ENV MCP_HOST=0.0.0.0
 ENV MCP_PORT=${PORT}
 ENV MCP_API_PATH=/mcp/
-ENV OPENAPI_URL=https://api.data.inclusion.beta.gouv.fr/api/openapi.json
-ENV MCP_SERVER_NAME=DataInclusionAPI
 
 # Étape 11: Définir la commande pour lancer le serveur
 # C'est la commande qui sera exécutée au démarrage du conteneur.

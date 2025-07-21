@@ -25,7 +25,11 @@ Variables d'environnement :
     ou depuis les variables d'environnement du système.
 """
 
+from typing import Optional, List
+import json
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseModel, ValidationError
 
 
 class AgentSettings(BaseSettings):
@@ -47,7 +51,7 @@ class AgentSettings(BaseSettings):
 
     # Configuration de connexion au serveur MCP
     # Utilise le nom du service Docker pour la communication inter-conteneurs
-    MCP_SERVER_URL: str = "http://mcp_server:8000/mcp/"
+    MCP_GATEWAY_BASE_URL: str = "http://mcp_server:8000/mcp/"
 
     # Port du serveur agent
     AGENT_PORT: int = 8001
@@ -77,7 +81,17 @@ class AgentSettings(BaseSettings):
     DEV_AWS_ENDPOINT: str | None = None
 
 
-class MCPSettings(BaseSettings):
+class MCPServiceConfig(BaseModel):
+    """
+    Configuration for a single MCP service.
+    """
+    name: str
+    openapi_url: str
+    api_key_env_var: str
+    tool_mappings_file: Optional[str] = None
+
+
+class MCPGatewaySettings(BaseSettings):
     """
     Configuration du serveur MCP basée sur Pydantic Settings.
 
@@ -85,18 +99,12 @@ class MCPSettings(BaseSettings):
     depuis le fichier .env et valide leur type.
     """
 
-    # Configuration de l'API OpenAPI
-    OPENAPI_URL: str = "https://api.data.inclusion.beta.gouv.fr/api/openapi.json"
-
     # Configuration du serveur MCP
     MCP_SERVER_NAME: str = "DataInclusionAPI"
     MCP_HOST: str = "0.0.0.0"
     MCP_PORT: int = 8000
     MCP_API_PATH: str = "/mcp/"
-
-    # Clés d'API et authentification
-    DATA_INCLUSION_API_KEY: str = ""
-    MCP_SERVER_SECRET_KEY: str | None = None
+    MCP_SERVICES_CONFIG: str = "[]"
 
 
 class AppSettings(BaseSettings):
@@ -109,7 +117,7 @@ class AppSettings(BaseSettings):
 
     # Configurations des composants
     agent: AgentSettings = AgentSettings()
-    mcp: MCPSettings = MCPSettings()
+    mcp_gateway: MCPGatewaySettings = MCPGatewaySettings()
 
     # Configuration Pydantic Settings
     model_config = SettingsConfigDict(
@@ -117,6 +125,21 @@ class AppSettings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",  # Ignore les variables d'environnement non définies
     )
+
+    @property
+    def mcp_services(self) -> List[MCPServiceConfig]:
+        """
+        Parses the MCP_SERVICES_CONFIG JSON string and returns a list of MCPServiceConfig objects.
+        Handles empty or malformed JSON.
+        """
+        try:
+            if self.mcp_gateway.MCP_SERVICES_CONFIG:
+                data = json.loads(self.mcp_gateway.MCP_SERVICES_CONFIG)
+                return [MCPServiceConfig(**service) for service in data]
+            return []
+        except (json.JSONDecodeError, ValidationError) as e:
+            print(f"Warning: Could not parse MCP_SERVICES_CONFIG: {e}")
+            return []
 
 
 # Instance globale de configuration
