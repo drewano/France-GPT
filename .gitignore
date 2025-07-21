@@ -84,3 +84,4 @@ db.sqlite3-journal
 .ipynb_checkpoints 
 repomix-output.xml
 .gemini
+prompt.xml

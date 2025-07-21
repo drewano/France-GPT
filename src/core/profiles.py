@@ -37,5 +37,20 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "ressources disponibles sur le territoire français."
         ),
         mcp_server_url=settings.agent.MCP_SERVER_URL,
+    ),
+    "job_search_agent": AgentProfile(
+        id="job_search_agent",
+        name="Agent Recherche d'Emploi",
+        description="Un conseiller expert pour trouver des structures d'aide à l'emploi.",
+        icon="/public/icons/agent-job-search.svg",
+        system_prompt=(
+            "Tu es un conseiller expert en recherche d'emploi en France. "
+            "Ton rôle est d'aider les utilisateurs à trouver des structures et des services "
+            "qui peuvent les accompagner dans leur parcours professionnel. Utilise les outils "
+            "à ta disposition pour identifier les ressources pertinentes, comme les points "
+            "d'accès numérique pour postuler en ligne, les services d'aide à la rédaction "
+            "de CV, ou les formations. Sois encourageant, précis et factuel."
+        ),
+        mcp_server_url=settings.agent.MCP_SERVER_URL,
     )
 }
