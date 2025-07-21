@@ -37,11 +37,8 @@ def get_data_layer():
     """
     storage_client = None
     if settings.agent.DEV_AWS_ENDPOINT:
-        storage_client = S3StorageClient(
-            bucket=settings.agent.BUCKET_NAME
-        )
+        storage_client = S3StorageClient(bucket=settings.agent.BUCKET_NAME)
 
     return SQLAlchemyDataLayer(
-        conninfo=settings.agent.DATABASE_URL,
-        storage_provider=storage_client
+        conninfo=settings.agent.DATABASE_URL, storage_provider=storage_client
     )

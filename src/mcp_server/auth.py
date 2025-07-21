@@ -8,6 +8,7 @@ for the MCP server, including Bearer token authentication.
 import logging
 from fastmcp.server.auth import BearerAuthProvider
 from fastmcp.server.auth.providers.bearer import RSAKeyPair
+from cryptography.hazmat.primitives import serialization
 
 from ..core.config import settings
 
@@ -36,13 +37,10 @@ def setup_authentication(logger: logging.Logger) -> BearerAuthProvider | None:
         logger.info("Secret key found - configuring Bearer Token authentication...")
         try:
             # Si la clé ressemble à une clé RSA privée PEM, l'utiliser directement
-            if (
-                secret_key.strip().startswith("-----BEGIN")
-                and "PRIVATE KEY" in secret_key
+            if secret_key.strip().startswith("-----BEGIN") and "PRIVATE KEY" in str(
+                secret_key
             ):
                 # Utiliser la clé privée pour créer une paire de clés
-                from cryptography.hazmat.primitives import serialization
-
                 private_key = serialization.load_pem_private_key(
                     secret_key.encode(), password=None
                 )

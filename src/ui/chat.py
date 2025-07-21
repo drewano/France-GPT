@@ -18,7 +18,9 @@ async def _setup_agent():
     profile_name = cl.user_session.get("chat_profile")
 
     if profile_name:
-        profile = next((p for p in AGENT_PROFILES.values() if p.name == profile_name), None)
+        profile = next(
+            (p for p in AGENT_PROFILES.values() if p.name == profile_name), None
+        )
     else:
         profile = AGENT_PROFILES.get("social_agent")
 
@@ -83,15 +85,19 @@ async def on_chat_resume(thread: ThreadDict):
     print(f"Reprise du fil de discussion (thread) : {thread['id']}")
 
     try:
-        await _setup_agent() # Call the new setup function
+        await _setup_agent()  # Call the new setup function
         reconstructed_history = []
         for step in thread["steps"]:
             step_type = step.get("type")
             step_output = step.get("output")
             if step_type == "user_message" and step_output:
-                reconstructed_history.append(ModelRequest(parts=[UserPromptPart(content=step_output)]))
+                reconstructed_history.append(
+                    ModelRequest(parts=[UserPromptPart(content=step_output)])
+                )
             elif step_type == "assistant_message" and step_output:
-                reconstructed_history.append(ModelResponse(parts=[TextPart(content=step_output)]))
+                reconstructed_history.append(
+                    ModelResponse(parts=[TextPart(content=step_output)])
+                )
 
         # L'historique des messages de l'UI est géré par Chainlit.
         # On réinitialise ici l'historique de l'agent Pydantic-AI pour cette session.

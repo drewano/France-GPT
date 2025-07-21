@@ -52,5 +52,5 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "de CV, ou les formations. Sois encourageant, précis et factuel."
         ),
         mcp_server_url=settings.agent.MCP_SERVER_URL,
-    )
+    ),
 }
