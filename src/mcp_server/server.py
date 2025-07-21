@@ -6,7 +6,6 @@ Il transforme automatiquement les endpoints OpenAPI en outils MCP.
 """
 
 import asyncio
-import logging
 from fastmcp import FastMCP
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
@@ -38,22 +37,25 @@ async def main():
             return
 
         # === 3. CRÉATION DE L'INSTANCE PRINCIPALE DE LA PASSERELLE MCP ===
-        logger.info(f"Creating MCP Gateway: {settings.mcp_gateway.MCP_SERVER_NAME}")
+        logger.info("Creating MCP Gateway: %s", settings.mcp_gateway.MCP_SERVER_NAME)
         gateway_server = FastMCP(name=settings.mcp_gateway.MCP_SERVER_NAME)
 
         # === 4. CRÉATION ET MONTAGE DES SERVEURS MCP POUR CHAQUE SERVICE ===
         for service_config in service_configs:
-            logger.info(f"Building and mounting MCP server for service: {service_config.name}")
+            logger.info("Building and mounting MCP server for service: %s", service_config.name)
             factory = MCPFactory(config=service_config, logger=logger)
             service_mcp_instance = await factory.build()
 
             # Monte le serveur du service sur la passerelle sans préfixe
             gateway_server.mount(service_mcp_instance)
-            logger.info(f"Mounted service '{service_config.name}' at the gateway root (no prefix).")
+            logger.info(
+                "Mounted service '%s' at the gateway root (no prefix).",
+                service_config.name
+            )
 
         # === 5. AJOUT D'UN ENDPOINT DE SANTÉ GLOBAL ===
         @gateway_server.custom_route("/health", methods=["GET"])
-        async def health_check(request: Request) -> PlainTextResponse:
+        async def health_check(_request: Request) -> PlainTextResponse:
             """A simple health check endpoint for the gateway."""
             return PlainTextResponse("OK", status_code=200)
         logger.info("Global health check endpoint (/health) added to gateway.")
@@ -64,7 +66,7 @@ async def main():
             f"http://{settings.mcp_gateway.MCP_HOST}:{settings.mcp_gateway.MCP_PORT}"
             f"{settings.mcp_gateway.MCP_API_PATH}"
         )
-        logger.info(f"Starting MCP Gateway on {server_url}")
+        logger.info("Starting MCP Gateway on %s", server_url)
         logger.info("Press Ctrl+C to stop the server")
 
         await gateway_server.run_async(
@@ -78,24 +80,16 @@ async def main():
         logger.info("Server stopped by user")
 
     except Exception as e:
-        logger.error(f"Unexpected error during MCP Gateway startup: {e}", exc_info=True)
+        logger.error("Unexpected error during MCP Gateway startup: %s", e, exc_info=True)
         logger.error("Please check your configuration and try again.")
 
     finally:
         # === 7. NETTOYAGE DES RESSOURCES ===
-        # Les clients HTTP des services montés sont fermés par leurs propres factories.
-        # Ici, nous nous assurons que toute ressource de la passerelle principale est nettoyée si nécessaire.
         if gateway_server:
-            # FastMCP gère généralement la fermeture de ses clients internes,
-            # mais si des ressources spécifiques à la passerelle étaient ouvertes, elles seraient fermées ici.
             logger.info("MCP Gateway cleanup completed.")
 
 
 if __name__ == "__main__":
-    """
-    Point d'entrée du script.
-    Lance la passerelle MCP avec gestion d'erreurs appropriée.
-    """
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
