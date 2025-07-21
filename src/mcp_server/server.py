@@ -47,9 +47,9 @@ async def main():
             factory = MCPFactory(config=service_config, logger=logger)
             service_mcp_instance = await factory.build()
 
-            # Monte le serveur du service sur la passerelle avec un préfixe
-            gateway_server.mount(service_mcp_instance, prefix=service_config.name)
-            logger.info(f"Mounted service '{service_config.name}' under prefix '/{service_config.name}'")
+            # Monte le serveur du service sur la passerelle sans préfixe
+            gateway_server.mount(service_mcp_instance)
+            logger.info(f"Mounted service '{service_config.name}' at the gateway root (no prefix).")
 
         # === 5. AJOUT D'UN ENDPOINT DE SANTÉ GLOBAL ===
         @gateway_server.custom_route("/health", methods=["GET"])
