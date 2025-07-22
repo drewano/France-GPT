@@ -29,7 +29,7 @@ services:
       retries: 3
       start_period: 20s
 
-  # --- Service 2: L'Agent IA et l'interface Gradio/FastAPI ---
+  # --- Service 2: L'Agent IA et l'interface Chainlit/FastAPI ---
   # C'est le service principal, qui fournit l'interface utilisateur et l'API de chat.
   agent:
     container_name: datainclusion-agent-ui
@@ -40,34 +40,97 @@ services:
     env_file:
       - .env
     environment:
-      # Port sur lequel l'interface Gradio et l'API de l'agent seront accessibles
+      # Port sur lequel l'interface Chainlit et l'API de l'agent seront accessibles
       - AGENT_PORT=8001
       # URL pour que l'agent puisse trouver le serveur MCP. 'mcp_server' est le nom du service.
-      - MCP_SERVER_URL=http://mcp_server:8000/mcp
+      - MCP_GATEWAY_BASE_URL=http://mcp_server:8000/mcp/
+      # URL de connexion à la base de données PostgreSQL
+      - DATABASE_URL=postgresql+asyncpg://user:password@postgres:5432/datainclusion
       # Mode de fonctionnement pour la journalisation et les configurations
       - ENVIRONMENT=production
+      # Secret JWT pour l'authentification Chainlit (requis quand l'authentification est activée)
+      - CHAINLIT_AUTH_SECRET=${CHAINLIT_AUTH_SECRET}
+      # Configuration AWS pour Localstack S3
+      - AWS_ACCESS_KEY_ID=${APP_AWS_ACCESS_KEY}
+      - AWS_SECRET_ACCESS_KEY=${APP_AWS_SECRET_KEY}
+      - AWS_DEFAULT_REGION=${APP_AWS_REGION}
+      - AWS_ENDPOINT_URL=${DEV_AWS_ENDPOINT}
     networks:
       - datainclusion-net
     ports:
-      # Expose le port 8001 pour accéder à l'interface Gradio via http://localhost:8001
+      # Expose le port 8001 pour accéder à l'interface Chainlit via http://localhost:8001
       - "8001:8001"
-    volumes:
-      # Persiste les données générées (logs, feedback, exports) sur la machine hôte
-      - ./logs:/app/logs
-      - ./feedback_data:/app/feedback_data
-      - ./exports:/app/exports
-    # S'assure que le serveur MCP est démarré et sain avant de lancer l'agent
+    # S'assure que le serveur MCP et la base de données sont démarrés et sains avant de lancer l'agent
     depends_on:
       mcp_server:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      # Vérifie que l'interface Gradio/FastAPI est bien démarrée
+      # Vérifie que l'interface Chainlit/FastAPI est bien démarrée
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  # --- Service 3: Base de données PostgreSQL ---
+  # Ce service héberge la base de données pour la persistance des conversations et utilisateurs.
+  postgres:
+    image: postgres:15-alpine
+    container_name: datainclusion-postgres-db
+    environment:
+      # Configuration de la base de données PostgreSQL pour le développement
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=datainclusion
+    volumes:
+      # Persistance des données de la base de données sur un volume Docker
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - datainclusion-net
+    ports:
+      # Expose le port PostgreSQL pour connexion locale si nécessaire
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      # Vérifie que PostgreSQL est prêt à accepter des connexions
+      test: ["CMD-SHELL", "pg_isready -U user -d datainclusion"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # --- Service 4: Localstack (simulation S3) ---
+  # Ce service simule les services AWS S3 localement pour le développement et les tests.
+  localstack:
+    image: localstack/localstack:latest
+    container_name: datainclusion-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - AWS_DEFAULT_REGION=eu-central-1 # Optionnel: Définir la région par défaut si nécessaire
+    volumes:
+      - ./localstack-script.sh:/etc/localstack/init/ready.d/script.sh
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - datainclusion-net
+    healthcheck:
+      test: ["CMD", "awslocal", "s3", "ls"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+# Définition des volumes persistants
+volumes:
+  postgres_data:
+    driver: local
 
 # Définition du réseau partagé pour permettre la communication entre les conteneurs
 networks:

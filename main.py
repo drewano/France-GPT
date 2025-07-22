@@ -4,11 +4,11 @@ Point d'entrée principal pour l'application Agent DataInclusion intégrée.
 
 Ce script orchestre l'assemblage et le lancement de l'application web combinée qui expose :
 - L'agent IA d'inclusion sociale via FastAPI (/api/*)
-- L'interface Gradio moderne (/chat/*)
+- L'interface Chainlit moderne (/chat/*)
 - Documentation interactive (/docs)
 - Health checks (/health)
 
-L'application utilise l'architecture FastAPI + Gradio pour offrir
+L'application utilise l'architecture FastAPI + Chainlit pour offrir
 une expérience utilisateur complète et une API programmatique.
 """
 
@@ -24,6 +24,15 @@ try:
     # Configuration du logging
     logger = setup_logging(name="datainclusion.agent")
 
+    def log_server_config(port: int):
+        """Log la configuration du serveur FastAPI."""
+        logger.info("📋 Configuration:")
+        logger.info("   - Host: 0.0.0.0")
+        logger.info(f"   - Port: {port}")
+        logger.info(f"   - Interface Chainlit: http://localhost:{port}/")
+        logger.info(f"   - Documentation: http://localhost:{port}/docs")
+        logger.info(f"   - Health Check: http://localhost:{port}/health")
+
     def run_app():
         """Lance l'application selon l'environnement configuré."""
         # Déterminer le mode d'exécution
@@ -32,67 +41,40 @@ try:
 
         if is_development:
             logger.info("🔧 Démarrage de l'application en mode DÉVELOPPEMENT")
-            logger.info("📋 Configuration:")
-            logger.info("   - Host: 0.0.0.0")
-            logger.info(f"   - Port: {settings.agent.AGENT_PORT}")
-            logger.info("   - Auto-reload: Activé")
-            logger.info(
-                f"   - Interface Gradio: http://localhost:{settings.agent.AGENT_PORT}/chat"
-            )
-            logger.info(
-                f"   - API Agent: http://localhost:{settings.agent.AGENT_PORT}/api"
-            )
-            logger.info(
-                f"   - Documentation: http://localhost:{settings.agent.AGENT_PORT}/docs"
-            )
-            logger.info(
-                f"   - Health Check: http://localhost:{settings.agent.AGENT_PORT}/health"
-            )
-
-            uvicorn.run(
-                "main:app",
-                host="0.0.0.0",
-                port=settings.agent.AGENT_PORT,
-                reload=True,
-                reload_dirs=["src", "static"],
-                reload_excludes=[
-                    "*.pyc",
-                    "__pycache__",
-                    "*.log",
-                    "feedback_data",
-                    "exports",
-                ],
-                log_level="info",
-                access_log=True,
-                use_colors=True,
-            )
         else:
             logger.info("🚀 Démarrage de l'application en mode PRODUCTION")
-            logger.info("📋 Configuration:")
-            logger.info("   - Host: 0.0.0.0")
-            logger.info(f"   - Port: {settings.agent.AGENT_PORT}")
-            logger.info(
-                f"   - Interface Gradio: http://localhost:{settings.agent.AGENT_PORT}/chat"
-            )
-            logger.info(
-                f"   - API Agent: http://localhost:{settings.agent.AGENT_PORT}/api"
-            )
-            logger.info(
-                f"   - Documentation: http://localhost:{settings.agent.AGENT_PORT}/docs"
-            )
-            logger.info(
-                f"   - Health Check: http://localhost:{settings.agent.AGENT_PORT}/health"
-            )
 
-            uvicorn.run(
-                app,
-                host="0.0.0.0",
-                port=settings.agent.AGENT_PORT,
-                log_level="info",
-                access_log=True,
-                reload=False,
-                workers=1,  # Gradio ne supporte pas bien les workers multiples
+        log_server_config(settings.agent.AGENT_PORT)
+
+        uvicorn_config = {
+            "host": "0.0.0.0",
+            "port": settings.agent.AGENT_PORT,
+            "log_level": "info",
+            "access_log": True,
+            "use_colors": True,
+        }
+
+        if is_development:
+            uvicorn_config.update(
+                {
+                    "reload": True,
+                    "reload_dirs": ["src"],
+                    "reload_excludes": [
+                        "*.pyc",
+                        "__pycache__",
+                        "*.log",
+                    ],
+                }
             )
+            uvicorn.run("main:app", **uvicorn_config)
+        else:
+            uvicorn_config.update(
+                {
+                    "reload": False,
+                    "workers": 1,  # Chainlit ne supporte pas bien les workers multiples
+                }
+            )
+            uvicorn.run(app, **uvicorn_config)
 
     # Instance de l'application entièrement configurée par la factory
     app = create_app()
@@ -100,7 +82,7 @@ try:
     if __name__ == "__main__":
         """
         Point d'entrée du script.
-        
+
         Variables d'environnement supportées :
         - ENVIRONMENT : "production" ou "development" (défaut: production)
         - AGENT_PORT : Port d'écoute (défaut: 8001)
@@ -119,11 +101,6 @@ try:
             print(f"Failed to start server: {e}")
             sys.exit(1)
 
-except ImportError as e:
-    print(f"❌ Erreur d'importation: {e}")
-    print("💡 Assurez-vous que toutes les dépendances sont installées:")
-    print("   uv pip install --system -r pyproject.toml")
-    sys.exit(1)
 except Exception as e:
     print(f"❌ Erreur inattendue: {e}")
     sys.exit(1)

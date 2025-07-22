@@ -28,7 +28,11 @@ RUN uv pip install --system -r pyproject.toml
 
 # Étape 8: Copier le reste du code de l'application
 COPY src/ ./src/
+COPY public/ ./public/
 COPY main.py ./
+
+# Étape 8.5: Configurer le PYTHONPATH pour que Python trouve les modules src
+ENV PYTHONPATH="/app:$PYTHONPATH"
 
 # Étape 9: Exposer le port sur lequel l'application va écouter
 # Le conteneur rendra ce port disponible pour être mappé sur l'hôte.
@@ -41,9 +45,7 @@ EXPOSE ${PORT}
 ENV TRANSPORT=http
 ENV MCP_HOST=0.0.0.0
 ENV MCP_PORT=${PORT}
-ENV MCP_API_PATH=/mcp
-ENV OPENAPI_URL=https://api.data.inclusion.beta.gouv.fr/api/openapi.json
-ENV MCP_SERVER_NAME=DataInclusionAPI
+ENV MCP_API_PATH=/mcp/
 
 # Étape 11: Définir la commande pour lancer le serveur
 # C'est la commande qui sera exécutée au démarrage du conteneur.

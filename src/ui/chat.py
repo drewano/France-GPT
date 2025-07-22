@@ -1,132 +1,164 @@
 """
-Interface de chat Gradio pour l'agent IA d'inclusion sociale.
-
-Ce module contient l'interface utilisateur Gradio pour interagir avec l'agent IA.
-Il est responsable de créer et monter l'interface sur l'application FastAPI.
+Module for handling chat interactions and agent management in the Chainlit UI.
 """
 
-import logging
-from typing import List, Dict, AsyncGenerator
-import gradio as gr
-from fastapi import FastAPI
+from typing import Optional
+import chainlit as cl
 
-# Imports locaux
-from .agent_streaming import process_agent_stream
+from chainlit.types import ThreadDict
+from pydantic_ai.messages import ModelRequest, ModelResponse, UserPromptPart, TextPart
 
-# Configuration du logging
-logger = logging.getLogger("datainclusion.agent")
+from src.ui.streaming import process_agent_modern_with_history
+from src.agent.agent import create_agent_from_profile
+from src.core.profiles import AGENT_PROFILES
+from src.ui import data_layer
 
 
-def create_complete_interface(app: FastAPI):
+async def _setup_agent():
     """
-    Crée l'interface Gradio complète avec streaming et affichage des appels aux outils MCP.
-
-    Args:
-        app: Instance de l'application FastAPI contenant l'agent dans son état
+    Fonction d'assistance pour configurer l'agent basé sur le profil sélectionné.
+    Déplace la logique de sélection de profil et de création d'agent ici.
     """
+    profile_name = cl.user_session.get("chat_profile")
 
-    async def chat_stream(
-        message: str, history: List[Dict[str, str]], request: gr.Request
-    ) -> AsyncGenerator[List[gr.ChatMessage], None]:
-        """
-        Fonction de streaming pour l'interface de chat avec affichage des appels aux outils MCP.
+    if profile_name:
+        profile = next(
+            (p for p in AGENT_PROFILES.values() if p.name == profile_name), None
+        )
+    else:
+        profile = AGENT_PROFILES.get("social_agent")
 
-        Utilise l'API d'itération avancée de Pydantic AI (agent.iter) pour capturer
-        et afficher chaque étape du processus de l'agent.
+    if not profile:
+        raise ValueError(f"Profil de chat '{profile_name}' non trouvé.")
 
-        Args:
-            message: Message de l'utilisateur
-            history: Historique des messages
-            request: Objet Request de Gradio (non utilisé pour l'accès à l'agent)
+    agent = create_agent_from_profile(profile)
+    cl.user_session.set("agent", agent)
+    cl.user_session.set("selected_profile_id", profile.id)
 
-        Yields:
-            Listes de ChatMessage formatées incluant les détails des appels aux outils MCP
-        """
-        if not message or not message.strip():
-            yield [
-                gr.ChatMessage(
-                    role="assistant", content="⚠️ Veuillez entrer un message valide."
-                )
-            ]
-            return
 
-        # Récupérer l'agent depuis l'état de l'application
-        agent = getattr(app.state, "agent", None)
-        if agent is None:
-            yield [
-                gr.ChatMessage(
-                    role="assistant", content="❌ Erreur: Agent non initialisé"
-                )
-            ]
-            return
-
-        # Déléguer le streaming à la fonction dédiée
-        async for messages in process_agent_stream(agent, message, history):
-            yield messages
-
-    # Exemples de conversation
-    examples = [
-        "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
-        "Trouve des structures d'aide près de 75001 Paris",
-        "Quels services d'insertion professionnelle à Lyon ?",
-        "Aide au logement d'urgence à Marseille",
-        "Services pour personnes handicapées à Lille",
-        "Comment obtenir une aide alimentaire ?",
-        "Structures d'accueil pour familles monoparentales",
+@cl.set_chat_profiles
+async def chat_profile(user: Optional[cl.User]):
+    """
+    Sets up chat profiles for the Chainlit application.
+    The 'user' argument is currently unused but kept for Chainlit's API compatibility.
+    """
+    return [
+        cl.ChatProfile(
+            name=profile.name,
+            markdown_description=profile.description,
+            icon=profile.icon,
+        )
+        for profile in AGENT_PROFILES.values()
     ]
 
-    # Créer l'interface ChatInterface
-    chat_interface = gr.ChatInterface(
-        fn=chat_stream,
-        type="messages",
-        title="🤖 Agent IA d'Inclusion Sociale",
-        description="Assistant intelligent spécialisé dans l'inclusion sociale en France - Affichage des appels aux outils MCP",
-        examples=examples,
-        cache_examples=False,
-        chatbot=gr.Chatbot(
-            label="Assistant IA",
-            height=1100,
-            show_copy_button=True,
-            type="messages",
-            avatar_images=(
-                "https://em-content.zobj.net/source/twitter/376/bust-in-silhouette_1f464.png",
-                "https://em-content.zobj.net/source/twitter/376/robot-face_1f916.png",
-            ),
-            placeholder="Bienvenue ! Posez votre question sur l'inclusion sociale...",
-        ),
-        textbox=gr.Textbox(
-            placeholder="Ex: Aide au logement près de 75001 Paris",
-            lines=1,
-            max_lines=3,
-            show_label=False,
-        ),
-    )
 
-    return chat_interface
-
-
-def mount_gradio_interface(app: FastAPI) -> FastAPI:
+@cl.password_auth_callback
+async def auth_callback(username: str, password: str) -> Optional[cl.User]:
     """
-    Monte l'interface Gradio sur l'application FastAPI.
-
-    Cette fonction centralise toute la logique de montage de l'interface Gradio,
-    favorisant le découplage entre la logique de l'application et l'interface utilisateur.
+    Fonction d'authentification par mot de passe pour Chainlit.
 
     Args:
-        app: Instance de l'application FastAPI sur laquelle monter l'interface
+        username: Le nom d'utilisateur fourni
+        password: Le mot de passe fourni
 
     Returns:
-        Instance FastAPI avec l'interface Gradio montée
+        Un objet cl.User si l'authentification réussit, None sinon
     """
+    # Pour les besoins du développement, utiliser des credentials codés en dur
+    if (username, password) == ("admin", "admin"):
+        return cl.User(
+            identifier="admin", metadata={"role": "admin", "provider": "credentials"}
+        )
+    else:
+        return None
 
-    logger.info("🎨 Montage de l'interface Gradio sur l'application FastAPI...")
 
-    # Créer l'interface Gradio complète
-    gradio_interface = create_complete_interface(app)
+@cl.on_chat_start
+async def on_chat_start():
+    """
+    Initialise la session de chat en créant un agent basé sur le profil sélectionné.
+    """
+    await _setup_agent()
+    # Initialise un historique de messages vide pour cette nouvelle session.
+    cl.user_session.set("message_history", [])
 
-    # Monter l'interface sur l'application FastAPI
-    app = gr.mount_gradio_app(app=app, blocks=gradio_interface, path="/chat")
 
-    logger.info("✅ Interface Gradio montée avec succès sur /chat")
+@cl.on_chat_resume
+async def on_chat_resume(thread: ThreadDict):
+    """
+    Gère la reprise d'une session de chat existante.
 
-    return app
+    Recrée l'agent pour assurer la cohérence de l'état et de la configuration.
+    """
+    print(f"Reprise du fil de discussion (thread) : {thread['id']}")
+
+    try:
+        await _setup_agent()  # Call the new setup function
+        reconstructed_history = []
+        for step in thread["steps"]:
+            step_type = step.get("type")
+            step_output = step.get("output")
+            if step_type == "user_message" and step_output:
+                reconstructed_history.append(
+                    ModelRequest(parts=[UserPromptPart(content=step_output)])
+                )
+            elif step_type == "assistant_message" and step_output:
+                reconstructed_history.append(
+                    ModelResponse(parts=[TextPart(content=step_output)])
+                )
+
+        # L'historique des messages de l'UI est géré par Chainlit.
+        # On réinitialise ici l'historique de l'agent Pydantic-AI pour cette session.
+        cl.user_session.set("message_history", reconstructed_history)
+
+    except RuntimeError as e:
+        print(f"Erreur lors de la reprise de session : {str(e)}")
+
+
+@cl.on_message
+async def on_message(message: cl.Message):
+    """
+    Fonction appelée à chaque message reçu de l'utilisateur.
+    Utilise la nouvelle approche moderne avec gestion complète de l'historique.
+
+    Args:
+        message: Le message reçu de l'utilisateur
+    """
+    try:
+        # Récupérer l'agent depuis la session utilisateur
+        agent = cl.user_session.get("agent")
+
+        if agent is None:
+            await cl.Message(
+                content="❌ **Erreur de configuration**: L'agent IA n'est pas disponible. "
+                "Veuillez rafraîchir la page pour réinitialiser la session."
+            ).send()
+            return
+
+        # Récupérer l'historique existant depuis la session
+        message_history = cl.user_session.get("message_history", [])
+
+        # Traiter le message avec l'agent moderne et streaming parfait
+        updated_history = await process_agent_modern_with_history(
+            agent, message.content, message_history
+        )
+
+        # Sauvegarder l'historique mis à jour dans la session
+        cl.user_session.set("message_history", updated_history)
+
+    except RuntimeError as e:
+        # Gestion des erreurs générales
+        await cl.Message(
+            content=f"❌ **Erreur lors du traitement**: {str(e)}\n\n"
+            "Veuillez réessayer ou reformuler votre question."
+        ).send()
+
+
+@cl.on_chat_end
+def on_chat_end():
+    """
+    Fonction appelée à la fin d'une session de chat.
+    Nettoie les ressources si nécessaire.
+    """
+    # Note: Pour l'instant, aucun nettoyage spécifique n'est requis
+    # car pydantic-ai gère automatiquement les connexions MCP

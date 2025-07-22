@@ -8,13 +8,12 @@ et la finalisation de l'application FastAPI avec l'agent IA.
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from pathlib import Path
 from fastapi import FastAPI
-from pydantic_ai.mcp import MCPServerStreamableHTTP
+import httpx  # Import httpx
 
 # Imports locaux
 from .config import settings
-from ..agent.agent import create_inclusion_agent
+from ..db.session import initialize_database
 
 # Configuration du logging
 logger = logging.getLogger("datainclusion.agent")
@@ -25,18 +24,10 @@ def setup_environment():
     Configure l'environnement d'exécution de l'application.
 
     Cette fonction :
-    - Crée les répertoires nécessaires
     - Affiche les avertissements de configuration
     - Valide les paramètres critiques
     """
     logger.info("🔧 Configuration de l'environnement...")
-
-    # Créer les répertoires nécessaires
-    directories = ["logs", "feedback_data", "exports", "static"]
-
-    for directory in directories:
-        Path(directory).mkdir(exist_ok=True)
-        logger.info(f"📁 Répertoire créé/vérifié: {directory}")
 
     # Avertissements pour la configuration
     if settings.agent.SECRET_KEY == "your-secret-key-here-change-in-production":
@@ -58,7 +49,7 @@ def setup_environment():
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """
     Gestionnaire de cycle de vie pour l'application combinée.
 
@@ -66,18 +57,22 @@ async def lifespan(app: FastAPI):
     avec logique de retry et backoff exponentiel.
 
     Args:
-        app: Instance FastAPI
+        _app: Instance FastAPI (renamed to _app as it's not directly used)
     """
-    logger.info("🚀 Démarrage de l'application Gradio + FastAPI...")
+    logger.info("🚀 Démarrage de l'application Chainlit + FastAPI...")
 
     # Configuration de l'environnement
     setup_environment()
 
-    # Initialisation du serveur MCP
-    mcp_server = MCPServerStreamableHTTP(settings.agent.MCP_SERVER_URL)
-
-    # Création de l'agent avec le serveur MCP
-    agent = create_inclusion_agent(mcp_server)
+    # Initialisation de la base de données
+    try:
+        await initialize_database()
+        logger.info("✅ Base de données initialisée avec succès")
+    except Exception as e:
+        logger.critical("❌ Échec de l'initialisation de la base de données: %s", e)
+        raise RuntimeError(
+            f"L'application ne peut pas démarrer sans base de données: {e}"
+        ) from e
 
     # Logique de connexion au MCP avec retry et backoff exponentiel
     max_retries = settings.agent.AGENT_MCP_CONNECTION_MAX_RETRIES
@@ -86,31 +81,61 @@ async def lifespan(app: FastAPI):
 
     for attempt in range(max_retries):
         try:
-            async with agent.run_mcp_servers():
-                # Stocker l'instance de l'agent dans l'état de l'application
-                app.state.agent = agent
+            health_check_url = (
+                f"http://mcp_server:{settings.mcp_gateway.MCP_PORT}/health"
+            )
+            async with httpx.AsyncClient() as client:
+                response = await client.get(health_check_url)
+                response.raise_for_status()  # Lève une exception pour les codes d'état 4xx/5xx
 
-                logger.info("✅ Application initialisée avec succès")
+            logger.info("✅ MCP Gateway is healthy and reachable.")
 
-                # Application prête
-                yield
+            # Application prête
+            yield
 
-                # Code après yield s'exécute lors du shutdown
-                break
+            # Code après yield s'exécute lors du shutdown
+            break
 
+        except httpx.HTTPStatusError as e:
+            if attempt == max_retries - 1:
+                raise RuntimeError(
+                    f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e.response.status_code} - {e.response.text}"
+                ) from e
+            delay = base_delay * (backoff_multiplier**attempt)
+            logger.warning(
+                "Tentative %d/%d échouée (HTTP Status: %s). Nouvelle tentative dans %.2fs...",
+                attempt + 1,
+                max_retries,
+                e.response.status_code,
+                delay,
+            )
+            await asyncio.sleep(delay)
+        except httpx.RequestError as e:
+            if attempt == max_retries - 1:
+                raise RuntimeError(
+                    f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e}"
+                ) from e
+            delay = base_delay * (backoff_multiplier**attempt)
+            logger.warning(
+                "Tentative %d/%d échouée (Request Error: %s). Nouvelle tentative dans %.2fs...",
+                attempt + 1,
+                max_retries,
+                e,
+                delay,
+            )
+            await asyncio.sleep(delay)
         except Exception as e:
             if attempt == max_retries - 1:
                 # Dernière tentative échouée
-                raise RuntimeError(
-                    f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e}"
-                )
-
+                raise e
             # Calcul du délai avec backoff exponentiel
             delay = base_delay * (backoff_multiplier**attempt)
 
             logger.warning(
-                f"Tentative {attempt + 1}/{max_retries} échouée. "
-                f"Nouvelle tentative dans {delay:.2f}s..."
+                "Tentative %d/%d échouée. Nouvelle tentative dans %.2fs...",
+                attempt + 1,
+                max_retries,
+                delay,
             )
             await asyncio.sleep(delay)
 
