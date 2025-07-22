@@ -1,16 +1,19 @@
+"""
+Factory class for constructing and configuring the MCP server.
+"""
+
 import json
 import logging
 import os
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any
 
-import httpx
 from fastmcp import FastMCP
 from fastmcp.server.openapi import RouteMap, MCPType
 from fastmcp.server.auth import BearerAuthProvider
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
-from ..core.config import MCPServiceConfig, AppSettings # Import AppSettings for initial configuration
+from ..core.config import MCPServiceConfig
 from .utils import create_api_client
 from .openapi_loader import OpenAPILoader
 from .tool_transformer import ToolTransformer
@@ -66,7 +69,9 @@ class MCPFactory:
         """
         self.logger.info("Loading OpenAPI specification...")
         openapi_loader = OpenAPILoader(self.logger)
-        self.openapi_spec, self.http_routes = await openapi_loader.load(self.config.openapi_url)
+        self.openapi_spec, self.http_routes = await openapi_loader.load(
+            self.config.openapi_url
+        )
 
     def _determine_base_url(self) -> None:
         """
@@ -88,7 +93,7 @@ class MCPFactory:
             self.base_url = servers[0]["url"]
             self.logger.info(f"Using base URL from OpenAPI spec: {self.base_url}")
         else:
-            self.base_url = "http://localhost:8000" # Default if not found in spec
+            self.base_url = "http://localhost:8000"  # Default if not found in spec
             self.logger.warning("No servers section found in OpenAPI spec.")
             self.logger.warning(f"Using default base URL: {self.base_url}")
 
@@ -108,9 +113,7 @@ class MCPFactory:
             self.logger.warning(
                 f"API key environment variable '{self.config.api_key_env_var}' not set."
             )
-        self.api_client = create_api_client(
-            self.base_url, self.logger, api_key
-        )
+        self.api_client = create_api_client(self.base_url, self.logger, api_key)
 
     def _load_tool_mappings(self) -> Dict[str, Any]:
         """
@@ -120,19 +123,29 @@ class MCPFactory:
             Dict[str, Any]: A dictionary of custom tool mappings.
         """
         if not self.config.tool_mappings_file:
-            self.logger.info("No custom tool mappings file specified. Using empty mappings.")
+            self.logger.info(
+                "No custom tool mappings file specified. Using empty mappings."
+            )
             return {}
 
         try:
-            with open(self.config.tool_mappings_file, 'r') as f:
+            with open(self.config.tool_mappings_file, "r", encoding="utf-8") as f:
                 mappings = json.load(f)
-            self.logger.info(f"Loaded custom tool mappings from {self.config.tool_mappings_file}")
+            self.logger.info(
+                f"Loaded custom tool mappings from {self.config.tool_mappings_file}"
+            )
             return mappings
         except FileNotFoundError:
-            self.logger.warning(f"Custom tool mappings file not found: {self.config.tool_mappings_file}. Using empty mappings.")
+            self.logger.warning(
+                f"Custom tool mappings file not found: {self.config.tool_mappings_file}. "
+                "Using empty mappings."
+            )
             return {}
         except json.JSONDecodeError as e:
-            self.logger.error(f"Error decoding JSON from tool mappings file {self.config.tool_mappings_file}: {e}. Using empty mappings.")
+            self.logger.error(
+                f"Error decoding JSON from tool mappings file {self.config.tool_mappings_file}: {e}. "
+                "Using empty mappings."
+            )
             return {}
 
     def _create_mcp_server(self, auth_provider: BearerAuthProvider | None) -> FastMCP:
@@ -169,7 +182,7 @@ class MCPFactory:
         temp_transformer = ToolTransformer(
             mcp_server=None,  # type: ignore # Sera défini après création du serveur
             http_routes=self.http_routes,
-            custom_tool_names=self.tool_mappings, # Use loaded mappings
+            custom_tool_names=self.tool_mappings,  # Use loaded mappings
             op_id_map=self.op_id_to_mangled_name,
             logger=self.logger,
         )
@@ -181,12 +194,12 @@ class MCPFactory:
             name=self.config.name,
             route_maps=custom_route_maps,
             auth=auth_provider,
-            mcp_component_fn=lambda route, component: temp_transformer.discover_and_customize(route, component),
+            mcp_component_fn=temp_transformer.discover_and_customize,
         )
 
         # Ajout de l'endpoint de santé
         @mcp_server.custom_route("/health", methods=["GET"])
-        async def health_check(request: Request) -> PlainTextResponse:
+        async def health_check(_request: Request) -> PlainTextResponse:
             """A simple health check endpoint."""
             return PlainTextResponse("OK", status_code=200)
 
@@ -216,24 +229,11 @@ class MCPFactory:
         tool_transformer = ToolTransformer(
             mcp_server=mcp_server,
             http_routes=self.http_routes,
-            custom_tool_names=self.tool_mappings, # Use loaded mappings
+            custom_tool_names=self.tool_mappings,  # Use loaded mappings
             op_id_map=self.op_id_to_mangled_name,
             logger=self.logger,
         )
         await tool_transformer.transform_tools()
-
-    async def _inspect_components(self, mcp_server: FastMCP) -> None:
-        """
-        Inspects MCP components for debugging.
-
-        This method analyzes and displays information about the generated
-        MCP components for debugging and diagnostic purposes.
-
-        Args:
-            mcp_server: Instance of the MCP server.
-        """
-        # TODO: This function is not implemented.
-        pass
 
     async def build(self) -> FastMCP:
         """
@@ -270,9 +270,6 @@ class MCPFactory:
             # 7. Transform tools
             await self._transform_tools(mcp_server)
 
-            # 8. Inspect components (for debug)
-            await self._inspect_components(mcp_server)
-
             return mcp_server
 
         except Exception as e:
@@ -289,4 +286,3 @@ class MCPFactory:
             self.logger.info("Closing HTTP client...")
             await self.api_client.aclose()
             self.logger.info("HTTP client closed successfully")
-

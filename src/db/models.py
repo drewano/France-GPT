@@ -13,7 +13,7 @@ Fonctionnalités:
 """
 
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import Column, String, Boolean, Integer, Text, UUID, ARRAY, ForeignKey
+from sqlalchemy import Column, Boolean, Integer, Text, UUID, ARRAY, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 
 # Base déclarative pour tous les modèles

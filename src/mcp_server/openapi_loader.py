@@ -11,8 +11,6 @@ from typing import List, Dict, Tuple
 import httpx
 from fastmcp.utilities.openapi import parse_openapi_to_http_routes, HTTPRoute
 
-from ..core.config import settings
-
 
 class OpenAPILoader:
     """
@@ -51,9 +49,7 @@ class OpenAPILoader:
             httpx.RequestError: Si la récupération de la spécification échoue
             json.JSONDecodeError: Si la réponse n'est pas un JSON valide
         """
-        self.logger.info(
-            f"Loading OpenAPI specification from URL: '{openapi_url}'..."
-        )
+        self.logger.info(f"Loading OpenAPI specification from URL: '{openapi_url}'...")
 
         try:
             # === CHARGEMENT DE LA SPÉCIFICATION OPENAPI ===
@@ -88,9 +84,7 @@ class OpenAPILoader:
             raise
 
         except json.JSONDecodeError as e:
-            self.logger.error(
-                f"Invalid JSON in the response from '{openapi_url}'."
-            )
+            self.logger.error(f"Invalid JSON in the response from '{openapi_url}'.")
             self.logger.error(f"Details: {e}")
             raise
 

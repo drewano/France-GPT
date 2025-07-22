@@ -12,7 +12,7 @@ Architecture:
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 
 import chainlit as cl
 from pydantic_ai import Agent
@@ -69,7 +69,7 @@ async def process_agent_with_perfect_streaming(
         Liste mise à jour des messages pour l'historique
     """
     try:
-        logger.info(f"🚀 Démarrage du streaming parfait pour: {message[:50]}...")
+        logger.info("🚀 Démarrage du streaming parfait pour: %s...", message[:50])
 
         # Ne pas créer le message de réponse tout de suite
         # Il sera créé seulement quand on commence à streamer du texte
@@ -87,7 +87,7 @@ async def process_agent_with_perfect_streaming(
             async for node in agent_run:
                 # 1. UserPromptNode - Message utilisateur reçu
                 if Agent.is_user_prompt_node(node):
-                    logger.debug(f"📨 UserPromptNode: {node.user_prompt}")
+                    logger.debug("📨 UserPromptNode: %s", node.user_prompt)
                     # Pas d'affichage spécial nécessaire, le message utilisateur est déjà affiché
 
                 # 2. ModelRequestNode - Requête vers le LLM avec streaming des tokens
@@ -100,7 +100,9 @@ async def process_agent_with_perfect_streaming(
                             # Début d'une nouvelle partie de réponse
                             if isinstance(event, PartStartEvent):
                                 logger.debug(
-                                    f"🔄 Début partie {event.index}: {type(event.part).__name__}"
+                                    "🔄 Début partie %s: %s",
+                                    event.index,
+                                    type(event.part).__name__,
                                 )
 
                             # Delta de texte - streaming en temps réel
@@ -123,7 +125,7 @@ async def process_agent_with_perfect_streaming(
                                 elif isinstance(event.delta, ToolCallPartDelta):
                                     # Les appels d'outils sont traités dans CallToolsNode
                                     logger.debug(
-                                        f"🔧 Tool call delta: {event.delta.args_delta}"
+                                        "🔧 Tool call delta: %s", event.delta.args_delta
                                     )
 
                 # 3. CallToolsNode - Appels d'outils MCP avec affichage transparent
@@ -140,7 +142,7 @@ async def process_agent_with_perfect_streaming(
                                 tool_args = event.part.args
                                 tool_call_id = event.part.tool_call_id
 
-                                logger.info(f"🔧 Appel outil: {tool_name}")
+                                logger.info("🔧 Appel outil: %s", tool_name)
 
                                 # Créer un Step pour l'appel d'outil
                                 step = cl.Step(
@@ -154,9 +156,9 @@ async def process_agent_with_perfect_streaming(
                                 active_tool_steps[tool_call_id] = step
 
                                 # Configurer l'input du step
-                                await step.__aenter__()
-                                if tool_args:
-                                    step.input = tool_args
+                                with step:
+                                    if tool_args:
+                                        step.input = tool_args
 
                             # Résultat d'un outil MCP
                             elif isinstance(event, FunctionToolResultEvent):
@@ -179,7 +181,8 @@ async def process_agent_with_perfect_streaming(
                                     del active_tool_steps[tool_call_id]
 
                                     logger.info(
-                                        f"✅ Résultat outil reçu: {len(str(result_content))} chars"
+                                        "✅ Résultat outil reçu: %s chars",
+                                        len(str(result_content)),
                                     )
 
                 # 4. EndNode - Fin de l'exécution
@@ -208,12 +211,12 @@ async def process_agent_with_perfect_streaming(
             trimmed_messages = message_history or []
 
         logger.info(
-            f"✅ Streaming terminé - Historique: {len(trimmed_messages)} messages"
+            "✅ Streaming terminé - Historique: %s messages", len(trimmed_messages)
         )
         return trimmed_messages
 
     except Exception as e:
-        logger.error(f"❌ Erreur dans le streaming parfait: {e}", exc_info=True)
+        logger.error("❌ Erreur dans le streaming parfait: %s", e, exc_info=True)
 
         # Nettoyage des steps ouverts en cas d'erreur
         for step in active_tool_steps.values():
@@ -253,7 +256,7 @@ async def process_agent_fallback_simple(
         result = await agent.run(message, message_history=message_history or [])
 
         if result is None:
-            raise Exception("L'agent a retourné un résultat null")
+            raise ValueError("L'agent a retourné un résultat null")
 
         # Afficher la réponse
         response_content = str(result.output)
@@ -270,7 +273,7 @@ async def process_agent_fallback_simple(
             return message_history or []
 
     except Exception as e:
-        logger.error(f"❌ Erreur même en fallback: {e}")
+        logger.error("❌ Erreur même en fallback: %s", e)
 
         error_message = cl.Message(
             content=f"❌ **Erreur système:**\n\n{str(e)}\n\n"
@@ -307,7 +310,7 @@ async def process_agent_modern_with_history(
         )
 
     except Exception as e:
-        logger.warning(f"⚠️ Échec du streaming parfait, fallback: {e}")
+        logger.warning("⚠️ Échec du streaming parfait, fallback: %s", e)
 
         # En cas d'échec, utiliser le fallback simple
         return await process_agent_fallback_simple(agent, message, message_history)

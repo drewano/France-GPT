@@ -9,12 +9,10 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-import httpx # Import httpx
+import httpx  # Import httpx
 
 # Imports locaux
 from .config import settings
-from src.agent.agent import create_agent_from_profile
-from src.core.profiles import AGENT_PROFILES
 from ..db.session import initialize_database
 
 # Configuration du logging
@@ -51,7 +49,7 @@ def setup_environment():
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """
     Gestionnaire de cycle de vie pour l'application combinée.
 
@@ -59,7 +57,7 @@ async def lifespan(app: FastAPI):
     avec logique de retry et backoff exponentiel.
 
     Args:
-        app: Instance FastAPI
+        _app: Instance FastAPI (renamed to _app as it's not directly used)
     """
     logger.info("🚀 Démarrage de l'application Chainlit + FastAPI...")
 
@@ -71,10 +69,10 @@ async def lifespan(app: FastAPI):
         await initialize_database()
         logger.info("✅ Base de données initialisée avec succès")
     except Exception as e:
-        logger.critical(f"❌ Échec de l'initialisation de la base de données: {e}")
+        logger.critical("❌ Échec de l'initialisation de la base de données: %s", e)
         raise RuntimeError(
             f"L'application ne peut pas démarrer sans base de données: {e}"
-        )
+        ) from e
 
     # Logique de connexion au MCP avec retry et backoff exponentiel
     max_retries = settings.agent.AGENT_MCP_CONNECTION_MAX_RETRIES
@@ -102,37 +100,42 @@ async def lifespan(app: FastAPI):
             if attempt == max_retries - 1:
                 raise RuntimeError(
                     f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e.response.status_code} - {e.response.text}"
-                )
+                ) from e
             delay = base_delay * (backoff_multiplier**attempt)
             logger.warning(
-                f"Tentative {attempt + 1}/{max_retries} échouée (HTTP Status: {e.response.status_code}). "
-                f"Nouvelle tentative dans {delay:.2f}s..."
+                "Tentative %d/%d échouée (HTTP Status: %s). Nouvelle tentative dans %.2fs...",
+                attempt + 1,
+                max_retries,
+                e.response.status_code,
+                delay,
             )
             await asyncio.sleep(delay)
         except httpx.RequestError as e:
             if attempt == max_retries - 1:
                 raise RuntimeError(
                     f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e}"
-                )
+                ) from e
             delay = base_delay * (backoff_multiplier**attempt)
             logger.warning(
-                f"Tentative {attempt + 1}/{max_retries} échouée (Request Error: {e}). "
-                f"Nouvelle tentative dans {delay:.2f}s..."
+                "Tentative %d/%d échouée (Request Error: %s). Nouvelle tentative dans %.2fs...",
+                attempt + 1,
+                max_retries,
+                e,
+                delay,
             )
             await asyncio.sleep(delay)
         except Exception as e:
             if attempt == max_retries - 1:
                 # Dernière tentative échouée
-                raise RuntimeError(
-                    f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e}"
-                )
-
+                raise e
             # Calcul du délai avec backoff exponentiel
             delay = base_delay * (backoff_multiplier**attempt)
 
             logger.warning(
-                f"Tentative {attempt + 1}/{max_retries} échouée. "
-                f"Nouvelle tentative dans {delay:.2f}s..."
+                "Tentative %d/%d échouée. Nouvelle tentative dans %.2fs...",
+                attempt + 1,
+                max_retries,
+                delay,
             )
             await asyncio.sleep(delay)
 

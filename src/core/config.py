@@ -85,6 +85,7 @@ class MCPServiceConfig(BaseModel):
     """
     Configuration for a single MCP service.
     """
+
     name: str
     openapi_url: str
     api_key_env_var: str

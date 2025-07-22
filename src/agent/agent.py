@@ -54,7 +54,9 @@ def create_agent_from_profile(profile: AgentProfile) -> Agent:
         model = OpenAIModel(model_name=settings.agent.AGENT_MODEL_NAME)
 
     # Construire l'URL complète du sous-serveur MCP
-    mcp_url = f"{settings.agent.MCP_GATEWAY_BASE_URL.rstrip('/')}/{profile.mcp_service_name}/"
+    mcp_url = (
+        f"{settings.agent.MCP_GATEWAY_BASE_URL.rstrip('/')}/{profile.mcp_service_name}/"
+    )
 
     mcp_server = MCPServerStreamableHTTP(mcp_url)
 

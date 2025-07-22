@@ -1,52 +1,10 @@
+"""
+Utility functions for the MCP server.
+"""
+
 import logging
 import httpx
-from fastmcp import FastMCP
 from fastmcp.utilities.openapi import HTTPRoute
-
-
-async def inspect_mcp_components(mcp_instance: FastMCP, logger: logging.Logger):
-    """Inspecte et affiche les composants MCP (outils, ressources, templates)."""
-    logger.info("--- Inspecting MCP Components ---")
-    tools = await mcp_instance.get_tools()
-    resources = await mcp_instance.get_resources()
-    templates = await mcp_instance.get_resource_templates()
-
-    # Séparer les outils activés et désactivés
-    enabled_tools = [t for t in tools.values() if t.enabled and t.name is not None]
-    disabled_tools = [t for t in tools.values() if not t.enabled and t.name is not None]
-
-    logger.info(
-        f"{len(tools)} Total Tool(s) found ({len(enabled_tools)} enabled, "
-        f"{len(disabled_tools)} disabled):"
-    )
-    if enabled_tools:
-        logger.info(
-            f"  Enabled Tools: {', '.join(sorted([t.name for t in enabled_tools]))}"
-        )
-    else:
-        logger.info("  No enabled tools found.")
-
-    if disabled_tools:
-        logger.debug(
-            f"  Disabled Tools: {', '.join(sorted([t.name for t in disabled_tools]))}"
-        )
-
-    logger.info(f"{len(resources)} Resource(s) found:")
-    if resources:
-        logger.info(
-            f"  Names: {', '.join(sorted([r.name for r in resources.values() if r.name is not None]))}"
-        )
-    else:
-        logger.info("  No resources generated.")
-
-    logger.info(f"{len(templates)} Resource Template(s) found:")
-    if templates:
-        logger.info(
-            f"  Names: {', '.join(sorted([t.name for t in templates.values() if t.name is not None]))}"
-        )
-    else:
-        logger.info("  No resource templates generated.")
-    logger.info("--- End of MCP Components Inspection ---")
 
 
 def create_api_client(
@@ -150,7 +108,7 @@ async def find_route_by_id(
     return None
 
 
-def clean_json_schema(route, component, logger: logging.Logger):
+def clean_json_schema(component, logger: logging.Logger):
     """
     Simplifie les schémas d'un composant pour une meilleure compatibilité avec les LLMs stricts.
 
@@ -160,7 +118,6 @@ def clean_json_schema(route, component, logger: logging.Logger):
     compatibles avec les spécifications strictes des LLMs.
 
     Args:
-        route: La route HTTP OpenAPI associée à l'outil.
         component: Le composant FastMCP à personnaliser.
         logger: Instance du logger pour enregistrer les opérations de nettoyage.
 

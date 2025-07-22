@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from src.core.config import settings
 
 
 class AgentProfile(BaseModel):

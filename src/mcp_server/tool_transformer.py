@@ -80,7 +80,7 @@ class ToolTransformer:
             pour stocker le mapping découvert entre operation_ids et noms d'outils.
         """
         # Appel de la fonction de nettoyage des schémas
-        clean_json_schema(route, component, self.logger)
+        clean_json_schema(component, self.logger)
 
         # Découverte du nom de l'outil et stockage dans la map
         if (

@@ -5,7 +5,6 @@ Cette factory centralise la création et la configuration de l'instance FastAPI,
 en séparant la logique de l'application de celle du lancement du serveur.
 """
 
-from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI

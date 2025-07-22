@@ -13,7 +13,9 @@ from cryptography.hazmat.primitives import serialization
 from ..core.config import settings
 
 
-def setup_authentication(logger: logging.Logger, audience: str) -> BearerAuthProvider | None:
+def setup_authentication(
+    logger: logging.Logger, audience: str
+) -> BearerAuthProvider | None:
     """
     Configure l'authentification Bearer pour le serveur MCP.
 

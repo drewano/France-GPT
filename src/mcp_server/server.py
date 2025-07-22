@@ -33,7 +33,9 @@ async def main():
         # === 2. CHARGEMENT DES CONFIGURATIONS DE SERVICE ===
         service_configs = settings.mcp_services
         if not service_configs:
-            logger.warning("No MCP services configured in settings. Skipping server creation.")
+            logger.warning(
+                "No MCP services configured in settings. Skipping server creation."
+            )
             return
 
         # === 3. CRÉATION DE L'INSTANCE PRINCIPALE DE LA PASSERELLE MCP ===
@@ -42,7 +44,9 @@ async def main():
 
         # === 4. CRÉATION ET MONTAGE DES SERVEURS MCP POUR CHAQUE SERVICE ===
         for service_config in service_configs:
-            logger.info("Building and mounting MCP server for service: %s", service_config.name)
+            logger.info(
+                "Building and mounting MCP server for service: %s", service_config.name
+            )
             factory = MCPFactory(config=service_config, logger=logger)
             service_mcp_instance = await factory.build()
 
@@ -50,7 +54,7 @@ async def main():
             gateway_server.mount(service_mcp_instance)
             logger.info(
                 "Mounted service '%s' at the gateway root (no prefix).",
-                service_config.name
+                service_config.name,
             )
 
         # === 5. AJOUT D'UN ENDPOINT DE SANTÉ GLOBAL ===
@@ -58,8 +62,8 @@ async def main():
         async def health_check(_request: Request) -> PlainTextResponse:
             """A simple health check endpoint for the gateway."""
             return PlainTextResponse("OK", status_code=200)
-        logger.info("Global health check endpoint (/health) added to gateway.")
 
+        logger.info("Global health check endpoint (/health) added to gateway.")
 
         # === 6. LANCEMENT DE LA PASSERELLE MCP ===
         server_url = (
@@ -80,7 +84,9 @@ async def main():
         logger.info("Server stopped by user")
 
     except Exception as e:
-        logger.error("Unexpected error during MCP Gateway startup: %s", e, exc_info=True)
+        logger.error(
+            "Unexpected error during MCP Gateway startup: %s", e, exc_info=True
+        )
         logger.error("Please check your configuration and try again.")
 
     finally:

@@ -41,7 +41,8 @@ async def initialize_database():
         # Récupération de l'URL de la base de données depuis la configuration
         database_url = settings.agent.DATABASE_URL
         logger.info(
-            f"🔗 Connexion à la base de données : {database_url.split('@')[1] if '@' in database_url else 'URL masquée'}"
+            "🔗 Connexion à la base de données : %s",
+            database_url.split("@")[1] if "@" in database_url else "URL masquée",
         )
 
         # Création du moteur de base de données asynchrone
@@ -74,9 +75,7 @@ async def initialize_database():
         logger.info("🎯 Initialisation de la base de données terminée avec succès")
 
     except Exception as e:
-        logger.error(
-            f"❌ Erreur lors de l'initialisation de la base de données : {str(e)}"
-        )
+        logger.error("❌ Erreur lors de l'initialisation de la base de données : %s", e)
         logger.error(
             "🔍 Vérifiez que PostgreSQL est accessible et que les paramètres de connexion sont corrects"
         )

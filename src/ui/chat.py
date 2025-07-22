@@ -1,13 +1,17 @@
-import chainlit as cl
-from src.ui.streaming import process_agent_modern_with_history
-from src.ui import data_layer
-from src.agent.agent import create_agent_from_profile
-from src.core.config import settings
-from pydantic_ai.mcp import MCPServerStreamableHTTP
+"""
+Module for handling chat interactions and agent management in the Chainlit UI.
+"""
+
 from typing import Optional
+import chainlit as cl
+
 from chainlit.types import ThreadDict
-from src.core.profiles import AGENT_PROFILES
 from pydantic_ai.messages import ModelRequest, ModelResponse, UserPromptPart, TextPart
+
+from src.ui.streaming import process_agent_modern_with_history
+from src.agent.agent import create_agent_from_profile
+from src.core.profiles import AGENT_PROFILES
+from src.ui import data_layer
 
 
 async def _setup_agent():
@@ -34,6 +38,10 @@ async def _setup_agent():
 
 @cl.set_chat_profiles
 async def chat_profile(user: Optional[cl.User]):
+    """
+    Sets up chat profiles for the Chainlit application.
+    The 'user' argument is currently unused but kept for Chainlit's API compatibility.
+    """
     return [
         cl.ChatProfile(
             name=profile.name,
@@ -103,7 +111,7 @@ async def on_chat_resume(thread: ThreadDict):
         # On réinitialise ici l'historique de l'agent Pydantic-AI pour cette session.
         cl.user_session.set("message_history", reconstructed_history)
 
-    except Exception as e:
+    except RuntimeError as e:
         print(f"Erreur lors de la reprise de session : {str(e)}")
 
 
@@ -138,7 +146,7 @@ async def on_message(message: cl.Message):
         # Sauvegarder l'historique mis à jour dans la session
         cl.user_session.set("message_history", updated_history)
 
-    except Exception as e:
+    except RuntimeError as e:
         # Gestion des erreurs générales
         await cl.Message(
             content=f"❌ **Erreur lors du traitement**: {str(e)}\n\n"
@@ -154,4 +162,3 @@ def on_chat_end():
     """
     # Note: Pour l'instant, aucun nettoyage spécifique n'est requis
     # car pydantic-ai gère automatiquement les connexions MCP
-    pass
