@@ -17,7 +17,7 @@ from ..core.config import MCPServiceConfig
 from .utils import create_api_client
 from .openapi_loader import OpenAPILoader
 from .tool_transformer import ToolTransformer
-from .auth import setup_authentication
+# from .auth import setup_authentication # This line should be removed
 
 
 class MCPFactory:
@@ -44,18 +44,6 @@ class MCPFactory:
         self.base_url = None
         self.op_id_to_mangled_name = {}
         self.tool_mappings = {}
-
-    def _configure_auth(self) -> BearerAuthProvider | None:
-        """
-        Configures Bearer authentication for the MCP server.
-
-        This method delegates authentication configuration to the dedicated module.
-
-        Returns:
-            BearerAuthProvider | None: The authentication provider or None.
-        """
-        audience = f"{self.config.name.lower()}-mcp-client"
-        return setup_authentication(self.logger, audience)
 
     async def _load_openapi_spec(self) -> None:
         """
@@ -148,7 +136,7 @@ class MCPFactory:
             )
             return {}
 
-    def _create_mcp_server(self, auth_provider: BearerAuthProvider | None) -> FastMCP:
+    def _create_mcp_server(self) -> FastMCP:
         """
         Creates and configures the MCP server.
 
@@ -193,7 +181,7 @@ class MCPFactory:
             client=self.api_client,
             name=self.config.name,
             route_maps=custom_route_maps,
-            auth=auth_provider,
+            auth=None,
             mcp_component_fn=temp_transformer.discover_and_customize,
         )
 
@@ -262,10 +250,10 @@ class MCPFactory:
             self._create_api_client()
 
             # 5. Configure authentication
-            auth_provider = self._configure_auth()
+            # auth_provider = self._configure_auth()
 
             # 6. Create the MCP server
-            mcp_server = self._create_mcp_server(auth_provider)
+            mcp_server = self._create_mcp_server()
 
             # 7. Transform tools
             await self._transform_tools(mcp_server)

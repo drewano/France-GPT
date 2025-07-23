@@ -54,17 +54,26 @@ def create_agent_from_profile(profile: AgentProfile) -> Agent:
         model = OpenAIModel(model_name=settings.agent.AGENT_MODEL_NAME)
 
     # Construire l'URL complète du sous-serveur MCP
+    # Recherchez la configuration du service correspondant au profil
+    service_config = next(
+        (s for s in settings.mcp_services if s.name == profile.mcp_service_name),
+        None,
+    )
+
+    if not service_config:
+        raise ValueError(f"No MCP service configuration found for {profile.mcp_service_name}")
+
     mcp_url = (
-        f"{settings.agent.MCP_GATEWAY_BASE_URL.rstrip('/')}/{profile.mcp_service_name}/"
+        f"{settings.agent.MCP_SERVER_HOST_URL}:{service_config.port}"
+        f"{settings.mcp_server.MCP_API_PATH}"
     )
 
     mcp_server = MCPServerStreamableHTTP(mcp_url)
-
     return Agent(
         # Modèle OpenAI qui supporte mieux les schémas JSON complexes
         model=model,
         # Prompt système définissant le rôle et les instructions de l'agent
         system_prompt=profile.system_prompt,
         # Configuration des serveurs MCP pour accéder aux données
-        mcp_servers=[mcp_server],
+        mcp_servers=[mcp_server]
     )

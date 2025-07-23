@@ -23,14 +23,13 @@ async def main():
     plusieurs serveurs MCP configurés via `settings.mcp_services`.
     """
 
-    # === 1. CONFIGURATION DU LOGGING ===
-    logger = setup_logging(name="datainclusion.mcp-gateway")
-    logger.info("Starting MCP Gateway server setup...")
+    logger = setup_logging(name="datainclusion.mcp-servers")
+    logger.info("Starting MCP Servers setup...")
 
-    gateway_server = None  # Initialize gateway_server to None for finally block
+    server_tasks = []
+    active_servers = []  # To keep track of servers for cleanup
 
     try:
-        # === 2. CHARGEMENT DES CONFIGURATIONS DE SERVICE ===
         service_configs = settings.mcp_services
         if not service_configs:
             logger.warning(
@@ -38,61 +37,70 @@ async def main():
             )
             return
 
-        # === 3. CRÉATION DE L'INSTANCE PRINCIPALE DE LA PASSERELLE MCP ===
-        logger.info("Creating MCP Gateway: %s", settings.mcp_gateway.MCP_SERVER_NAME)
-        gateway_server = FastMCP(name=settings.mcp_gateway.MCP_SERVER_NAME)
-
-        # === 4. CRÉATION ET MONTAGE DES SERVEURS MCP POUR CHAQUE SERVICE ===
         for service_config in service_configs:
             logger.info(
-                "Building and mounting MCP server for service: %s", service_config.name
+                "Building and preparing MCP server for service: %s on port %d",
+                service_config.name,
+                service_config.port,
             )
             factory = MCPFactory(config=service_config, logger=logger)
             service_mcp_instance = await factory.build()
+            active_servers.append(service_mcp_instance)
 
-            # Monte le serveur du service sur la passerelle sans préfixe
-            gateway_server.mount(service_mcp_instance)
+            # Add a health check endpoint to each individual service MCP instance
+            @service_mcp_instance.custom_route("/health", methods=["GET"])
+            async def health_check(_request: Request) -> PlainTextResponse:
+                """A simple health check endpoint for the individual service."""
+                return PlainTextResponse("OK", status_code=200)
+
             logger.info(
-                "Mounted service '%s' at the gateway root (no prefix).",
+                "Health check endpoint (/health) added to service '%s'.",
                 service_config.name,
             )
 
-        # === 5. AJOUT D'UN ENDPOINT DE SANTÉ GLOBAL ===
-        @gateway_server.custom_route("/health", methods=["GET"])
-        async def health_check(_request: Request) -> PlainTextResponse:
-            """A simple health check endpoint for the gateway."""
-            return PlainTextResponse("OK", status_code=200)
+            server_url = (
+                f"http://{settings.mcp_server.MCP_HOST}:{service_config.port}"
+                f"{settings.mcp_server.MCP_API_PATH}"
+            )
+            logger.info("Scheduling MCP server '%s' to run on %s", service_config.name, server_url)
 
-        logger.info("Global health check endpoint (/health) added to gateway.")
+            task = asyncio.create_task(
+                service_mcp_instance.run_async(
+                    transport="http",
+                    host=settings.mcp_server.MCP_HOST,
+                    port=service_config.port,
+                    path=settings.mcp_server.MCP_API_PATH,
+                )
+            )
+            server_tasks.append(task)
 
-        # === 6. LANCEMENT DE LA PASSERELLE MCP ===
-        server_url = (
-            f"http://{settings.mcp_gateway.MCP_HOST}:{settings.mcp_gateway.MCP_PORT}"
-            f"{settings.mcp_gateway.MCP_API_PATH}"
-        )
-        logger.info("Starting MCP Gateway on %s", server_url)
-        logger.info("Press Ctrl+C to stop the server")
+        logger.info("All MCP servers scheduled. Starting concurrently...")
+        logger.info("Press Ctrl+C to stop all servers.")
 
-        await gateway_server.run_async(
-            transport="http",
-            host=settings.mcp_gateway.MCP_HOST,
-            port=settings.mcp_gateway.MCP_PORT,
-            path=settings.mcp_gateway.MCP_API_PATH,
-        )
+        await asyncio.gather(*server_tasks)
 
     except KeyboardInterrupt:
-        logger.info("Server stopped by user")
+        logger.info("Servers stopped by user.")
 
     except Exception as e:
         logger.error(
-            "Unexpected error during MCP Gateway startup: %s", e, exc_info=True
+            "Unexpected error during MCP Servers startup: %s", e, exc_info=True
         )
         logger.error("Please check your configuration and try again.")
 
     finally:
-        # === 7. NETTOYAGE DES RESSOURCES ===
-        if gateway_server:
-            logger.info("MCP Gateway cleanup completed.")
+        logger.info("Initiating MCP Servers cleanup...")
+        for server in active_servers:
+            if hasattr(server, 'client') and server.client:
+                # Attempt to close the client within the server instance if it exists
+                try:
+                    await server.client.aclose()
+                    logger.info("Closed HTTP client for server '%s'.", server.name)
+                except Exception as close_e:
+                    logger.warning(
+                        "Error closing HTTP client for server '%s': %s", server.name, close_e
+                    )
+        logger.info("MCP Servers cleanup completed.")
 
 
 if __name__ == "__main__":

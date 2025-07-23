@@ -51,7 +51,7 @@ class AgentSettings(BaseSettings):
 
     # Configuration de connexion au serveur MCP
     # Utilise le nom du service Docker pour la communication inter-conteneurs
-    MCP_GATEWAY_BASE_URL: str = "http://mcp_server:8000/mcp/"
+    MCP_SERVER_HOST_URL: str = "http://mcp_server"
 
     # Port du serveur agent
     AGENT_PORT: int = 8001
@@ -90,9 +90,10 @@ class MCPServiceConfig(BaseModel):
     openapi_url: str
     api_key_env_var: str
     tool_mappings_file: Optional[str] = None
+    port: int = 8000 # Default port
 
 
-class MCPGatewaySettings(BaseSettings):
+class MCPServerSettings(BaseSettings):
     """
     Configuration du serveur MCP basée sur Pydantic Settings.
 
@@ -101,7 +102,6 @@ class MCPGatewaySettings(BaseSettings):
     """
 
     # Configuration du serveur MCP
-    MCP_SERVER_NAME: str = "DataInclusionAPI"
     MCP_HOST: str = "0.0.0.0"
     MCP_PORT: int = 8000
     MCP_API_PATH: str = "/mcp/"
@@ -118,7 +118,7 @@ class AppSettings(BaseSettings):
 
     # Configurations des composants
     agent: AgentSettings = AgentSettings()
-    mcp_gateway: MCPGatewaySettings = MCPGatewaySettings()
+    mcp_server: MCPServerSettings = MCPServerSettings()
 
     # Configuration Pydantic Settings
     model_config = SettingsConfigDict(
@@ -134,8 +134,8 @@ class AppSettings(BaseSettings):
         Handles empty or malformed JSON.
         """
         try:
-            if self.mcp_gateway.MCP_SERVICES_CONFIG:
-                data = json.loads(self.mcp_gateway.MCP_SERVICES_CONFIG)
+            if self.mcp_server.MCP_SERVICES_CONFIG:
+                data = json.loads(self.mcp_server.MCP_SERVICES_CONFIG)
                 return [MCPServiceConfig(**service) for service in data]
             return []
         except (json.JSONDecodeError, ValidationError) as e:

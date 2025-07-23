@@ -53,8 +53,8 @@ async def lifespan(_app: FastAPI):
     """
     Gestionnaire de cycle de vie pour l'application combinée.
 
-    Gère la connexion au serveur MCP et l'initialisation de l'agent
-    avec logique de retry et backoff exponentiel.
+    Gère la connexion aux serveurs MCP et l'initialisation de la base de données
+    avec une logique de retry et backoff exponentiel.
 
     Args:
         _app: Instance FastAPI (renamed to _app as it's not directly used)
@@ -74,63 +74,45 @@ async def lifespan(_app: FastAPI):
             f"L'application ne peut pas démarrer sans base de données: {e}"
         ) from e
 
-    # Logique de connexion au MCP avec retry et backoff exponentiel
+    # Logique de connexion aux serveurs MCP avec retry et backoff exponentiel
     max_retries = settings.agent.AGENT_MCP_CONNECTION_MAX_RETRIES
     base_delay = settings.agent.AGENT_MCP_CONNECTION_BASE_DELAY
     backoff_multiplier = settings.agent.AGENT_MCP_CONNECTION_BACKOFF_MULTIPLIER
 
+    all_services_healthy = False
     for attempt in range(max_retries):
         try:
-            health_check_url = (
-                f"http://mcp_server:{settings.mcp_gateway.MCP_PORT}/health"
-            )
+            logger.info("🩺 Vérification de la santé des serveurs MCP...")
+            all_services_healthy = True
+            
+            service_configs = settings.mcp_services
+            if not service_configs:
+                logger.warning("Aucun service MCP n'est configuré. Démarrage sans vérification.")
+                break
+
             async with httpx.AsyncClient() as client:
-                response = await client.get(health_check_url)
-                response.raise_for_status()  # Lève une exception pour les codes d'état 4xx/5xx
-
-            logger.info("✅ MCP Gateway is healthy and reachable.")
-
-            # Application prête
-            yield
-
-            # Code après yield s'exécute lors du shutdown
+                for service_config in service_configs:
+                    health_check_url = (
+                        f"http://mcp_server:{service_config.port}/health"
+                    )
+                    logger.info(f"   - Test de '{service_config.name}' sur le port {service_config.port}...")
+                    response = await client.get(health_check_url)
+                    response.raise_for_status()
+                    logger.info(f"   ✓ Le service '{service_config.name}' est sain.")
+            
+            # Si toutes les vérifications ont réussi, on sort de la boucle
             break
 
-        except httpx.HTTPStatusError as e:
+        except (httpx.RequestError, httpx.HTTPStatusError) as e:
+            all_services_healthy = False
+            error_details = f"({e.response.status_code} - {e.response.text})" if isinstance(e, httpx.HTTPStatusError) else str(e)
+            logger.warning(f"❌ Un service MCP n'est pas encore prêt: {error_details}")
             if attempt == max_retries - 1:
                 raise RuntimeError(
-                    f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e.response.status_code} - {e.response.text}"
+                    f"Échec de la connexion aux serveurs MCP après {max_retries} tentatives."
                 ) from e
+                
             delay = base_delay * (backoff_multiplier**attempt)
-            logger.warning(
-                "Tentative %d/%d échouée (HTTP Status: %s). Nouvelle tentative dans %.2fs...",
-                attempt + 1,
-                max_retries,
-                e.response.status_code,
-                delay,
-            )
-            await asyncio.sleep(delay)
-        except httpx.RequestError as e:
-            if attempt == max_retries - 1:
-                raise RuntimeError(
-                    f"Échec de la connexion au serveur MCP après {max_retries} tentatives: {e}"
-                ) from e
-            delay = base_delay * (backoff_multiplier**attempt)
-            logger.warning(
-                "Tentative %d/%d échouée (Request Error: %s). Nouvelle tentative dans %.2fs...",
-                attempt + 1,
-                max_retries,
-                e,
-                delay,
-            )
-            await asyncio.sleep(delay)
-        except Exception as e:
-            if attempt == max_retries - 1:
-                # Dernière tentative échouée
-                raise e
-            # Calcul du délai avec backoff exponentiel
-            delay = base_delay * (backoff_multiplier**attempt)
-
             logger.warning(
                 "Tentative %d/%d échouée. Nouvelle tentative dans %.2fs...",
                 attempt + 1,
@@ -139,6 +121,13 @@ async def lifespan(_app: FastAPI):
             )
             await asyncio.sleep(delay)
 
-    # Nettoyage lors du shutdown
-    logger.info("🛑 Arrêt de l'application...")
-    logger.info("✅ Nettoyage terminé")
+    if all_services_healthy:
+        logger.info("✅ Tous les serveurs MCP sont sains et joignables.")
+        # L'application est prête
+        yield
+        # Le code après yield s'exécute lors du shutdown
+        logger.info("🛑 Arrêt de l'application...")
+        logger.info("✅ Nettoyage terminé")
+    else:
+        # Si on arrive ici, c'est que la boucle s'est terminée sans succès
+        logger.critical("❌ Impossible de démarrer : tous les services MCP ne sont pas disponibles.")
