@@ -12,12 +12,12 @@ from fastmcp.server.openapi import RouteMap, MCPType
 from fastmcp.server.auth import BearerAuthProvider
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
+import httpx # Add this import for httpx.AsyncClient
 
 from ..core.config import MCPServiceConfig
-from .utils import create_api_client
 from .openapi_loader import OpenAPILoader
 from .tool_transformer import ToolTransformer
-# from .auth import setup_authentication # This line should be removed
+from .auth import create_auth_handler # Import the new auth handler
 
 
 class MCPFactory:
@@ -58,7 +58,7 @@ class MCPFactory:
         self.logger.info("Loading OpenAPI specification...")
         openapi_loader = OpenAPILoader(self.logger)
         self.openapi_spec, self.http_routes = await openapi_loader.load(
-            self.config.openapi_url
+            self.config.openapi_path_or_url # Use openapi_path_or_url
         )
 
     def _determine_base_url(self) -> None:
@@ -95,13 +95,21 @@ class MCPFactory:
         if not self.base_url:
             raise ValueError("Base URL not determined")
 
-        self.logger.info("Creating HTTP client...")
-        api_key = os.getenv(self.config.api_key_env_var)
-        if not api_key:
-            self.logger.warning(
-                f"API key environment variable '{self.config.api_key_env_var}' not set."
-            )
-        self.api_client = create_api_client(self.base_url, self.logger, api_key)
+        self.logger.info("Creating HTTP client with new authentication handler...")
+        auth_handler = create_auth_handler(self.config.auth, self.logger)
+
+        headers = {
+            "User-Agent": "DataInclusion-MCP-Server/1.0",
+            "Accept": "application/json"
+        }
+
+        self.api_client = httpx.AsyncClient(
+            base_url=self.base_url,
+            headers=headers,
+            timeout=30.0,
+            auth=auth_handler # Pass the auth handler
+        )
+        self.logger.info("HTTP client created successfully with authentication.")
 
     def _load_tool_mappings(self) -> Dict[str, Any]:
         """

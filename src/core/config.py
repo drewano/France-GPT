@@ -25,11 +25,11 @@ Variables d'environnement :
     ou depuis les variables d'environnement du système.
 """
 
-from typing import Optional, List
+from typing import Optional, List, Union, Literal
 import json
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, Field
 
 
 class AgentSettings(BaseSettings):
@@ -81,14 +81,33 @@ class AgentSettings(BaseSettings):
     DEV_AWS_ENDPOINT: str | None = None
 
 
+class BearerAuthConfig(BaseModel):
+    api_key_env_var: str
+    method: Literal["bearer"] = "bearer"
+
+
+class OAuth2ClientCredentialsConfig(BaseModel):
+    token_url: str
+    client_id_env_var: str
+    client_secret_env_var: str
+    scope: str
+    method: Literal["oauth2_client_credentials"] = "oauth2_client_credentials"
+
+
+class AuthConfig(BaseModel):
+    auth_type: Union[
+        BearerAuthConfig, OAuth2ClientCredentialsConfig
+    ]  # Allow either Bearer or OAuth2
+
+
 class MCPServiceConfig(BaseModel):
     """
     Configuration for a single MCP service.
     """
 
     name: str
-    openapi_url: str
-    api_key_env_var: str
+    openapi_path_or_url: str  # Changed from openapi_url to support local paths or URLs
+    auth: Union[BearerAuthConfig, OAuth2ClientCredentialsConfig] = Field(..., discriminator="method")
     tool_mappings_file: Optional[str] = None
     port: int = 8000 # Default port
 

@@ -18,15 +18,15 @@ services:
     networks:
       - datainclusion-net
     ports:
-      # Expose le port 8000 pour que les clients MCP (ex: Claude Desktop) puissent s'y connecter
-      - "8000-8005:8000-8005"
+      - "8000:8000"  # Port pour DataInclusion
+      - "8002:8002"  # Port pour Legifrance
     restart: unless-stopped
     healthcheck:
       # Vérifie que le serveur MCP est bien démarré et répond
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health && curl -f http://localhost:8002/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 20s
 
   # --- Service 2: L'Agent IA et l'interface Chainlit/FastAPI ---
@@ -41,7 +41,7 @@ services:
       - .env
     environment:
       # Port sur lequel l'interface Chainlit et l'API de l'agent seront accessibles
-      - AGENT_PORT=8006
+      - AGENT_PORT=8001
       # URL pour que l'agent puisse trouver le serveur MCP. 'mcp_server' est le nom du service.
       - MCP_SERVER_HOST_URL=http://mcp_server
       # URL de connexion à la base de données PostgreSQL
@@ -59,7 +59,7 @@ services:
       - datainclusion-net
     ports:
       # Expose le port 8001 pour accéder à l'interface Chainlit via http://localhost:8001
-      - "8006:8006"
+      - "8001:8001"
     # S'assure que le serveur MCP et la base de données sont démarrés et sains avant de lancer l'agent
     depends_on:
       mcp_server:
@@ -71,7 +71,7 @@ services:
     restart: unless-stopped
     healthcheck:
       # Vérifie que l'interface Chainlit/FastAPI est bien démarrée
-      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
       timeout: 10s
       retries: 3

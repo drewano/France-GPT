@@ -7,6 +7,8 @@ et de pré-traitement des spécifications OpenAPI pour le serveur MCP.
 
 import json
 import logging
+import os # Import os
+import pathlib # Import pathlib
 from typing import List, Dict, Tuple
 import httpx
 from fastmcp.utilities.openapi import parse_openapi_to_http_routes, HTTPRoute
@@ -32,7 +34,7 @@ class OpenAPILoader:
         """
         self.logger = logger
 
-    async def load(self, openapi_url: str) -> Tuple[Dict, List[HTTPRoute]]:
+    async def load(self, openapi_path_or_url: str) -> Tuple[Dict, List[HTTPRoute]]:
         """
         Charge et pré-traite la spécification OpenAPI.
 
@@ -48,45 +50,72 @@ class OpenAPILoader:
         Raises:
             httpx.RequestError: Si la récupération de la spécification échoue
             json.JSONDecodeError: Si la réponse n'est pas un JSON valide
+            FileNotFoundError: Si le fichier local spécifié n'existe pas
         """
-        self.logger.info(f"Loading OpenAPI specification from URL: '{openapi_url}'...")
-
-        try:
-            # === CHARGEMENT DE LA SPÉCIFICATION OPENAPI ===
-            async with httpx.AsyncClient() as client:
-                response = await client.get(openapi_url)
-                response.raise_for_status()  # Lève une exception si le statut n'est pas 2xx
-                openapi_spec = response.json()
-
-            api_title = openapi_spec.get("info", {}).get("title", "Unknown API")
-            self.logger.info(f"Successfully loaded OpenAPI spec: '{api_title}'")
-
-            # === PRÉ-PARSING DE LA SPÉCIFICATION OPENAPI ===
-            self.logger.info("Parsing OpenAPI specification to HTTP routes...")
-            http_routes = parse_openapi_to_http_routes(openapi_spec)
+        openapi_spec = {}
+        if openapi_path_or_url.startswith("http://") or openapi_path_or_url.startswith(
+            "https://"
+        ):
             self.logger.info(
-                f"Successfully parsed {len(http_routes)} HTTP routes from OpenAPI specification"
+                f"Loading OpenAPI specification from URL: '{openapi_path_or_url}'..."
             )
-
-            # === MODIFICATION DES LIMITES DE PAGINATION ===
-            # Limite la taille des pages pour les outils de listing à 25 éléments maximum
-            # Cela s'applique aux outils: list_all_structures, list_all_services, search_services
-            self.logger.info("Applying pagination limits to data-listing endpoints...")
-            openapi_spec = self._limit_page_size(openapi_spec, max_size=25)
-
-            return openapi_spec, http_routes
-
-        except httpx.RequestError as e:
-            self.logger.error(
-                f"Failed to fetch OpenAPI specification from '{openapi_url}'."
+            try:
+                # === CHARGEMENT DE LA SPÉCIFICATION OPENAPI DEPUIS URL ===
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(openapi_path_or_url)
+                    response.raise_for_status()  # Lève une exception si le statut n'est pas 2xx
+                    openapi_spec = response.json()
+            except httpx.RequestError as e:
+                self.logger.error(
+                    f"Failed to fetch OpenAPI specification from '{openapi_path_or_url}'."
+                )
+                self.logger.error(f"Details: {e}")
+                raise
+            except json.JSONDecodeError as e:
+                self.logger.error(
+                    f"Invalid JSON in the response from '{openapi_path_or_url}'."
+                )
+                self.logger.error(f"Details: {e}")
+                raise
+        else:
+            self.logger.info(
+                f"Loading OpenAPI specification from local file: '{openapi_path_or_url}'..."
             )
-            self.logger.error(f"Details: {e}")
-            raise
+            try:
+                # === CHARGEMENT DE LA SPÉCIFICATION OPENAPI DEPUIS FICHIER LOCAL ===
+                if not os.path.exists(openapi_path_or_url):
+                    raise FileNotFoundError(
+                        f"Local OpenAPI file not found at '{openapi_path_or_url}'"
+                    )
+                with pathlib.Path(openapi_path_or_url).open("r", encoding="utf-8") as f:
+                    openapi_spec = json.load(f)
+            except FileNotFoundError as e:
+                self.logger.error(f"Failed to load local OpenAPI file. Details: {e}")
+                raise
+            except json.JSONDecodeError as e:
+                self.logger.error(
+                    f"Invalid JSON in the local file '{openapi_path_or_url}'."
+                )
+                self.logger.error(f"Details: {e}")
+                raise
 
-        except json.JSONDecodeError as e:
-            self.logger.error(f"Invalid JSON in the response from '{openapi_url}'.")
-            self.logger.error(f"Details: {e}")
-            raise
+        api_title = openapi_spec.get("info", {}).get("title", "Unknown API")
+        self.logger.info(f"Successfully loaded OpenAPI spec: '{api_title}'")
+
+        # === PRÉ-PARSING DE LA SPÉCIFICATION OPENAPI ===
+        self.logger.info("Parsing OpenAPI specification to HTTP routes...")
+        http_routes = parse_openapi_to_http_routes(openapi_spec)
+        self.logger.info(
+            f"Successfully parsed {len(http_routes)} HTTP routes from OpenAPI specification"
+        )
+
+        # === MODIFICATION DES LIMITES DE PAGINATION ===
+        # Limite la taille des pages pour les outils de listing à 25 éléments maximum
+        # Cela s'applique aux outils: list_all_structures, list_all_services, search_services
+        self.logger.info("Applying pagination limits to data-listing endpoints...")
+        openapi_spec = self._limit_page_size(openapi_spec, max_size=25)
+
+        return openapi_spec, http_routes
 
     def _limit_page_size(self, spec: dict, max_size: int = 25) -> dict:
         """

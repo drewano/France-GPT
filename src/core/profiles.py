@@ -50,6 +50,6 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "d'accès numérique pour postuler en ligne, les services d'aide à la rédaction "
             "de CV, ou les formations. Sois encourageant, précis et factuel."
         ),
-        mcp_service_name="datainclusion",
+        mcp_service_name="legifrance",
     ),
 }
