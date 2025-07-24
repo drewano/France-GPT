@@ -4,20 +4,18 @@ Factory class for constructing and configuring the MCP server.
 
 import json
 import logging
-import os
 from typing import Dict, Any
 
 from fastmcp import FastMCP
 from fastmcp.server.openapi import RouteMap, MCPType
-from fastmcp.server.auth import BearerAuthProvider
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
-import httpx # Add this import for httpx.AsyncClient
+import httpx  # Add this import for httpx.AsyncClient
 
 from ..core.config import MCPServiceConfig
 from .openapi_loader import OpenAPILoader
 from .tool_transformer import ToolTransformer
-from .auth import create_auth_handler # Import the new auth handler
+from .auth import create_auth_handler  # Import the new auth handler
 
 
 class MCPFactory:
@@ -58,7 +56,7 @@ class MCPFactory:
         self.logger.info("Loading OpenAPI specification...")
         openapi_loader = OpenAPILoader(self.logger)
         self.openapi_spec, self.http_routes = await openapi_loader.load(
-            self.config.openapi_path_or_url # Use openapi_path_or_url
+            self.config.openapi_path_or_url  # Use openapi_path_or_url
         )
 
     def _determine_base_url(self) -> None:
@@ -100,14 +98,14 @@ class MCPFactory:
 
         headers = {
             "User-Agent": "DataInclusion-MCP-Server/1.0",
-            "Accept": "application/json"
+            "Accept": "application/json",
         }
 
         self.api_client = httpx.AsyncClient(
             base_url=self.base_url,
             headers=headers,
             timeout=30.0,
-            auth=auth_handler # Pass the auth handler
+            auth=auth_handler,  # Pass the auth handler
         )
         self.logger.info("HTTP client created successfully with authentication.")
 

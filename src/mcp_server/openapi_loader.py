@@ -7,8 +7,8 @@ et de pré-traitement des spécifications OpenAPI pour le serveur MCP.
 
 import json
 import logging
-import os # Import os
-import pathlib # Import pathlib
+import os  # Import os
+import pathlib  # Import pathlib
 from typing import List, Dict, Tuple
 import httpx
 from fastmcp.utilities.openapi import parse_openapi_to_http_routes, HTTPRoute

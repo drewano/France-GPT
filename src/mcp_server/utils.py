@@ -3,7 +3,6 @@ Utility functions for the MCP server.
 """
 
 import logging
-import httpx
 from fastmcp.utilities.openapi import HTTPRoute
 
 

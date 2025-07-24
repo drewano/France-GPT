@@ -61,7 +61,9 @@ def create_agent_from_profile(profile: AgentProfile) -> Agent:
     )
 
     if not service_config:
-        raise ValueError(f"No MCP service configuration found for {profile.mcp_service_name}")
+        raise ValueError(
+            f"No MCP service configuration found for {profile.mcp_service_name}"
+        )
 
     mcp_url = (
         f"{settings.agent.MCP_SERVER_HOST_URL}:{service_config.port}"
@@ -75,5 +77,5 @@ def create_agent_from_profile(profile: AgentProfile) -> Agent:
         # Prompt système définissant le rôle et les instructions de l'agent
         system_prompt=profile.system_prompt,
         # Configuration des serveurs MCP pour accéder aux données
-        mcp_servers=[mcp_server]
+        mcp_servers=[mcp_server],
     )

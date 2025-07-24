@@ -107,9 +107,11 @@ class MCPServiceConfig(BaseModel):
 
     name: str
     openapi_path_or_url: str  # Changed from openapi_url to support local paths or URLs
-    auth: Union[BearerAuthConfig, OAuth2ClientCredentialsConfig] = Field(..., discriminator="method")
+    auth: Union[BearerAuthConfig, OAuth2ClientCredentialsConfig] = Field(
+        ..., discriminator="method"
+    )
     tool_mappings_file: Optional[str] = None
-    port: int = 8000 # Default port
+    port: int = 8000  # Default port
 
 
 class MCPServerSettings(BaseSettings):

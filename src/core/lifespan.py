@@ -28,7 +28,6 @@ def setup_environment():
     - Valide les paramètres critiques
     """
     logger.info("🔧 Configuration de l'environnement...")
-
     # Avertissements pour la configuration
     if settings.agent.SECRET_KEY == "your-secret-key-here-change-in-production":
         logger.warning(
@@ -84,34 +83,40 @@ async def lifespan(_app: FastAPI):
         try:
             logger.info("🩺 Vérification de la santé des serveurs MCP...")
             all_services_healthy = True
-            
             service_configs = settings.mcp_services
             if not service_configs:
-                logger.warning("Aucun service MCP n'est configuré. Démarrage sans vérification.")
+                logger.warning(
+                    "Aucun service MCP n'est configuré. Démarrage sans vérification."
+                )
                 break
 
             async with httpx.AsyncClient() as client:
                 for service_config in service_configs:
-                    health_check_url = (
-                        f"http://mcp_server:{service_config.port}/health"
+                    health_check_url = f"http://mcp_server:{service_config.port}/health"
+                    logger.info(
+                        "   - Test de '%s' sur le port %s...",
+                        service_config.name,
+                        service_config.port,
                     )
-                    logger.info(f"   - Test de '{service_config.name}' sur le port {service_config.port}...")
                     response = await client.get(health_check_url)
                     response.raise_for_status()
-                    logger.info(f"   ✓ Le service '{service_config.name}' est sain.")
-            
+                    logger.info("   ✓ Le service '%s' est sain.", service_config.name)
+
             # Si toutes les vérifications ont réussi, on sort de la boucle
             break
 
         except (httpx.RequestError, httpx.HTTPStatusError) as e:
             all_services_healthy = False
-            error_details = f"({e.response.status_code} - {e.response.text})" if isinstance(e, httpx.HTTPStatusError) else str(e)
-            logger.warning(f"❌ Un service MCP n'est pas encore prêt: {error_details}")
+            error_details = (
+                f"({e.response.status_code} - {e.response.text})"
+                if isinstance(e, httpx.HTTPStatusError)
+                else str(e)
+            )
+            logger.warning("❌ Un service MCP n'est pas encore prêt: %s", error_details)
             if attempt == max_retries - 1:
                 raise RuntimeError(
                     f"Échec de la connexion aux serveurs MCP après {max_retries} tentatives."
                 ) from e
-                
             delay = base_delay * (backoff_multiplier**attempt)
             logger.warning(
                 "Tentative %d/%d échouée. Nouvelle tentative dans %.2fs...",
@@ -130,4 +135,6 @@ async def lifespan(_app: FastAPI):
         logger.info("✅ Nettoyage terminé")
     else:
         # Si on arrive ici, c'est que la boucle s'est terminée sans succès
-        logger.critical("❌ Impossible de démarrer : tous les services MCP ne sont pas disponibles.")
+        logger.critical(
+            "❌ Impossible de démarrer : tous les services MCP ne sont pas disponibles."
+        )

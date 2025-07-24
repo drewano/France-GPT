@@ -6,7 +6,6 @@ Il transforme automatiquement les endpoints OpenAPI en outils MCP.
 """
 
 import asyncio
-from fastmcp import FastMCP
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
@@ -48,10 +47,11 @@ async def main():
             active_servers.append(service_mcp_instance)
 
             # Add a health check endpoint to each individual service MCP instance
-            @service_mcp_instance.custom_route("/health", methods=["GET"])
             async def health_check(_request: Request) -> PlainTextResponse:
                 """A simple health check endpoint for the individual service."""
                 return PlainTextResponse("OK", status_code=200)
+
+            service_mcp_instance.custom_route("/health", methods=["GET"])(health_check)
 
             logger.info(
                 "Health check endpoint (/health) added to service '%s'.",
@@ -62,7 +62,11 @@ async def main():
                 f"http://{settings.mcp_server.MCP_HOST}:{service_config.port}"
                 f"{settings.mcp_server.MCP_API_PATH}"
             )
-            logger.info("Scheduling MCP server '%s' to run on %s", service_config.name, server_url)
+            logger.info(
+                "Scheduling MCP server '%s' to run on %s",
+                service_config.name,
+                server_url,
+            )
 
             task = asyncio.create_task(
                 service_mcp_instance.run_async(
@@ -91,14 +95,16 @@ async def main():
     finally:
         logger.info("Initiating MCP Servers cleanup...")
         for server in active_servers:
-            if hasattr(server, 'client') and server.client:
+            if hasattr(server, "client") and server.client:
                 # Attempt to close the client within the server instance if it exists
                 try:
                     await server.client.aclose()
                     logger.info("Closed HTTP client for server '%s'.", server.name)
                 except Exception as close_e:
                     logger.warning(
-                        "Error closing HTTP client for server '%s': %s", server.name, close_e
+                        "Error closing HTTP client for server '%s': %s",
+                        server.name,
+                        close_e,
                     )
         logger.info("MCP Servers cleanup completed.")
 
