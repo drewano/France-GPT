@@ -26,7 +26,7 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
         id="social_agent",
         name="Agent Social",
         description="Un assistant expert de l'inclusion sociale en France.",
-        icon="/public/icons/agent-social.svg",
+        icon="/public/icons/social_agent.svg",
         system_prompt=(
             "Tu es un assistant expert de l'inclusion sociale en France. "
             "Utilise les outils disponibles pour répondre aux questions sur les "
@@ -37,19 +37,16 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
         ),
         mcp_service_name="datainclusion",
     ),
-    "job_search_agent": AgentProfile(
-        id="job_search_agent",
-        name="Agent Recherche d'Emploi",
-        description="Un conseiller expert pour trouver des structures d'aide à l'emploi.",
-        icon="/public/icons/agent-job-search.svg",
+    "legal_agent": AgentProfile(
+        id="legal_agent",
+        name="Agent Juridique",
+        description="Un assistant expert de la législation française, capable de rechercher des textes de loi et des articles du code.",
+        icon="/public/icons/lawyer_agent.svg",
         system_prompt=(
-            "Tu es un conseiller expert en recherche d'emploi en France. "
-            "Ton rôle est d'aider les utilisateurs à trouver des structures et des services "
-            "qui peuvent les accompagner dans leur parcours professionnel. Utilise les outils "
-            "à ta disposition pour identifier les ressources pertinentes, comme les points "
-            "d'accès numérique pour postuler en ligne, les services d'aide à la rédaction "
-            "de CV, ou les formations. Sois encourageant, précis et factuel."
+            "Tu es un assistant expert en droit français. "
+            "Utilise les outils de l'API Légifrance pour répondre aux questions sur les codes, "
+            "les lois et la jurisprudence. Sois précis, cite tes sources et n'interprète pas la loi."
         ),
-        mcp_service_name="datainclusion",
+        mcp_service_name="legifrance",
     ),
 }

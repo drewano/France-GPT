@@ -1,94 +1,98 @@
-"""
-Authentication module for the DataInclusion MCP Server.
-
-This module handles the configuration and setup of authentication
-for the MCP server, including Bearer token authentication.
-"""
-
+import os
 import logging
-from fastmcp.server.auth import BearerAuthProvider
-from fastmcp.server.auth.providers.bearer import RSAKeyPair
-from cryptography.hazmat.primitives import serialization
+import time
+import httpx
+from typing import Generator, Union
 
-from ..core.config import settings
+from src.core.config import BearerAuthConfig, OAuth2ClientCredentialsConfig
 
 
-def setup_authentication(
-    logger: logging.Logger, audience: str
-) -> BearerAuthProvider | None:
-    """
-    Configure l'authentification Bearer pour le serveur MCP.
+class OAuth2ClientCredentialsAuth(httpx.Auth):
+    def __init__(self, config: OAuth2ClientCredentialsConfig, logger: logging.Logger):
+        self.config = config
+        self.logger = logger
+        self._access_token: str | None = None
+        self._token_expiry_time: float = 0.0
 
-    Cette fonction :
-    1. Lit la clé secrète depuis la configuration
-    2. Configure BearerAuthProvider si une clé est fournie
-    3. Génère un token de test pour le développement
+    def _get_new_token(self):
+        client_id = os.getenv(self.config.client_id_env_var)
+        client_secret = os.getenv(self.config.client_secret_env_var)
 
-    Args:
-        logger: Instance du logger pour enregistrer les messages
-        audience: The audience for the Bearer token.
+        if not client_id or not client_secret:
+            self.logger.error(
+                "Client ID or client secret not found in environment variables."
+            )
+            return
 
-    Returns:
-        BearerAuthProvider | None: Le provider d'authentification ou None
-    """
-    logger.info("Configuring server authentication...")
-
-    # Lecture de la clé secrète depuis la configuration
-    secret_key = settings.agent.SECRET_KEY
-
-    if secret_key and secret_key.strip():
-        logger.info("Secret key found - configuring Bearer Token authentication...")
         try:
-            # Si la clé ressemble à une clé RSA privée PEM, l'utiliser directement
-            if secret_key.strip().startswith("-----BEGIN") and "PRIVATE KEY" in str(
-                secret_key
-            ):
-                # Utiliser la clé privée pour créer une paire de clés
-                private_key = serialization.load_pem_private_key(
-                    secret_key.encode(), password=None
-                )
-                public_key_pem = (
-                    private_key.public_key()
-                    .public_bytes(
-                        encoding=serialization.Encoding.PEM,
-                        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-                    )
-                    .decode()
-                )
+            response = httpx.post(
+                self.config.token_url,
+                data={
+                    "grant_type": "client_credentials",
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "scope": self.config.scope,
+                },
+                timeout=10.0,  # Add a timeout to prevent hanging requests
+            )
+            response.raise_for_status()
+            token_data = response.json()
+            self._access_token = token_data["access_token"]
+            expires_in = token_data.get("expires_in", 3600)
+            self._token_expiry_time = time.time() + expires_in - 60  # 60 seconds buffer
+            self.logger.info("Successfully fetched new OAuth2 token.")
+        except httpx.RequestError as e:
+            self.logger.error(f"Error requesting OAuth2 token: {e}")
+            self._access_token = None
+            self._token_expiry_time = 0.0
+        except KeyError:
+            self.logger.error("Access token not found in OAuth2 response.")
+            self._access_token = None
+            self._token_expiry_time = 0.0
 
-                auth_provider = BearerAuthProvider(
-                    public_key=public_key_pem, audience=audience
-                )
-            else:
-                # Utiliser la clé comme seed pour générer une paire de clés déterministe
-                # Pour des raisons de simplicité, on génère une nouvelle paire de clés
-                key_pair = RSAKeyPair.generate()
+    def auth_flow(
+        self, request: httpx.Request
+    ) -> Generator[httpx.Request, httpx.Response, None]:
+        if not self._access_token or time.time() >= self._token_expiry_time:
+            self.logger.info(
+                "OAuth2 token expired or not present, requesting new token..."
+            )
+            self._get_new_token()
 
-                auth_provider = BearerAuthProvider(
-                    public_key=key_pair.public_key,
-                    audience=audience,
-                )
+        if self._access_token:
+            request.headers["Authorization"] = f"Bearer {self._access_token}"
+        else:
+            self.logger.warning(
+                "No OAuth2 access token available, proceeding without authentication."
+            )
+        yield request
 
-                # Log du token de test (UNIQUEMENT pour le développement)
-                test_token = key_pair.create_token(
-                    audience=audience,
-                    subject="test-user",
-                    expires_in_seconds=3600,
-                )
-                logger.info(f"🔑 Test Bearer Token (for development): {test_token}")
 
-            logger.info("✓ Bearer Token authentication configured successfully")
-            logger.info(f"   - Audience: {audience}")
-            logger.info("   - Server will require valid Bearer tokens for access")
-            return auth_provider
+class BearerAuth(httpx.Auth):
+    def __init__(self, api_key: str):
+        self.api_key = api_key
 
-        except Exception as e:
-            logger.error(f"Failed to configure authentication: {e}")
-            logger.warning("Continuing without authentication...")
+    def auth_flow(
+        self, request: httpx.Request
+    ) -> Generator[httpx.Request, httpx.Response, None]:
+        request.headers["Authorization"] = f"Bearer {self.api_key}"
+        yield request
+
+
+def create_auth_handler(
+    auth_config: Union[BearerAuthConfig, OAuth2ClientCredentialsConfig],
+    logger: logging.Logger,
+) -> httpx.Auth | None:
+    if isinstance(auth_config, BearerAuthConfig):
+        api_key = os.getenv(auth_config.api_key_env_var)
+        if not api_key:
+            logger.error(
+                f"API key not found for environment variable: {auth_config.api_key_env_var}"
+            )
             return None
+        return BearerAuth(api_key)
+    elif isinstance(auth_config, OAuth2ClientCredentialsConfig):
+        return OAuth2ClientCredentialsAuth(auth_config, logger)
     else:
-        logger.warning(
-            "MCP_SERVER_SECRET_KEY not set - server will run WITHOUT authentication"
-        )
-        logger.warning("⚠️  All clients will have unrestricted access to the server")
+        logger.warning(f"Unsupported authentication type: {type(auth_config)}")
         return None

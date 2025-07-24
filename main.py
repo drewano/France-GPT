@@ -28,10 +28,10 @@ try:
         """Log la configuration du serveur FastAPI."""
         logger.info("📋 Configuration:")
         logger.info("   - Host: 0.0.0.0")
-        logger.info(f"   - Port: {port}")
-        logger.info(f"   - Interface Chainlit: http://localhost:{port}/")
-        logger.info(f"   - Documentation: http://localhost:{port}/docs")
-        logger.info(f"   - Health Check: http://localhost:{port}/health")
+        logger.info("   - Port: %s", port)
+        logger.info("   - Interface Chainlit: http://localhost:%s/", port)
+        logger.info("   - Documentation: http://localhost:%s/docs", port)
+        logger.info("   - Health Check: http://localhost:%s/health", port)
 
     def run_app():
         """Lance l'application selon l'environnement configuré."""
@@ -80,27 +80,20 @@ try:
     app = create_app()
 
     if __name__ == "__main__":
-        """
-        Point d'entrée du script.
-
-        Variables d'environnement supportées :
-        - ENVIRONMENT : "production" ou "development" (défaut: production)
-        - AGENT_PORT : Port d'écoute (défaut: 8001)
-        - OPENAI_API_KEY : Clé API OpenAI (requis)
-        - SECRET_KEY : Clé secrète pour les sessions (à changer en production)
-        - CORS_ORIGINS : Domaines autorisés pour CORS (séparés par virgules)
-        """
         try:
             run_app()
 
         except KeyboardInterrupt:
             logger.info("👋 Arrêt demandé par l'utilisateur")
             print("\nGoodbye!")
-        except Exception as e:
-            logger.error(f"💥 Erreur fatale lors du démarrage: {e}")
-            print(f"Failed to start server: {e}")
+        except SystemExit:
+            # sys.exit() est déjà géré, pas besoin de le loguer comme une erreur fatale
+            pass
+        except Exception as exc:  # Catch other unexpected errors
+            logger.error("💥 Erreur fatale lors du démarrage: %s", exc)
+            print(f"Failed to start server: {exc}")
             sys.exit(1)
 
-except Exception as e:
-    print(f"❌ Erreur inattendue: {e}")
+except Exception as exc_outer:
+    print(f"❌ Erreur inattendue: {exc_outer}")
     sys.exit(1)

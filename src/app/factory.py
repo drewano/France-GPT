@@ -11,12 +11,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from chainlit.utils import mount_chainlit
 
 # Imports locaux
 from src.core.config import settings
 from src.core.lifespan import lifespan
 from src.core.logging import setup_logging
-from chainlit.utils import mount_chainlit
 
 # Configuration du logging unifié
 logger = setup_logging(name="datainclusion.agent")

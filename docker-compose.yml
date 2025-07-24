@@ -18,15 +18,15 @@ services:
     networks:
       - datainclusion-net
     ports:
-      # Expose le port 8000 pour que les clients MCP (ex: Claude Desktop) puissent s'y connecter
-      - "8000:8000"
+      - "8000:8000"  # Port pour DataInclusion
+      - "8002:8002"  # Port pour Legifrance
     restart: unless-stopped
     healthcheck:
       # Vérifie que le serveur MCP est bien démarré et répond
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health && curl -f http://localhost:8002/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 20s
 
   # --- Service 2: L'Agent IA et l'interface Chainlit/FastAPI ---
@@ -43,7 +43,7 @@ services:
       # Port sur lequel l'interface Chainlit et l'API de l'agent seront accessibles
       - AGENT_PORT=8001
       # URL pour que l'agent puisse trouver le serveur MCP. 'mcp_server' est le nom du service.
-      - MCP_GATEWAY_BASE_URL=http://mcp_server:8000/mcp/
+      - MCP_SERVER_HOST_URL=http://mcp_server
       # URL de connexion à la base de données PostgreSQL
       - DATABASE_URL=postgresql+asyncpg://user:password@postgres:5432/datainclusion
       # Mode de fonctionnement pour la journalisation et les configurations

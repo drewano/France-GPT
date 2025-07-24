@@ -4,20 +4,18 @@ Factory class for constructing and configuring the MCP server.
 
 import json
 import logging
-import os
 from typing import Dict, Any
 
 from fastmcp import FastMCP
 from fastmcp.server.openapi import RouteMap, MCPType
-from fastmcp.server.auth import BearerAuthProvider
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
+import httpx  # Add this import for httpx.AsyncClient
 
 from ..core.config import MCPServiceConfig
-from .utils import create_api_client
 from .openapi_loader import OpenAPILoader
 from .tool_transformer import ToolTransformer
-from .auth import setup_authentication
+from .auth import create_auth_handler  # Import the new auth handler
 
 
 class MCPFactory:
@@ -45,18 +43,6 @@ class MCPFactory:
         self.op_id_to_mangled_name = {}
         self.tool_mappings = {}
 
-    def _configure_auth(self) -> BearerAuthProvider | None:
-        """
-        Configures Bearer authentication for the MCP server.
-
-        This method delegates authentication configuration to the dedicated module.
-
-        Returns:
-            BearerAuthProvider | None: The authentication provider or None.
-        """
-        audience = f"{self.config.name.lower()}-mcp-client"
-        return setup_authentication(self.logger, audience)
-
     async def _load_openapi_spec(self) -> None:
         """
         Loads and parses the OpenAPI specification.
@@ -70,7 +56,7 @@ class MCPFactory:
         self.logger.info("Loading OpenAPI specification...")
         openapi_loader = OpenAPILoader(self.logger)
         self.openapi_spec, self.http_routes = await openapi_loader.load(
-            self.config.openapi_url
+            self.config.openapi_path_or_url  # Use openapi_path_or_url
         )
 
     def _determine_base_url(self) -> None:
@@ -107,13 +93,21 @@ class MCPFactory:
         if not self.base_url:
             raise ValueError("Base URL not determined")
 
-        self.logger.info("Creating HTTP client...")
-        api_key = os.getenv(self.config.api_key_env_var)
-        if not api_key:
-            self.logger.warning(
-                f"API key environment variable '{self.config.api_key_env_var}' not set."
-            )
-        self.api_client = create_api_client(self.base_url, self.logger, api_key)
+        self.logger.info("Creating HTTP client with new authentication handler...")
+        auth_handler = create_auth_handler(self.config.auth, self.logger)
+
+        headers = {
+            "User-Agent": "DataInclusion-MCP-Server/1.0",
+            "Accept": "application/json",
+        }
+
+        self.api_client = httpx.AsyncClient(
+            base_url=self.base_url,
+            headers=headers,
+            timeout=30.0,
+            auth=auth_handler,  # Pass the auth handler
+        )
+        self.logger.info("HTTP client created successfully with authentication.")
 
     def _load_tool_mappings(self) -> Dict[str, Any]:
         """
@@ -148,7 +142,7 @@ class MCPFactory:
             )
             return {}
 
-    def _create_mcp_server(self, auth_provider: BearerAuthProvider | None) -> FastMCP:
+    def _create_mcp_server(self) -> FastMCP:
         """
         Creates and configures the MCP server.
 
@@ -193,7 +187,7 @@ class MCPFactory:
             client=self.api_client,
             name=self.config.name,
             route_maps=custom_route_maps,
-            auth=auth_provider,
+            auth=None,
             mcp_component_fn=temp_transformer.discover_and_customize,
         )
 
@@ -262,10 +256,10 @@ class MCPFactory:
             self._create_api_client()
 
             # 5. Configure authentication
-            auth_provider = self._configure_auth()
+            # auth_provider = self._configure_auth()
 
             # 6. Create the MCP server
-            mcp_server = self._create_mcp_server(auth_provider)
+            mcp_server = self._create_mcp_server()
 
             # 7. Transform tools
             await self._transform_tools(mcp_server)

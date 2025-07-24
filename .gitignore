@@ -85,3 +85,4 @@ db.sqlite3-journal
 repomix-output.xml
 .gemini
 prompt.xml
+.qwen

@@ -25,11 +25,11 @@ Variables d'environnement :
     ou depuis les variables d'environnement du système.
 """
 
-from typing import Optional, List
+from typing import Optional, List, Union, Literal
 import json
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, Field
 
 
 class AgentSettings(BaseSettings):
@@ -51,7 +51,7 @@ class AgentSettings(BaseSettings):
 
     # Configuration de connexion au serveur MCP
     # Utilise le nom du service Docker pour la communication inter-conteneurs
-    MCP_GATEWAY_BASE_URL: str = "http://mcp_server:8000/mcp/"
+    MCP_SERVER_HOST_URL: str = "http://mcp_server"
 
     # Port du serveur agent
     AGENT_PORT: int = 8001
@@ -81,18 +81,40 @@ class AgentSettings(BaseSettings):
     DEV_AWS_ENDPOINT: str | None = None
 
 
+class BearerAuthConfig(BaseModel):
+    api_key_env_var: str
+    method: Literal["bearer"] = "bearer"
+
+
+class OAuth2ClientCredentialsConfig(BaseModel):
+    token_url: str
+    client_id_env_var: str
+    client_secret_env_var: str
+    scope: str
+    method: Literal["oauth2_client_credentials"] = "oauth2_client_credentials"
+
+
+class AuthConfig(BaseModel):
+    auth_type: Union[
+        BearerAuthConfig, OAuth2ClientCredentialsConfig
+    ]  # Allow either Bearer or OAuth2
+
+
 class MCPServiceConfig(BaseModel):
     """
     Configuration for a single MCP service.
     """
 
     name: str
-    openapi_url: str
-    api_key_env_var: str
+    openapi_path_or_url: str  # Changed from openapi_url to support local paths or URLs
+    auth: Union[BearerAuthConfig, OAuth2ClientCredentialsConfig] = Field(
+        ..., discriminator="method"
+    )
     tool_mappings_file: Optional[str] = None
+    port: int = 8000  # Default port
 
 
-class MCPGatewaySettings(BaseSettings):
+class MCPServerSettings(BaseSettings):
     """
     Configuration du serveur MCP basée sur Pydantic Settings.
 
@@ -101,7 +123,6 @@ class MCPGatewaySettings(BaseSettings):
     """
 
     # Configuration du serveur MCP
-    MCP_SERVER_NAME: str = "DataInclusionAPI"
     MCP_HOST: str = "0.0.0.0"
     MCP_PORT: int = 8000
     MCP_API_PATH: str = "/mcp/"
@@ -118,7 +139,7 @@ class AppSettings(BaseSettings):
 
     # Configurations des composants
     agent: AgentSettings = AgentSettings()
-    mcp_gateway: MCPGatewaySettings = MCPGatewaySettings()
+    mcp_server: MCPServerSettings = MCPServerSettings()
 
     # Configuration Pydantic Settings
     model_config = SettingsConfigDict(
@@ -134,8 +155,8 @@ class AppSettings(BaseSettings):
         Handles empty or malformed JSON.
         """
         try:
-            if self.mcp_gateway.MCP_SERVICES_CONFIG:
-                data = json.loads(self.mcp_gateway.MCP_SERVICES_CONFIG)
+            if self.mcp_server.MCP_SERVICES_CONFIG:
+                data = json.loads(self.mcp_server.MCP_SERVICES_CONFIG)
                 return [MCPServiceConfig(**service) for service in data]
             return []
         except (json.JSONDecodeError, ValidationError) as e:
