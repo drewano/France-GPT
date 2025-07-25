@@ -168,9 +168,15 @@ class MCPFactory:
         self.logger.info(f"Creating FastMCP server '{self.config.name}'...")
 
         # Configuration des routes MCP
-        custom_route_maps = [
-            RouteMap(methods=["GET"], pattern=r".*", mcp_type=MCPType.TOOL),
-        ]
+        route_maps = []
+        if self.config.name == "datainclusion":
+            allowed_op_ids = set(self.tool_mappings.keys())
+            for route in self.http_routes:
+                if route.operation_id in allowed_op_ids:
+                    route_maps.append(
+                        RouteMap(methods=[route.method], pattern=f"^{route.path}$", mcp_type=MCPType.TOOL)
+                    )
+            route_maps.append(RouteMap(mcp_type=MCPType.EXCLUDE))
 
         # Création du transformer temporaire pour le callback
         temp_transformer = ToolTransformer(
@@ -186,7 +192,7 @@ class MCPFactory:
             openapi_spec=self.openapi_spec,
             client=self.api_client,
             name=self.config.name,
-            route_maps=custom_route_maps,
+            route_maps=route_maps, # Pass the dynamically created route_maps
             auth=None,
             mcp_component_fn=temp_transformer.discover_and_customize,
         )

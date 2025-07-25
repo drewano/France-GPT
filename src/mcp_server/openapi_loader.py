@@ -134,9 +134,9 @@ class OpenAPILoader:
             dict: Le dictionnaire de la spécification modifié avec les limites de page appliquées.
         """
         paths_to_modify = [
-            "/api/v0/structures",
-            "/api/v0/services",
-            "/api/v0/search/services",
+            "/api/v1/structures",
+            "/api/v1/services",
+            "/api/v1/search/services",
         ]
 
         self.logger.info(f"Applying page size limit (max_size={max_size}) to spec...")
