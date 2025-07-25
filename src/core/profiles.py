@@ -53,17 +53,17 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             StarterConfig(
                 label="Aide alimentaire",
                 message="Où puis-je trouver des banques alimentaires ou des distributions de repas près de Paris ?",
-                icon="/public/avatars/social_agent.svg"
+                icon="/public/icons/food.png"
             ),
             StarterConfig(
                 label="Aide au logement",
                 message="Quelles sont les aides disponibles pour payer mon loyer ou trouver un logement social ?",
-                icon="/public/icons/social_agent.svg"
+                icon="/public/icons/house.png"
             ),
             StarterConfig(
                 label="Rechercher une structure",
                 message="Trouve-moi les structures d'accompagnement pour les jeunes en difficulté à Lyon.",
-                icon="/public/icons/search.svg"
+                icon="/public/icons/teen.png"
             ),
         ],
     ),
@@ -71,7 +71,7 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
         id="legal_agent",
         name="Agent Juridique",
         description="Un assistant expert de la législation française, capable de rechercher des textes de loi et des articles du code.",
-        icon="/public/icons/lawyer_agent.svg",
+        icon="/public/avatars/lawyer_agent.svg",
         system_prompt=(
             "Tu es un assistant expert en droit français. "
             "Utilise les outils de l'API Légifrance pour répondre aux questions sur les codes, "
