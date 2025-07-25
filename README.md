@@ -7,8 +7,8 @@
 <a href="https://fastapi.tiangolo.com/" target="_blank" rel="noreferrer">
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/fastapi/fastapi-original.svg" alt="FastAPI" height="40"/>
 </a>
-<a href="https://pydantic.dev/" target="_blank" rel="noreferrer">
-<img src="https://cdn.simpleicons.org/pydantic/E92063" alt="Pydantic" height="40"/>
+<a href="https://ai.pydantic.dev/" target="_blank" rel="noreferrer">
+<img src="https://avatars.githubusercontent.com/u/110818415?v=4" alt="Pydantic-AI" height="40"/>
 </a>
 <a href="https://chainlit.io/" target="_blank" rel="noreferrer">
 <img src="https://docs.chainlit.io/logo.svg" alt="Chainlit" height="40"/>
@@ -16,8 +16,8 @@
 <a href="https://www.docker.com/" target="_blank" rel="noreferrer">
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg" alt="Docker" height="40"/>
 </a>
-<a href="https://pydantic-ai.readthedocs.io/en/latest/concepts/mcp/" target="_blank" rel="noreferrer">
-<img src="https://img.shields.io/badge/FastMCP-%238A2BE2.svg?style=flat&logo=bolt&logoColor=white" alt="FastMCP" height="40"/>
+<a href="https://gofastmcp.com/getting-started/welcome" target="_blank" rel="noreferrer">
+<img src="https://mintlify.s3-us-west-1.amazonaws.com/fastmcp/_generated/favicon/apple-touch-icon.png?v=3" alt="FastMCP" height="40"/>
 </a>
 </div>
 <br/>
