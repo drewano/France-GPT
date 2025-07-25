@@ -11,7 +11,7 @@
 <img src="https://avatars.githubusercontent.com/u/110818415?v=4" alt="Pydantic-AI" height="40"/>
 </a>
 <a href="https://chainlit.io/" target="_blank" rel="noreferrer">
-<img src="https://mintlify.s3.us-west-1.amazonaws.com/chainlit-43/logo/light.svg" alt="Chainlit" height="40"/>
+<img src="https://avatars.githubusercontent.com/u/128686189?s=200&v=4" alt="Chainlit" height="40"/>
 </a>
 <a href="https://www.docker.com/" target="_blank" rel="noreferrer">
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg" alt="Docker" height="40"/>
