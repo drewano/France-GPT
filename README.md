@@ -1,4 +1,4 @@
-# FranceGPT 🇫🇷
+# France-GPT 🇫🇷
 
 <div align="center">
 <a href="https://www.python.org" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="Python" height="40"/></a>
@@ -10,15 +10,15 @@
 </div>
 <br/>
 
-FranceGPT est une application conversationnelle de type ChatGPT, conçue pour interagir avec les données publiques françaises. Elle héberge une collection d'**Agents IA spécialisés** qui exploitent les API de `data.gouv.fr` (Légifrance, Data.Inclusion, INSEE, etc.) en les transformant en outils puissants et fiables pour les modèles de langage (LLM).
+France-GPT est une application conversationnelle de type ChatGPT, conçue pour interagir avec les données publiques françaises. Elle héberge une collection d'**Agents IA spécialisés** qui exploitent les API de `data.gouv.fr` (Légifrance, Data.Inclusion, INSEE, etc.) en les transformant en outils puissants et fiables pour les modèles de langage (LLM).
 
-![screenshot_placeholder](https://github.com/drewano/FranceGPT/blob/c3f4eba1d8527ec2583aaaf36bfe03e7aee644e6/public/screen.png)
+![screenshot_placeholder](https://github.com/drewano/France-GPT/blob/c3f4eba1d8527ec2583aaaf36bfe03e7aee644e6/public/screen.png)
 
 ## 🎯 Le Besoin Fondamental
 
 Les API gouvernementales, bien que riches en informations, ne sont pas directement utilisables par les agents IA. Leurs schémas complexes et leurs formats de données brutes constituent une barrière.
 
-**FranceGPT est né d'un besoin fondamental :** il faut transformer l'accès à ces API en **outils MCP (Model Context Protocol)**. Le protocole MCP standardise la communication entre les LLM et les services externes, rendant les interactions plus fiables, sécurisées et compréhensibles pour l'IA.
+**France-GPT est né d'un besoin fondamental :** il faut transformer l'accès à ces API en **outils MCP (Model Context Protocol)**. Le protocole MCP standardise la communication entre les LLM et les services externes, rendant les interactions plus fiables, sécurisées et compréhensibles pour l'IA.
 
 Ce projet sert de pont, permettant aux agents IA de non seulement consommer les données publiques, mais aussi de les comprendre, de les croiser et de créer des workflows complexes pour automatiser des tâches et fournir des réponses précises et contextualisées.
 
@@ -34,7 +34,7 @@ Ce projet sert de pont, permettant aux agents IA de non seulement consommer les 
 
 ## 🏗️ Architecture du Projet
 
-L'architecture de FranceGPT est conçue pour être modulaire et robuste, séparant clairement les responsabilités de chaque composant.
+L'architecture de France-GPT est conçue pour être modulaire et robuste, séparant clairement les responsabilités de chaque composant.
 
 ```mermaid
 graph TD
@@ -129,7 +129,7 @@ Le projet est entièrement conteneurisé avec Docker, ce qui simplifie grandemen
     ```
 
 4.  **Accéder à l'application :**
-    -   **Interface FranceGPT (Chainlit)** : [http://localhost:8001](http://localhost:8001)
+    -   **Interface France-GPT (Chainlit)** : [http://localhost:8001](http://localhost:8001)
     -   Serveur MCP Data.Inclusion (pour test) : `http://localhost:8000/health`
     -   Serveur MCP Légifrance (pour test) : `http://localhost:8002/health`
 
