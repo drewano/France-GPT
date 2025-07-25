@@ -35,7 +35,7 @@ async def _setup_agent():
 
     # Créer le toolset d'interface utilisateur
     ui_toolset = FunctionToolset(tools=[display_website])
-    
+
     # Créer l'agent avec le toolset d'interface utilisateur
     agent = create_agent_from_profile(profile, ui_toolsets=[ui_toolset])
     cl.user_session.set("agent", agent)
@@ -55,12 +55,12 @@ async def chat_profile(user: Optional[cl.User]):
             icon=profile.icon,
             starters=[
                 cl.Starter(
-                    label=starter.label,
-                    message=starter.message,
-                    icon=starter.icon
-                ) 
+                    label=starter.label, message=starter.message, icon=starter.icon
+                )
                 for starter in profile.starters
-            ] if profile.starters else []
+            ]
+            if profile.starters
+            else [],
         )
         for profile in AGENT_PROFILES.values()
     ]

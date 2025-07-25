@@ -15,7 +15,9 @@ from src.core.config import settings
 from src.core.profiles import AgentProfile
 
 
-def create_agent_from_profile(profile: AgentProfile, ui_toolsets: list[FunctionToolset] | None = None) -> Agent:
+def create_agent_from_profile(
+    profile: AgentProfile, ui_toolsets: list[FunctionToolset] | None = None
+) -> Agent:
     """
     Crée et configure un agent IA à partir d'un profil donné.
 
@@ -73,18 +75,18 @@ def create_agent_from_profile(profile: AgentProfile, ui_toolsets: list[FunctionT
     )
 
     mcp_server = MCPServerStreamableHTTP(mcp_url)
-    
+
     # Initialiser la liste de tous les toolsets
     all_toolsets = []
-    
+
     # Ajouter le serveur MCP s'il existe
     if mcp_server:
         all_toolsets.append(mcp_server)
-        
+
     # Ajouter les toolsets d'interface utilisateur s'ils existent
     if ui_toolsets:
         all_toolsets.extend(ui_toolsets)
-        
+
     return Agent(
         # Modèle OpenAI qui supporte mieux les schémas JSON complexes
         model=model,

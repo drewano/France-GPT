@@ -6,6 +6,7 @@ class StarterConfig(BaseModel):
     """
     Configuration pour les messages de démarrage suggérés.
     """
+
     label: str
     message: str
     icon: str
@@ -27,6 +28,7 @@ class AgentProfile(BaseModel):
     system_prompt: str
     mcp_service_name: str
     starters: Optional[List[StarterConfig]] = None
+
 
 # Base de données centrale des profils d'agents disponibles dans l'application.
 # Ce dictionnaire utilise un identifiant unique comme clé pour chaque profil,
@@ -53,17 +55,17 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             StarterConfig(
                 label="Aide alimentaire",
                 message="Où puis-je trouver des banques alimentaires ou des distributions de repas près de Paris ?",
-                icon="/public/icons/food.png"
+                icon="/public/icons/food.png",
             ),
             StarterConfig(
                 label="Aide au logement",
                 message="Quelles sont les aides disponibles pour payer mon loyer ou trouver un logement social ?",
-                icon="/public/icons/house.png"
+                icon="/public/icons/house.png",
             ),
             StarterConfig(
                 label="Rechercher une structure",
                 message="Trouve-moi les structures d'accompagnement pour les jeunes en difficulté à Lyon.",
-                icon="/public/icons/teen.png"
+                icon="/public/icons/teen.png",
             ),
         ],
     ),
