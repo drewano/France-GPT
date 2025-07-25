@@ -1,8 +1,9 @@
 import os
 import logging
 import time
-import httpx
 from typing import Generator, Union
+import httpx
+
 
 from src.core.config import BearerAuthConfig, OAuth2ClientCredentialsConfig
 

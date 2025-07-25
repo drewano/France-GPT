@@ -298,12 +298,11 @@ class ToolTransformer:
             and route.description.strip()
         ):
             return route.description.strip()
-        elif hasattr(route, "summary") and route.summary and route.summary.strip():
+        if hasattr(route, "summary") and route.summary and route.summary.strip():
             # Fallback vers le summary si pas de description
             return route.summary.strip()
-        else:
-            # Description par défaut basée sur le nom de l'outil
-            return f"Execute the {new_name} operation on the Data Inclusion API"
+        # Description par défaut basée sur le nom de l'outil
+        return f"Execute the {new_name} operation on the Data Inclusion API"
 
     def _create_tool_tags(self, new_name: str) -> set[str]:
         """

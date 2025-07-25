@@ -83,8 +83,7 @@ async def auth_callback(username: str, password: str) -> Optional[cl.User]:
         return cl.User(
             identifier="admin", metadata={"role": "admin", "provider": "credentials"}
         )
-    else:
-        return None
+    return None
 
 
 @cl.on_chat_start
