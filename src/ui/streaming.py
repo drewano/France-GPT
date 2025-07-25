@@ -22,6 +22,7 @@ from pydantic_ai.messages import (
     PartDeltaEvent,
     FunctionToolCallEvent,
     FunctionToolResultEvent,
+    TextPart,
     TextPartDelta,
     ToolCallPartDelta,
 )
@@ -104,15 +105,22 @@ async def process_agent_with_perfect_streaming(
                                     event.index,
                                     type(event.part).__name__,
                                 )
+                                
+                                # Si c'est une partie texte, créer le message de réponse
+                                if isinstance(event.part, TextPart) and event.part.content:
+                                    if response_message is None:
+                                        response_message = cl.Message(content="")
+                                        await response_message.send()
+                                    
+                                    # Streamer le contenu initial
+                                    if response_message:
+                                        await response_message.stream_token(event.part.content)
 
                             # Delta de texte - streaming en temps réel
                             elif isinstance(event, PartDeltaEvent):
                                 if isinstance(event.delta, TextPartDelta):
                                     # Créer le message de réponse maintenant, quand on a du contenu
-                                    if (
-                                        response_message is None
-                                        and event.delta.content_delta
-                                    ):
+                                    if response_message is None and event.delta.content_delta:
                                         response_message = cl.Message(content="")
                                         await response_message.send()
 
