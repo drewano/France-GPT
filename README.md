@@ -17,7 +17,7 @@
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg" alt="Docker" height="40"/>
 </a>
 <a href="https://gofastmcp.com/getting-started/welcome" target="_blank" rel="noreferrer">
-<img src="https://mintlify.s3-us-west-1.amazonaws.com/fastmcp/_generated/favicon/apple-touch-icon.png?v=3" alt="FastMCP" height="40"/>
+<img src="https://img.shields.io/badge/FastMCP-%238A2BE2.svg?style=flat&logo=bolt&logoColor=white" alt="FastMCP" height="40"/>
 </a>
 </div>
 <br/>
