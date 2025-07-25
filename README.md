@@ -107,7 +107,7 @@ Le projet est entièrement conteneurisé avec Docker, ce qui simplifie grandemen
 
 1.  **Cloner le dépôt :**
     ```bash
-    git clone https://github.com/votre-user/france-gpt.git
+    git clone https://github.com/drewano/FranceGPT
     cd france-gpt
     ```
 
