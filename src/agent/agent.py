@@ -9,12 +9,13 @@ from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.toolsets import FunctionToolset
 
 from src.core.config import settings
 from src.core.profiles import AgentProfile
 
 
-def create_agent_from_profile(profile: AgentProfile) -> Agent:
+def create_agent_from_profile(profile: AgentProfile, ui_toolsets: list[FunctionToolset] | None = None) -> Agent:
     """
     Crée et configure un agent IA à partir d'un profil donné.
 
@@ -25,6 +26,7 @@ def create_agent_from_profile(profile: AgentProfile) -> Agent:
 
     Args:
         profile: Le profil d'agent à utiliser pour la configuration.
+        ui_toolsets: Liste optionnelle de toolsets d'interface utilisateur à ajouter à l'agent.
 
     Returns:
         Un agent PydanticAI configuré et prêt à l'emploi.
@@ -71,11 +73,23 @@ def create_agent_from_profile(profile: AgentProfile) -> Agent:
     )
 
     mcp_server = MCPServerStreamableHTTP(mcp_url)
+    
+    # Initialiser la liste de tous les toolsets
+    all_toolsets = []
+    
+    # Ajouter le serveur MCP s'il existe
+    if mcp_server:
+        all_toolsets.append(mcp_server)
+        
+    # Ajouter les toolsets d'interface utilisateur s'ils existent
+    if ui_toolsets:
+        all_toolsets.extend(ui_toolsets)
+        
     return Agent(
         # Modèle OpenAI qui supporte mieux les schémas JSON complexes
         model=model,
         # Prompt système définissant le rôle et les instructions de l'agent
         system_prompt=profile.system_prompt,
-        # Configuration des serveurs MCP pour accéder aux données
-        mcp_servers=[mcp_server],
+        # Configuration des toolsets (MCP + UI)
+        toolsets=all_toolsets,
     )

@@ -33,7 +33,10 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "structures et services d'aide. Sois précis et factuel. "
             "Ton rôle est d'aider les utilisateurs à trouver des informations "
             "sur les services d'inclusion, les structures d'aide, et les "
-            "ressources disponibles sur le territoire français."
+            "ressources disponibles sur le territoire français. "
+            "Tu disposes également d'un outil nommé `display_website` qui prend une URL en argument. "
+            "Lorsque tu juges pertinent d'afficher une page web à l'utilisateur, ou si l'utilisateur "
+            "te le demande explicitement, utilise cet outil pour l'afficher directement dans l'interface de chat."
         ),
         mcp_service_name="datainclusion",
     ),

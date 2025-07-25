@@ -7,9 +7,11 @@ import chainlit as cl
 
 from chainlit.types import ThreadDict
 from pydantic_ai.messages import ModelRequest, ModelResponse, UserPromptPart, TextPart
+from pydantic_ai.toolsets import FunctionToolset
 
 from src.ui.streaming import process_agent_modern_with_history
 from src.agent.agent import create_agent_from_profile
+from src.agent.ui_tools import display_website
 from src.core.profiles import AGENT_PROFILES
 from src.ui import data_layer
 
@@ -31,7 +33,11 @@ async def _setup_agent():
     if not profile:
         raise ValueError(f"Profil de chat '{profile_name}' non trouvé.")
 
-    agent = create_agent_from_profile(profile)
+    # Créer le toolset d'interface utilisateur
+    ui_toolset = FunctionToolset(tools=[display_website])
+    
+    # Créer l'agent avec le toolset d'interface utilisateur
+    agent = create_agent_from_profile(profile, ui_toolsets=[ui_toolset])
     cl.user_session.set("agent", agent)
     cl.user_session.set("selected_profile_id", profile.id)
 
