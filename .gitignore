@@ -78,7 +78,6 @@ db.sqlite3-journal
 
 # VSCode
 .vscode/
-.chainlit
 
 # Jupyter Notebook
 .ipynb_checkpoints 
