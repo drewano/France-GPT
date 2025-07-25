@@ -12,8 +12,7 @@
 
 FranceGPT est une application conversationnelle de type ChatGPT, conçue pour interagir avec les données publiques françaises. Elle héberge une collection d'**Agents IA spécialisés** qui exploitent les API de `data.gouv.fr` (Légifrance, Data.Inclusion, INSEE, etc.) en les transformant en outils puissants et fiables pour les modèles de langage (LLM).
 
-
-*(Image d'illustration : L'interface Chainlit avec la sélection des profils d'agents spécialisés.)*
+![screenshot_placeholder](https://github.com/drewano/FranceGPT/blob/c3f4eba1d8527ec2583aaaf36bfe03e7aee644e6/public/screen.png)
 
 ## 🎯 Le Besoin Fondamental
 
