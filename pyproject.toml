@@ -1,7 +1,7 @@
 [project]
-name = "datainclusion-mcp-server"
+name = "FranceGPT"
 version = "0.1.0"
-description = "A FastMCP server for the data.inclusion.beta.gouv.fr API."
+description = "Ce projet est une collection d'Agents spécialisé grâce aux API's data.gouv transformé en outils MCP (Légifrance, Data.Inclusion, INSEE ...)"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }

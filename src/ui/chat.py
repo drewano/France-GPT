@@ -53,6 +53,14 @@ async def chat_profile(user: Optional[cl.User]):
             name=profile.name,
             markdown_description=profile.description,
             icon=profile.icon,
+            starters=[
+                cl.Starter(
+                    label=starter.label,
+                    message=starter.message,
+                    icon=starter.icon
+                ) 
+                for starter in profile.starters
+            ] if profile.starters else []
         )
         for profile in AGENT_PROFILES.values()
     ]

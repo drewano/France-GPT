@@ -1,54 +1,5 @@
 # FranceGPT 🇫🇷
 
-<div align="center">
-<a href="https://www.python.org" target="_blank" rel="noreferrer">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="Python" height="40"/>
-</a>
-<a href="https://fastapi.tiangolo.com/" target="_blank" rel="noreferrer">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/fastapi/fastapi-original.svg" alt="FastAPI" height="40"/>
-</a>
-<a href="https://pydantic.dev/" target="_blank" rel="noreferrer">
-<img src="https://cdn.simpleicons.org/pydantic/E92063" alt="Pydantic" height="40"/>
-</a>
-<a href="https://chainlit.io/" target="_blank" rel="noreferrer">
-<img src="https://docs.chainlit.io/logo.svg" alt="Chainlit" height="40"/>
-</a>
-<a href="https://www.docker.com/" target="_blank" rel="noreferrer">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg" alt="Docker" height="40"/>
-</a>
-<a href="https://pydantic-ai.readthedocs.io/en/latest/concepts/mcp/" target="_blank" rel="noreferrer">
-<img src="https://img.shields.io/badge/FastMCP-%238A2BE2.svg?style=flat&logo=bolt&logoColor=white" alt="FastMCP" height="40"/>
-</a>
-</div>
-<br/>
-
-FranceGPT est une application conversationnelle de type ChatGPT, conçue pour interagir avec les données publiques françaises. Elle héberge une collection d'**Agents IA spécialisés** qui exploitent les API de `data.gouv.fr` (Légifrance, Data.Inclusion, INSEE, etc.) en les transformant en outils puissants et fiables pour les modèles de langage (LLM).
-
-
-*(Image d'illustration : L'interface Chainlit avec la sélection des profils d'agents spécialisés.)*
-
-## 🎯 Le Besoin Fondamental
-
-Les API gouvernementales, bien que riches en informations, ne sont pas directement utilisables par les agents IA. Leurs schémas complexes et leurs formats de données brutes constituent une barrière.
-
-**FranceGPT est né d'un besoin fondamental :** il faut transformer l'accès à ces API en **outils MCP (Model Context Protocol)**. Le protocole MCP standardise la communication entre les LLM et les services externes, rendant les interactions plus fiables, sécurisées et compréhensibles pour l'IA.
-
-Ce projet sert de pont, permettant aux agents IA de non seulement consommer les données publiques, mais aussi de les comprendre, de les croiser et de créer des workflows complexes pour automatiser des tâches et fournir des réponses précises et contextualisées.
-
-## ✨ Fonctionnalités Clés
-
-- **🤖 Collection d'Agents Spécialisés** : Des agents pré-configurés comme l'**Agent Social** (basé sur Data.Inclusion) et l'**Agent Juridique** (basé sur Légifrance), chacun avec son propre prompt système et ses outils dédiés.
-- **🔌 Serveurs MCP Dynamiques** : Utilise **FastMCP** pour créer dynamiquement des serveurs MCP pour chaque API gouvernementale configurée, rendant le système extensible à de nouvelles sources de données.
-- **🛠️ Transformation d'Outils Avancée** : Ne se contente pas de convertir les endpoints OpenAPI. Un `ToolTransformer` enrichit les outils générés avec des noms plus clairs, des descriptions améliorées et des schémas optimisés pour une meilleure compréhension par les LLM.
-- **💬 Interface Moderne avec Streaming** : Une interface utilisateur épurée de type ChatGPT construite avec **Chainlit**, offrant une expérience de streaming fluide qui montre en temps réel les appels d'outils (`cl.Step`).
-- **🧠 Agents Intelligents avec Pydantic AI** : Utilise **Pydantic AI** pour la création d'agents robustes, la gestion de l'historique des conversations et l'orchestration des appels d'outils.
-- **📦 Architecture Modulaire et Conteneurisée** : Une séparation claire des services (UI, Serveurs MCP, Base de données) via Docker, assurant la scalabilité et la facilité de déploiement.
-- **💾 Persistance des Données** : Sauvegarde des conversations, des utilisateurs et des éléments grâce à l'intégration de la couche de données de Chainlit avec une base de données PostgreSQL.
-
-## 🏗️ Architecture du Projet
-
-L'architecture de FranceGPT est conçue pour être modulaire et robuste, séparant clairement les responsabilités de chaque composant.
-
 ```mermaid
 graph TD
     subgraph "Navigateur Utilisateur"
@@ -213,5 +164,3 @@ Quand un utilisateur interagit, `ui/chat.py` sélectionne un profil d'agent déf
 Les contributions sont les bienvenues ! Que ce soit pour ajouter de nouveaux agents, intégrer de nouvelles API `data.gouv`, améliorer la documentation ou corriger des bugs, n'hésitez pas à ouvrir une Pull Request ou une Issue.
 
 ## 📜 Licence
-
-Ce projet est distribué sous la licence MIT. Voir le fichier `LICENSE` pour plus de détails.
