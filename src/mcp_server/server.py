@@ -6,6 +6,7 @@ Il transforme automatiquement les endpoints OpenAPI en outils MCP.
 """
 
 import asyncio
+import sys
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
@@ -116,4 +117,4 @@ if __name__ == "__main__":
         print("\nGoodbye!")
     except Exception as e:
         print(f"Failed to start MCP Gateway: {e}")
-        exit(1)
+        sys.exit(1)

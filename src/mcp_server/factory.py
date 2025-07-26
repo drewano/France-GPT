@@ -4,7 +4,8 @@ Factory class for constructing and configuring the MCP server.
 
 import json
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from dataclasses import dataclass
 
 from fastmcp import FastMCP
 from fastmcp.server.openapi import RouteMap, MCPType
@@ -14,8 +15,17 @@ import httpx  # Add this import for httpx.AsyncClient
 
 from ..core.config import MCPServiceConfig
 from .openapi_loader import OpenAPILoader
-from .tool_transformer import ToolTransformer
+from .tool_transformer import ToolTransformer, ToolTransformerConfig
 from .auth import create_auth_handler  # Import the new auth handler
+
+
+@dataclass
+class FactoryState:
+    """Container for factory state to reduce instance attributes."""
+    api_client: Optional[httpx.AsyncClient] = None
+    openapi_spec: Optional[Dict[str, Any]] = None
+    http_routes: Optional[list] = None
+    base_url: Optional[str] = None
 
 
 class MCPFactory:
@@ -36,10 +46,7 @@ class MCPFactory:
         """
         self.config = config
         self.logger = logger
-        self.api_client = None
-        self.openapi_spec = None
-        self.http_routes = None
-        self.base_url = None
+        self.state = FactoryState()
         self.op_id_to_mangled_name = {}
         self.tool_mappings = {}
 
@@ -55,7 +62,7 @@ class MCPFactory:
         """
         self.logger.info("Loading OpenAPI specification...")
         openapi_loader = OpenAPILoader(self.logger)
-        self.openapi_spec, self.http_routes = await openapi_loader.load(
+        self.state.openapi_spec, self.state.http_routes = await openapi_loader.load(
             self.config.openapi_path_or_url  # Use openapi_path_or_url
         )
 
@@ -66,22 +73,22 @@ class MCPFactory:
         This method analyzes the 'servers' section of the OpenAPI specification
         to determine the server's base URL.
         """
-        if not self.openapi_spec:
+        if not self.state.openapi_spec:
             raise ValueError("OpenAPI specification not loaded")
 
-        servers = self.openapi_spec.get("servers", [])
+        servers = self.state.openapi_spec.get("servers", [])
         if (
             servers
             and isinstance(servers, list)
             and len(servers) > 0
             and "url" in servers[0]
         ):
-            self.base_url = servers[0]["url"]
-            self.logger.info(f"Using base URL from OpenAPI spec: {self.base_url}")
+            self.state.base_url = servers[0]["url"]
+            self.logger.info(f"Using base URL from OpenAPI spec: {self.state.base_url}")
         else:
-            self.base_url = "http://localhost:8000"  # Default if not found in spec
+            self.state.base_url = "http://localhost:8000"  # Default if not found in spec
             self.logger.warning("No servers section found in OpenAPI spec.")
-            self.logger.warning(f"Using default base URL: {self.base_url}")
+            self.logger.warning(f"Using default base URL: {self.state.base_url}")
 
     def _create_api_client(self) -> None:
         """
@@ -90,7 +97,7 @@ class MCPFactory:
         This method creates an HTTP client configured with the base URL
         and appropriate authentication parameters.
         """
-        if not self.base_url:
+        if not self.state.base_url:
             raise ValueError("Base URL not determined")
 
         self.logger.info("Creating HTTP client with new authentication handler...")
@@ -101,8 +108,8 @@ class MCPFactory:
             "Accept": "application/json",
         }
 
-        self.api_client = httpx.AsyncClient(
-            base_url=self.base_url,
+        self.state.api_client = httpx.AsyncClient(
+            base_url=self.state.base_url,
             headers=headers,
             timeout=30.0,
             auth=auth_handler,  # Pass the auth handler
@@ -158,11 +165,11 @@ class MCPFactory:
         Raises:
             Exception: If server creation fails.
         """
-        if not self.openapi_spec:
+        if not self.state.openapi_spec:
             raise ValueError("OpenAPI specification not loaded")
-        if not self.http_routes:
+        if not self.state.http_routes:
             raise ValueError("HTTP routes not loaded")
-        if not self.api_client:
+        if not self.state.api_client:
             raise ValueError("API client not created")
 
         self.logger.info(f"Creating FastMCP server '{self.config.name}'...")
@@ -171,7 +178,7 @@ class MCPFactory:
         route_maps = []
         if self.config.name == "datainclusion":
             allowed_op_ids = set(self.tool_mappings.keys())
-            for route in self.http_routes:
+            for route in self.state.http_routes:
                 if route.operation_id in allowed_op_ids:
                     route_maps.append(
                         RouteMap(
@@ -183,18 +190,19 @@ class MCPFactory:
             route_maps.append(RouteMap(mcp_type=MCPType.EXCLUDE))
 
         # Création du transformer temporaire pour le callback
-        temp_transformer = ToolTransformer(
+        temp_transformer_config = ToolTransformerConfig(
             mcp_server=None,  # type: ignore # Sera défini après création du serveur
-            http_routes=self.http_routes,
+            http_routes=self.state.http_routes,
             custom_tool_names=self.tool_mappings,  # Use loaded mappings
             op_id_map=self.op_id_to_mangled_name,
             logger=self.logger,
         )
+        temp_transformer = ToolTransformer(config=temp_transformer_config)
 
         # Création du serveur MCP
         mcp_server = FastMCP.from_openapi(
-            openapi_spec=self.openapi_spec,
-            client=self.api_client,
+            openapi_spec=self.state.openapi_spec,
+            client=self.state.api_client,
             name=self.config.name,
             route_maps=route_maps,  # Pass the dynamically created route_maps
             auth=None,
@@ -226,17 +234,18 @@ class MCPFactory:
         Raises:
             Exception: If tool transformation fails.
         """
-        if not self.http_routes:
+        if not self.state.http_routes:
             raise ValueError("HTTP routes not loaded")
 
         self.logger.info("Transforming tools...")
-        tool_transformer = ToolTransformer(
+        tool_transformer_config = ToolTransformerConfig(
             mcp_server=mcp_server,
-            http_routes=self.http_routes,
+            http_routes=self.state.http_routes,
             custom_tool_names=self.tool_mappings,  # Use loaded mappings
             op_id_map=self.op_id_to_mangled_name,
             logger=self.logger,
         )
+        tool_transformer = ToolTransformer(config=tool_transformer_config)
         await tool_transformer.transform_tools()
 
     async def build(self) -> FastMCP:
@@ -265,9 +274,6 @@ class MCPFactory:
             # 4. Create the authenticated API client
             self._create_api_client()
 
-            # 5. Configure authentication
-            # auth_provider = self._configure_auth()
-
             # 6. Create the MCP server
             mcp_server = self._create_mcp_server()
 
@@ -278,15 +284,15 @@ class MCPFactory:
 
         except Exception as e:
             self.logger.error(f"Failed to build MCP server: {e}")
-            if self.api_client:
-                await self.api_client.aclose()
+            if self.state.api_client:
+                await self.state.api_client.aclose()
             raise
 
     async def cleanup(self) -> None:
         """
         Cleans up resources used by the factory.
         """
-        if self.api_client:
+        if self.state.api_client:
             self.logger.info("Closing HTTP client...")
-            await self.api_client.aclose()
+            await self.state.api_client.aclose()
             self.logger.info("HTTP client closed successfully")

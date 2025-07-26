@@ -17,6 +17,9 @@ Le processus de transformation se déroule en plusieurs étapes :
 """
 
 import logging
+from dataclasses import dataclass
+from typing import Dict, List
+
 from fastmcp import FastMCP
 from fastmcp.tools import Tool
 from fastmcp.tools.tool_transform import ArgTransform
@@ -24,6 +27,16 @@ from fastmcp.utilities.components import FastMCPComponent
 from fastmcp.utilities.openapi import HTTPRoute
 
 from .utils import find_route_by_id, clean_json_schema
+
+
+@dataclass
+class ToolTransformerConfig:
+    """Configuration class for ToolTransformer to reduce argument count."""
+    mcp_server: FastMCP
+    http_routes: List[HTTPRoute]
+    custom_tool_names: Dict[str, str]
+    op_id_map: Dict[str, str]
+    logger: logging.Logger
 
 
 class ToolTransformer:
@@ -35,29 +48,18 @@ class ToolTransformer:
     avec des noms personnalisés, des descriptions améliorées et des métadonnées.
     """
 
-    def __init__(
-        self,
-        mcp_server: FastMCP,
-        http_routes: list[HTTPRoute],
-        custom_tool_names: dict[str, str],
-        op_id_map: dict[str, str],
-        logger: logging.Logger,
-    ):
+    def __init__(self, config: ToolTransformerConfig):
         """
-        Initialise le transformateur d'outils avec les paramètres nécessaires.
+        Initialise le transformateur d'outils avec la configuration.
 
         Args:
-            mcp_server: Instance du serveur MCP où les outils seront enregistrés
-            http_routes: Liste des routes HTTP OpenAPI pour l'enrichissement des descriptions
-            custom_tool_names: Mapping des operation_ids vers les noms d'outils personnalisés
-            op_id_map: Mapping des operation_ids vers les noms d'outils générés par FastMCP
-            logger: Instance du logger pour enregistrer le processus de transformation
+            config: Configuration object containing all required parameters
         """
-        self.mcp_server = mcp_server
-        self.http_routes = http_routes
-        self.custom_tool_names = custom_tool_names
-        self.op_id_map = op_id_map
-        self.logger = logger
+        self.mcp_server = config.mcp_server
+        self.http_routes = config.http_routes
+        self.custom_tool_names = config.custom_tool_names
+        self.op_id_map = config.op_id_map
+        self.logger = config.logger
 
     def discover_and_customize(
         self,
@@ -135,22 +137,15 @@ class ToolTransformer:
                 if not original_tool:
                     continue
 
-                # Enrichir les arguments avec des descriptions
-                arg_transforms, param_count = self._enrich_arguments(route)
-
-                # Créer la description enrichie
-                tool_description = self._create_tool_description(route, new_name)
-
-                # Créer les tags pour l'organisation
-                tool_tags = self._create_tool_tags(new_name)
-
+                # Process tool transformation
+                transform_result = self._process_tool_transformation(route, new_name)               
                 # Créer l'outil transformé
                 transformed_tool = Tool.from_tool(
                     tool=original_tool,
                     name=new_name,
-                    description=tool_description,
-                    transform_args=arg_transforms if arg_transforms else None,
-                    tags=tool_tags,
+                    description=transform_result["description"],
+                    transform_args=transform_result["arg_transforms"],
+                    tags=transform_result["tags"],
                 )
 
                 # Remplacer l'outil original par le transformé
@@ -160,12 +155,12 @@ class ToolTransformer:
                 successful_renames += 1
                 enrichment_info = []
 
-                if tool_description:
+                if transform_result["description"]:
                     enrichment_info.append("description")
-                if param_count > 0:
-                    enrichment_info.append(f"{param_count} param descriptions")
-                if tool_tags:
-                    enrichment_info.append(f"{len(tool_tags)} tags")
+                if transform_result["param_count"] > 0:
+                    enrichment_info.append(f"{transform_result['param_count']} param descriptions")
+                if transform_result["tags"]:
+                    enrichment_info.append(f"{len(transform_result['tags'])} tags")
 
                 enrichment_msg = (
                     f" (enriched: {', '.join(enrichment_info)})"
@@ -303,6 +298,32 @@ class ToolTransformer:
             return route.summary.strip()
         # Description par défaut basée sur le nom de l'outil
         return f"Execute the {new_name} operation on the Data Inclusion API"
+
+    def _process_tool_transformation(self, route: HTTPRoute, new_name: str) -> dict:
+        """
+        Process tool transformation and return all necessary components.
+
+        Args:
+            route: The HTTP route for the tool
+            new_name: The new name for the tool
+
+        Returns:
+            Dictionary containing description, arg_transforms, tags, and param_count
+        """
+        # Enrichir les arguments avec des descriptions
+        arg_transforms, param_count = self._enrich_arguments(route)
+
+        # Créer la description enrichie
+        tool_description = self._create_tool_description(route, new_name)
+
+        # Créer les tags pour l'organisation
+        tool_tags = self._create_tool_tags(new_name)       
+        return {
+            "description": tool_description,
+            "arg_transforms": arg_transforms,
+            "tags": tool_tags,
+            "param_count": param_count
+        }
 
     def _create_tool_tags(self, new_name: str) -> set[str]:
         """
