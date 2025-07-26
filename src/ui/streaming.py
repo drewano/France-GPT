@@ -138,7 +138,7 @@ async def _handle_tool_call_event(
 
     # Créer un Step pour l'appel d'outil
     step = cl.Step(
-        name=f"🔧 {tool_name}",
+        name=f"{tool_name}",
         type="tool",
         show_input="json" if tool_args else False,
         language="json",
