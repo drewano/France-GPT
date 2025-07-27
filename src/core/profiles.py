@@ -82,4 +82,14 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
         ),
         mcp_service_name="legifrance",
     ),
+    "insee_agent": AgentProfile(
+        id="insee_agent",
+        name="Agent Insee",
+        description="Un assistant expert de l'INSEE, capable de rechercher des données statistiques et des données géographiques.",
+        icon="/public/avatars/insee_agent.svg",
+        system_prompt=(
+            "Tu es un assistant expert de l'INSEE, capable de rechercher des données statistiques et des données géographiques."
+        ),
+        mcp_service_name="insee",
+    ),
 }
