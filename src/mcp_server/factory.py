@@ -176,7 +176,7 @@ class MCPFactory:
 
         # Configuration des routes MCP
         route_maps = []
-        if self.config.name == "datainclusion":
+        if self.config.name in ["datainclusion", "legifrance"]:
             allowed_op_ids = set(self.tool_mappings.keys())
             for route in self.state.http_routes:
                 if route.operation_id in allowed_op_ids:
