@@ -27,6 +27,7 @@ from fastmcp.utilities.components import FastMCPComponent
 from fastmcp.utilities.openapi import HTTPRoute
 
 from .utils import find_route_by_id, clean_json_schema
+from .services.legifrance.tool_definitions import LEGIFRANCE_TOOL_DEFINITIONS
 
 
 @dataclass
@@ -162,11 +163,13 @@ class ToolTransformer:
                 if transform_result["tags"]:
                     enrichment_info.append(f"{len(transform_result['tags'])} tags")
 
-                enrichment_msg = (
-                    f" (enriched: {', '.join(enrichment_info)})"
-                    if enrichment_info
-                    else ""
-                )
+                # Améliorer le message de log pour indiquer l'utilisation d'une définition détaillée
+                enrichment_msg = ""
+                if transform_result.get("detailed_definition", False):
+                    enrichment_msg = " (enriched with detailed definition)"
+                elif enrichment_info:
+                    enrichment_msg = f" (enriched: {', '.join(enrichment_info)})"
+
                 self.logger.info(
                     f"  ✓ Transformed tool: '{original_name}' -> '{new_name}'{enrichment_msg}"
                 )
@@ -310,20 +313,63 @@ class ToolTransformer:
         Returns:
             Dictionary containing description, arg_transforms, tags, and param_count
         """
-        # Enrichir les arguments avec des descriptions
-        arg_transforms, param_count = self._enrich_arguments(route)
+        # Vérifier si une définition détaillée existe pour cet outil
+        if new_name in LEGIFRANCE_TOOL_DEFINITIONS:
+            # Utiliser la définition détaillée pour les outils Légifrance
+            definition = LEGIFRANCE_TOOL_DEFINITIONS[new_name]
+            
+            # Utiliser la description de la définition détaillée
+            tool_description = definition["description"]
+            
+            # Construire le dictionnaire arg_transforms à partir de la définition
+            arg_transforms = {}
+            param_count = 0
+            
+            for arg_name, arg_info in definition["arguments"].items():
+                # Créer une instance de ArgTransform avec les valeurs de la définition
+                transforms = {}
+                
+                if "description" in arg_info:
+                    transforms["description"] = arg_info["description"]
+                    
+                if "hide" in arg_info:
+                    transforms["hide"] = arg_info["hide"]
+                    
+                if "name" in arg_info:
+                    transforms["name"] = arg_info["name"]
+                    
+                if transforms:
+                    arg_transforms[arg_name] = ArgTransform(**transforms)
+                    param_count += 1
+                    
+            # Créer les tags pour l'organisation
+            tool_tags = self._create_tool_tags(new_name)
+            
+            return {
+                "description": tool_description,
+                "arg_transforms": arg_transforms,
+                "tags": tool_tags,
+                "param_count": param_count,
+                "detailed_definition": True  # Indicateur pour le logging
+            }
+        else:
+            # Conserver la logique existante (générique) comme fallback
+            # Enrichir les arguments avec des descriptions
+            arg_transforms, param_count = self._enrich_arguments(route)
 
-        # Créer la description enrichie
-        tool_description = self._create_tool_description(route, new_name)
+            # Créer la description enrichie
+            tool_description = self._create_tool_description(route, new_name)
 
-        # Créer les tags pour l'organisation
-        tool_tags = self._create_tool_tags(new_name)       
-        return {
-            "description": tool_description,
-            "arg_transforms": arg_transforms,
-            "tags": tool_tags,
-            "param_count": param_count
-        }
+            # Créer les tags pour l'organisation
+            tool_tags = self._create_tool_tags(new_name)
+            
+            return {
+                "description": tool_description,
+                "arg_transforms": arg_transforms,
+                "tags": tool_tags,
+                "param_count": param_count,
+                "detailed_definition": False  # Indicateur pour le logging
+            }
 
     def _create_tool_tags(self, new_name: str) -> set[str]:
         """
