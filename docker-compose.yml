@@ -4,7 +4,7 @@ services:
   # --- Service 1: Le serveur MCP ---
   # Ce service exécute le serveur FastMCP qui transforme l'API data.inclusion en outils.
   mcp_server:
-    container_name: datainclusion-mcp-server
+    container_name: france-gpt-mcp-server
     build:
       context: .
       dockerfile: Dockerfile
@@ -33,7 +33,7 @@ services:
   # --- Service 2: L'Agent IA et l'interface Chainlit/FastAPI ---
   # C'est le service principal, qui fournit l'interface utilisateur et l'API de chat.
   agent:
-    container_name: datainclusion-agent-ui
+    container_name: france-gpt-ui
     build:
       context: .
       dockerfile: Dockerfile
@@ -95,7 +95,7 @@ services:
       - datainclusion-net
     ports:
       # Expose le port PostgreSQL pour connexion locale si nécessaire
-      - "5432:5432"
+      - "5433:5433"
     restart: unless-stopped
     healthcheck:
       # Vérifie que PostgreSQL est prêt à accepter des connexions

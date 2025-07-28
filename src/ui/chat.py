@@ -15,6 +15,9 @@ from src.agent.ui_tools import display_website
 from src.core.profiles import AGENT_PROFILES
 from src.ui import data_layer
 
+# Import Langfuse
+from langfuse import get_client
+
 
 async def _setup_agent():
     """
@@ -138,26 +141,39 @@ async def on_message(message: cl.Message):
         message: Le message reçu de l'utilisateur
     """
     try:
-        # Récupérer l'agent depuis la session utilisateur
-        agent = cl.user_session.get("agent")
+        # Get Langfuse client
+        langfuse = get_client()
+        
+        # Start a span for this user interaction
+        with langfuse.start_as_current_span(name="user-chat-interaction") as span: # pylint: disable=not-context-manager
+            # Update trace with metadata
+            span.update_trace(
+                user_id=cl.user_session.get("user").identifier if cl.user_session.get("user") else "unknown",
+                session_id=message.thread_id,
+                tags=[cl.user_session.get("selected_profile_id")],
+                metadata={"user_message": message.content}
+            )
+            
+            # Récupérer l'agent depuis la session utilisateur
+            agent = cl.user_session.get("agent")
 
-        if agent is None:
-            await cl.Message(
-                content="❌ **Erreur de configuration**: L'agent IA n'est pas disponible. "
-                "Veuillez rafraîchir la page pour réinitialiser la session."
-            ).send()
-            return
+            if agent is None:
+                await cl.Message(
+                    content="❌ **Erreur de configuration**: L'agent IA n'est pas disponible. "
+                    "Veuillez rafraîchir la page pour réinitialiser la session."
+                ).send()
+                return
 
-        # Récupérer l'historique existant depuis la session
-        message_history = cl.user_session.get("message_history", [])
+            # Récupérer l'historique existant depuis la session
+            message_history = cl.user_session.get("message_history", [])
 
-        # Traiter le message avec l'agent moderne et streaming parfait
-        updated_history = await process_agent_modern_with_history(
-            agent, message.content, message_history
-        )
+            # Traiter le message avec l'agent moderne et streaming parfait
+            updated_history = await process_agent_modern_with_history(
+                agent, message.content, message_history
+            )
 
-        # Sauvegarder l'historique mis à jour dans la session
-        cl.user_session.set("message_history", updated_history)
+            # Sauvegarder l'historique mis à jour dans la session
+            cl.user_session.set("message_history", updated_history)
 
     except RuntimeError as e:
         # Gestion des erreurs générales
@@ -165,6 +181,7 @@ async def on_message(message: cl.Message):
             content=f"❌ **Erreur lors du traitement**: {str(e)}\n\n"
             "Veuillez réessayer ou reformuler votre question."
         ).send()
+
 
 
 @cl.on_chat_end

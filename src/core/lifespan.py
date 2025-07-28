@@ -7,9 +7,13 @@ et la finalisation de l'application FastAPI avec l'agent IA.
 
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import httpx  # Import httpx
+
+# Imports Langfuse
+from langfuse import Langfuse, get_client
 
 # Imports locaux
 from .config import settings
@@ -62,6 +66,26 @@ async def lifespan(_app: FastAPI):
 
     # Configuration de l'environnement
     setup_environment()
+
+    # Initialisation du client Langfuse si les clés sont présentes
+    if (settings.agent.LANGFUSE_PUBLIC_KEY and settings.agent.LANGFUSE_SECRET_KEY):
+        # Configuration des variables d'environnement pour Langfuse
+        os.environ["LANGFUSE_PUBLIC_KEY"] = settings.agent.LANGFUSE_PUBLIC_KEY
+        os.environ["LANGFUSE_SECRET_KEY"] = settings.agent.LANGFUSE_SECRET_KEY
+        if settings.agent.LANGFUSE_HOST:
+            os.environ["LANGFUSE_HOST"] = settings.agent.LANGFUSE_HOST
+
+        # Initialisation du client Langfuse
+        try:
+            langfuse = Langfuse()
+            if langfuse.auth_check():
+                logger.info("✅ Client Langfuse initialisé avec succès")
+            else:
+                logger.warning("⚠️ Échec de l'authentification Langfuse")
+        except Exception as e:
+            logger.warning("⚠️ Impossible d'initialiser le client Langfuse: %s", e)
+    else:
+        logger.info("ℹ️ Langfuse désactivé (clés API non configurées)")
 
     # Initialisation de la base de données
     try:
@@ -132,6 +156,16 @@ async def lifespan(_app: FastAPI):
         yield
         # Le code après yield s'exécute lors du shutdown
         logger.info("🛑 Arrêt de l'application...")
+        
+        # Flush et shutdown du client Langfuse
+        try:
+            langfuse_client = get_client()
+            langfuse_client.flush()
+            langfuse_client.shutdown()
+            logger.info("✅ Client Langfuse arrêté proprement")
+        except Exception as e:
+            logger.warning("⚠️ Erreur lors de l'arrêt du client Langfuse: %s", e)
+        
         logger.info("✅ Nettoyage terminé")
     else:
         # Si on arrive ici, c'est que la boucle s'est terminée sans succès

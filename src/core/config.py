@@ -80,6 +80,11 @@ class AgentSettings(BaseSettings):
     APP_AWS_REGION: str = "eu-central-1"
     DEV_AWS_ENDPOINT: str | None = None
 
+    # Configuration Langfuse (optionnelle)
+    LANGFUSE_PUBLIC_KEY: Optional[str] = None
+    LANGFUSE_SECRET_KEY: Optional[str] = None
+    LANGFUSE_HOST: Optional[str] = "https://cloud.langfuse.com"
+
 
 class BearerAuthConfig(BaseModel):
     api_key_env_var: str

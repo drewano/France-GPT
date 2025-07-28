@@ -26,7 +26,7 @@ from pydantic_ai.messages import (
     TextPartDelta,
     ToolCallPartDelta,
 )
-
+from langfuse import observe
 # Configuration du logging
 logger = logging.getLogger("datainclusion.streaming")
 
@@ -106,6 +106,7 @@ async def _handle_model_event(
     return response_message
 
 
+@observe()
 async def _handle_call_tools_node(
     node, agent_run, active_tool_steps: Dict[str, cl.Step], tool_call_counter: int
 ) -> int:
