@@ -80,6 +80,11 @@ class AgentSettings(BaseSettings):
     APP_AWS_REGION: str = "eu-central-1"
     DEV_AWS_ENDPOINT: str | None = None
 
+    # Configuration Langfuse pour le tracing
+    LANGFUSE_PUBLIC_KEY: str = ""
+    LANGFUSE_SECRET_KEY: str = ""
+    LANGFUSE_HOST: str | None = None
+
 
 class BearerAuthConfig(BaseModel):
     api_key_env_var: str

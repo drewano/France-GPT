@@ -94,4 +94,6 @@ def create_agent_from_profile(
         system_prompt=profile.system_prompt,
         # Configuration des toolsets (MCP + UI)
         toolsets=all_toolsets,
+        # Activation de l'instrumentation pour le tracing avec Langfuse
+        instrument=True,
     )

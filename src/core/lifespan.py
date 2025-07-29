@@ -7,6 +7,7 @@ et la finalisation de l'application FastAPI avec l'agent IA.
 
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import httpx  # Import httpx
@@ -14,6 +15,10 @@ import httpx  # Import httpx
 # Imports locaux
 from .config import settings
 from ..db.session import initialize_database
+
+# Langfuse and Pydantic AI imports
+from langfuse import get_client
+from pydantic_ai.agent import Agent
 
 # Configuration du logging
 logger = logging.getLogger("datainclusion.agent")
@@ -62,6 +67,26 @@ async def lifespan(_app: FastAPI):
 
     # Configuration de l'environnement
     setup_environment()
+
+    # Configuration des variables d'environnement pour Langfuse
+    os.environ["LANGFUSE_PUBLIC_KEY"] = settings.agent.LANGFUSE_PUBLIC_KEY
+    os.environ["LANGFUSE_SECRET_KEY"] = settings.agent.LANGFUSE_SECRET_KEY
+    if settings.agent.LANGFUSE_HOST:
+        os.environ["LANGFUSE_HOST"] = settings.agent.LANGFUSE_HOST
+
+    # Initialisation de l'instrumentation et vérification de l'authentification
+    if settings.agent.LANGFUSE_PUBLIC_KEY and settings.agent.LANGFUSE_SECRET_KEY:
+        logger.info(" Initialisation de l'instrumentation Langfuse pour Pydantic AI...")
+        Agent.instrument_all()
+        langfuse_client = get_client()
+        if langfuse_client.auth_check():
+            logger.info("✅ Connexion à Langfuse réussie.")
+        else:
+            logger.error("❌ Échec de l'authentification à Langfuse. Veuillez vérifier vos clés.")
+            # Optionnel mais recommandé : lever une exception pour empêcher le démarrage
+            # raise RuntimeError("Échec de la connexion à Langfuse.")
+    else:
+        logger.warning("⚠️ Clés Langfuse non fournies. Le tracing est désactivé.")
 
     # Initialisation de la base de données
     try:
