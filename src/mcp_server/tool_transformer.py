@@ -32,6 +32,7 @@ from .utils import find_route_by_id, clean_json_schema
 @dataclass
 class ToolTransformerConfig:
     """Configuration class for ToolTransformer to reduce argument count."""
+
     mcp_server: FastMCP
     http_routes: List[HTTPRoute]
     custom_tool_names: Dict[str, str]
@@ -138,7 +139,7 @@ class ToolTransformer:
                     continue
 
                 # Process tool transformation
-                transform_result = self._process_tool_transformation(route, new_name)               
+                transform_result = self._process_tool_transformation(route, new_name)
                 # Créer l'outil transformé
                 transformed_tool = Tool.from_tool(
                     tool=original_tool,
@@ -158,7 +159,9 @@ class ToolTransformer:
                 if transform_result["description"]:
                     enrichment_info.append("description")
                 if transform_result["param_count"] > 0:
-                    enrichment_info.append(f"{transform_result['param_count']} param descriptions")
+                    enrichment_info.append(
+                        f"{transform_result['param_count']} param descriptions"
+                    )
                 if transform_result["tags"]:
                     enrichment_info.append(f"{len(transform_result['tags'])} tags")
 
@@ -317,12 +320,12 @@ class ToolTransformer:
         tool_description = self._create_tool_description(route, new_name)
 
         # Créer les tags pour l'organisation
-        tool_tags = self._create_tool_tags(new_name)       
+        tool_tags = self._create_tool_tags(new_name)
         return {
             "description": tool_description,
             "arg_transforms": arg_transforms,
             "tags": tool_tags,
-            "param_count": param_count
+            "param_count": param_count,
         }
 
     def _create_tool_tags(self, new_name: str) -> set[str]:

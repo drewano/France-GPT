@@ -12,13 +12,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import httpx  # Import httpx
 
+# Langfuse and Pydantic AI imports
+from langfuse import get_client
+from pydantic_ai.agent import Agent
+
 # Imports locaux
 from .config import settings
 from ..db.session import initialize_database
 
-# Langfuse and Pydantic AI imports
-from langfuse import get_client
-from pydantic_ai.agent import Agent
+
 
 # Configuration du logging
 logger = logging.getLogger("datainclusion.agent")
@@ -82,7 +84,9 @@ async def lifespan(_app: FastAPI):
         if langfuse_client.auth_check():
             logger.info("✅ Connexion à Langfuse réussie.")
         else:
-            logger.error("❌ Échec de l'authentification à Langfuse. Veuillez vérifier vos clés.")
+            logger.error(
+                "❌ Échec de l'authentification à Langfuse. Veuillez vérifier vos clés."
+            )
             # Optionnel mais recommandé : lever une exception pour empêcher le démarrage
             # raise RuntimeError("Échec de la connexion à Langfuse.")
     else:
