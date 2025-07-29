@@ -5,9 +5,6 @@ Ce module contient la fonction factory qui instancie l'agent PydanticAI
 avec sa configuration spécialisée pour l'inclusion sociale en France.
 """
 
-# Langfuse OpenAI integration - doit être importé avant pydantic_ai pour le monkey-patching
-from langfuse.openai import openai
-
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerStreamableHTTP
 from pydantic_ai.models.openai import OpenAIModel
@@ -97,4 +94,6 @@ def create_agent_from_profile(
         system_prompt=profile.system_prompt,
         # Configuration des toolsets (MCP + UI)
         toolsets=all_toolsets,
+        # Activation de l'instrumentation pour le tracing avec Langfuse
+        instrument=True,
     )

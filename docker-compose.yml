@@ -11,16 +11,16 @@ services:
     env_file:
       - .env
     environment:
-      - MCP_PORT=8000
+      - MCP_PORT=8001
     networks:
       - datainclusion-net
     ports:
-      - "8000:8000"
+      - "8001:8001"
       - "8002:8002"
       - "8003:8003"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health && curl -f http://localhost:8002/health && curl -f http://localhost:8003/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/health && curl -f http://localhost:8002/health && curl -f http://localhost:8003/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -36,7 +36,7 @@ services:
       - .env
     environment:
       # --- Configuration existante ---
-      - AGENT_PORT=8001
+      - AGENT_PORT=8000
       - MCP_SERVER_HOST_URL=http://mcp_server
       - DATABASE_URL=postgresql+asyncpg://user:password@postgres:5432/datainclusion
       - ENVIRONMENT=production
@@ -60,7 +60,7 @@ services:
       # Réseau partagé pour communiquer avec Langfuse
       - francegpt-langfuse-net
     ports:
-      - "8001:8001"
+      - "8000:8000"
     depends_on:
       mcp_server:
         condition: service_healthy
@@ -70,7 +70,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
