@@ -100,8 +100,13 @@ class MCPFactory:
         if not self.state.base_url:
             raise ValueError("Base URL not determined")
 
-        self.logger.info("Creating HTTP client with new authentication handler...")
-        auth_handler = create_auth_handler(self.config.auth, self.logger)
+        self.logger.info("Creating HTTP client...")
+        auth_handler = None  # Default to no auth handler
+        
+        # Only create auth handler if auth config is provided
+        if self.config.auth:
+            self.logger.info("Creating authentication handler...")
+            auth_handler = create_auth_handler(self.config.auth, self.logger)
 
         headers = {
             "User-Agent": "DataInclusion-MCP-Server/1.0",
@@ -112,9 +117,12 @@ class MCPFactory:
             base_url=self.state.base_url,
             headers=headers,
             timeout=30.0,
-            auth=auth_handler,  # Pass the auth handler
+            auth=auth_handler,  # Pass the auth handler (can be None)
         )
-        self.logger.info("HTTP client created successfully with authentication.")
+        if auth_handler:
+            self.logger.info("HTTP client created successfully with authentication.")
+        else:
+            self.logger.info("HTTP client created successfully without authentication.")
 
     def _load_tool_mappings(self) -> Dict[str, Any]:
         """
@@ -176,7 +184,7 @@ class MCPFactory:
 
         # Configuration des routes MCP
         route_maps = []
-        if self.config.name in ["datainclusion", "legifrance"]:
+        if self.config.name == "datainclusion":
             allowed_op_ids = set(self.tool_mappings.keys())
             for route in self.state.http_routes:
                 if route.operation_id in allowed_op_ids:

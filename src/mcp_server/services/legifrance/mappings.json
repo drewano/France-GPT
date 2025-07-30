@@ -1,8 +1,0 @@
-{
-    "searchUsingPOST": "recherche_approfondie",
-    "getArticleUsingPOST": "consulter_article_par_id",
-    "displayTextTableOfContentsUsingPOST": "consulter_table_des_matieres",
-    "displayJuriUsingPOST": "rechercher_jurisprudence",
-    "displayLegiPartUsingPOST": "consulter_section_texte_legi",
-    "crossSearchUsingPOST": "recherche_simplifiee"
-}
