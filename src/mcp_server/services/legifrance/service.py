@@ -46,21 +46,62 @@ def _get_legifrance_client() -> LegifranceClient:
     
     return _legifrance_client
 
+# Initialize client and service objects once at module level
+client = _get_legifrance_client()
+loda_service = Loda(client)
+juri_service = JuriAPI(client)
+code_service = Code(client)
+
+# Mapping of ID prefixes to their corresponding fetcher functions
+ID_FETCHER_MAPPING = {
+    "JURI": juri_service.fetch,
+    "LEGIARTI": code_service.fetch_article,
+    "LEGI": loda_service.fetch,
+    "JORF": loda_service.fetch,
+}
+
+def _format_document_output(document, doc_id: str) -> Dict[str, str]:
+    """
+    Format a document object into a standardized output dictionary.
+    
+    Args:
+        document: A document object returned by pylegifrance (TexteLoda, Article, JuriDecision, etc.)
+        doc_id: The document ID string
+        
+    Returns:
+        Dict containing formatted document information
+    """
+    # Extract title with fallback chain based on model attributes
+    titre = getattr(document, 'title', '') or getattr(document, 'titre', '') or getattr(document, 'long_title', '')
+    
+    # Extract content with fallback chain based on model attributes
+    contenu_html = getattr(document, 'content', '') or getattr(document, 'text_html', '') or getattr(document, 'text', '')
+    
+    # Construct URL based on document ID prefix
+    if doc_id.startswith("JURI"):
+        url = f"https://www.legifrance.gouv.fr/juri/id/{doc_id}"
+    elif doc_id.startswith("LEGIARTI"):
+        url = f"https://www.legifrance.gouv.fr/codes/article_lc/{doc_id}"
+    elif doc_id.startswith("LEGITEXT") or doc_id.startswith("LEGI") or doc_id.startswith("JORF"):
+        url = f"https://www.legifrance.gouv.fr/eli/id/{doc_id}"
+    else:
+        url = f"https://www.legifrance.gouv.fr"
+    
+    return {
+        "titre": titre,
+        "id": doc_id,
+        "contenu_html": contenu_html,
+        "url": url
+    }
+
 async def rechercher_textes_juridiques(mots_cles: str) -> List[Dict[str, str]]:
     """
     Recherche des documents juridiques français (lois, décrets, articles de code, jurisprudences) par mots-clés.
     """
     try:
-        # Initialisation du client Legifrance
-        client = _get_legifrance_client()
-        
-        # Initialisation des classes LODA et JURI
-        loda = Loda(client)
-        juri = JuriAPI(client)
-        
-        # Recherche dans les deux fonds
-        loda_results = loda.search(mots_cles)
-        juri_results = juri.search(mots_cles)
+        # Recherche simple par mots-clés dans les fonds LODA et JURI
+        loda_results = loda_service.search(query=mots_cles)
+        juri_results = juri_service.search(query=mots_cles)
         
         # Formatage des résultats LODA
         formatted_loda_results = []
@@ -114,46 +155,21 @@ async def consulter_document_par_id(id_document: str) -> Optional[Dict[str, str]
     Récupère le contenu complet d'un document juridique à partir de son ID unique.
     """
     try:
-        # Initialisation du client Legifrance
-        client = _get_legifrance_client()
+        # Initialize document as None
+        document = None
         
-        # Inspection du préfixe de l'ID pour déterminer le type de document
-        if id_document.startswith("JURI"):
-            # Utilisation de la classe Juri pour les jurisprudences
-            juri = JuriAPI(client)
-            document = juri.fetch(id_document)
-        elif id_document.startswith("LEGIARTI"):
-            # Utilisation de la classe Code pour les articles de code
-            code = Code(client)
-            document = code.fetch_article(id_document)
-        else:
-            # ID non reconnu
-            return None
+        # Find the appropriate fetcher based on ID prefix
+        for prefix, fetcher in ID_FETCHER_MAPPING.items():
+            if id_document.startswith(prefix):
+                document = fetcher(id_document)
+                break
         
-        # Si le document n'a pas été trouvé
+        # If no matching prefix was found or document is None
         if document is None:
             return None
         
-        # Formatage de la réponse
-        titre = getattr(document, 'title', '') or getattr(document, 'titre', '') or getattr(document, 'long_title', '')
-        contenu_html = getattr(document, 'content', '') or getattr(document, 'text', '')
-        
-        # Construction de l'URL
-        if id_document.startswith("JURI"):
-            url = f"https://www.legifrance.gouv.fr/juri/id/{id_document}"
-        elif id_document.startswith("LEGIARTI"):
-            url = f"https://www.legifrance.gouv.fr/codes/article_lc/{id_document}"
-        elif id_document.startswith("LEGITEXT"):
-            url = f"https://www.legifrance.gouv.fr/eli/id/{id_document}"
-        else:
-            url = f"https://www.legifrance.gouv.fr"
-        
-        return {
-            "titre": titre,
-            "id": id_document,
-            "contenu_html": contenu_html,
-            "url": url
-        }
+        # Format the document output using the standardized function
+        return _format_document_output(document, id_document)
     
     except Exception as e:
         raise Exception(f"Erreur de l'API Légifrance: {str(e)}")
