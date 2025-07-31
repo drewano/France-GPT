@@ -81,6 +81,23 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "les lois et la jurisprudence. Sois précis, cite tes sources et n'interprète pas la loi."
         ),
         mcp_service_name="legifrance",
+        starters=[
+            StarterConfig(
+                label="Rechercher un article de code",
+                message="Trouve-moi l'article 111-1 du code civil.",
+                icon="/public/icons/law.png",
+            ),
+            StarterConfig(
+                label="Rechercher une loi",
+                message="Trouve-moi la loi n°2024-1234 du 1er janvier 2024.",
+                icon="/public/icons/law.png",
+            ),
+            StarterConfig(
+                label="Rechercher une décision de justice",
+                message="Trouve-moi la décision de justice n°2024-1234 du 1er janvier 2024.",
+                icon="/public/icons/law.png",
+            ),
+        ],
     ),
     "insee_agent": AgentProfile(
         id="insee_agent",
