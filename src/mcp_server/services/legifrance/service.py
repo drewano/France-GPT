@@ -1,6 +1,7 @@
 import os
 import logging
 from typing import List, Dict, Any, Optional
+from datetime import datetime
 
 # --- Dépendances Pylegifrance ---
 # Assurez-vous que pylegifrance est installé : uv add pylegifrance
@@ -59,33 +60,25 @@ except ValueError as e:
 # --- Fonction de formatage partagée pour les documents complets ---
 def _format_full_document_output(document: Any) -> Dict[str, str]:
     """
-    Formate un objet document COMPLET (obtenu via fetch_*) en un dictionnaire standardisé.
-    Cette version gère les documents "conteneurs" (lois, décrets, conventions) en agrégeant 
-    le texte de leurs articles pour fournir un contenu complet et utile.
+    Formate un objet document (TexteLoda, JuriDecision, Article) en un dictionnaire standardisé.
+    S'appuie sur les propriétés de pylegifrance pour obtenir le contenu HTML complet.
     """
     if not document:
         return {}
 
-    contenu_html = ''
-    
-    # Gère les documents qui sont des conteneurs d'articles (Lois, Décrets, etc.)
-    # en assemblant leur contenu. C'est plus utile que le texte du conteneur vide.
-    if hasattr(document, 'articles') and document.articles:
-        html_parts = []
-        for article in document.articles:
-            num_article = getattr(article, 'num', '') or ''
-            titre_article = f"<h4>Article {num_article}</h4>" if num_article else ""
-            texte_article = getattr(article, 'text', '') or ''
-            html_parts.append(f"{titre_article}<div>{texte_article}</div><hr>")
-        contenu_html = "".join(html_parts)
-    
-    # Fallback pour les documents simples (articles, décisions) ou conteneurs sans articles
-    if not contenu_html:
-        contenu_html = getattr(document, 'content', '') or getattr(document, 'text_html', '') or getattr(document, 'text', '') or 'Contenu non disponible'
+    # pylegifrance fournit directement le HTML complet ou le texte brut.
+    # La propriété .texte_html a déjà une logique interne pour assembler le contenu si besoin.
+    contenu_html = getattr(document, 'texte_html', '') or \
+                   getattr(document, 'content_html', '') or \
+                   getattr(document, 'content', '') or \
+                   getattr(document, 'text', '') or \
+                   'Contenu non disponible'
 
     doc_id = getattr(document, 'id', 'ID non disponible')
     titre = getattr(document, 'title', '') or getattr(document, 'titre', '') or 'Titre non disponible'
-    url = getattr(document, 'url', '')
+    
+    # L'URL est disponible sur l'objet Article, mais pas toujours sur les autres
+    url = getattr(document, 'url', f"https://www.legifrance.gouv.fr/loda/id/{doc_id}")
 
     return {
         "titre": titre,
@@ -147,7 +140,9 @@ async def consulter_article_code(id_article: str) -> Optional[Dict[str, str]]:
     """Récupère le contenu complet d'un ARTICLE DE CODE à partir de son ID (ex: 'LEGIARTI...')."""
     try:
         logger.info(f"Consultation de l'article de code ID: {id_article}")
-        document = code_service.fetch_article(id_article)
+        # Pour les articles, la consultation à la date du jour est la plus sûre
+        todays_date_iso = datetime.now().strftime("%Y-%m-%d")
+        document = code_service.fetch_article(id_article).at(todays_date_iso)
         return _format_full_document_output(document) if document else None
     except Exception as e:
         logger.error(f"Erreur sur consulter_article_code (ID: {id_article}): {e}", exc_info=True)
@@ -157,8 +152,17 @@ async def consulter_texte_loi_decret(id_texte: str) -> Optional[Dict[str, str]]:
     """Récupère le contenu complet d'une LOI, d'un DÉCRET ou d'un texte JORF à partir de son ID (ex: 'LEGITEXT...', 'JORFTEXT...')."""
     try:
         logger.info(f"Consultation du texte/loi/décret ID: {id_texte}")
-        # La documentation montre que loda.fetch est utilisé pour ces types de textes
-        document = loda_service.fetch(id_texte)
+        
+        # CORRECTION : S'assurer qu'une date est toujours fournie pour la robustesse.
+        # Si l'ID ne contient pas de date (pas de '_'), on ajoute la date du jour pour demander
+        # la version en vigueur. La méthode `loda_service.fetch` sait gérer les ID au format "ID_DATE".
+        id_a_consulter = id_texte
+        if "_" not in id_texte:
+            todays_date_fr = datetime.now().strftime("%d-%m-%Y")
+            id_a_consulter = f"{id_texte}_{todays_date_fr}"
+            logger.info(f"Aucune date dans l'ID, utilisation de l'ID enrichi: {id_a_consulter}")
+        
+        document = loda_service.fetch(id_a_consulter)
         return _format_full_document_output(document) if document else None
     except Exception as e:
         logger.error(f"Erreur sur consulter_texte_loi_decret (ID: {id_texte}): {e}", exc_info=True)
@@ -168,6 +172,7 @@ async def consulter_decision_justice(id_decision: str) -> Optional[Dict[str, str
     """Récupère le contenu complet d'une DÉCISION DE JUSTICE à partir de son ID (ex: 'JURI...')."""
     try:
         logger.info(f"Consultation de la décision de justice ID: {id_decision}")
+        # Pour la jurisprudence, un fetch simple est généralement suffisant
         document = juri_api.fetch(id_decision)
         return _format_full_document_output(document) if document else None
     except Exception as e:
@@ -178,8 +183,14 @@ async def consulter_convention_collective(id_convention: str) -> Optional[Dict[s
     """Récupère le contenu complet d'une CONVENTION COLLECTIVE à partir de son ID (ex: 'KALITEXT...')."""
     try:
         logger.info(f"Consultation de la convention collective ID: {id_convention}")
-        # Les conventions collectives sont aussi récupérées via le fond LODA
-        document = loda_service.fetch(id_convention)
+        # Même logique que pour les décrets : on s'assure d'avoir une date.
+        id_a_consulter = id_convention
+        if "_" not in id_convention:
+            todays_date_fr = datetime.now().strftime("%d-%m-%Y")
+            id_a_consulter = f"{id_convention}_{todays_date_fr}"
+            logger.info(f"Aucune date dans l'ID, utilisation de l'ID enrichi: {id_a_consulter}")
+            
+        document = loda_service.fetch(id_a_consulter)
         return _format_full_document_output(document) if document else None
     except Exception as e:
         logger.error(f"Erreur sur consulter_convention_collective (ID: {id_convention}): {e}", exc_info=True)
