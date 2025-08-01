@@ -6,12 +6,14 @@ Il transforme automatiquement les endpoints OpenAPI en outils MCP.
 """
 
 import asyncio
+import sys
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
 from ..core.config import settings
 from ..core.logging import setup_logging
 from .factory import MCPFactory
+from .services.legifrance.service import create_legifrance_mcp_server
 
 
 async def main():
@@ -42,21 +44,22 @@ async def main():
                 service_config.name,
                 service_config.port,
             )
-            factory = MCPFactory(config=service_config, logger=logger)
-            service_mcp_instance = await factory.build()
+            
+            # Handle services based on whether they have an OpenAPI path/URL
+            if service_config.openapi_path_or_url:
+                # Use the factory for services with OpenAPI specification
+                factory = MCPFactory(config=service_config, logger=logger)
+                service_mcp_instance = await factory.build()
+            else:
+                # Handle services defined programmatically
+                # For now, we assume this is Legifrance
+                if service_config.name == 'legifrance':
+                    service_mcp_instance = create_legifrance_mcp_server()
+                else:
+                    logger.warning(f"Service '{service_config.name}' has no openapi_path_or_url and no manual builder. Skipping.")
+                    continue
+            
             active_servers.append(service_mcp_instance)
-
-            # Add a health check endpoint to each individual service MCP instance
-            async def health_check(_request: Request) -> PlainTextResponse:
-                """A simple health check endpoint for the individual service."""
-                return PlainTextResponse("OK", status_code=200)
-
-            service_mcp_instance.custom_route("/health", methods=["GET"])(health_check)
-
-            logger.info(
-                "Health check endpoint (/health) added to service '%s'.",
-                service_config.name,
-            )
 
             server_url = (
                 f"http://{settings.mcp_server.MCP_HOST}:{service_config.port}"
@@ -116,4 +119,4 @@ if __name__ == "__main__":
         print("\nGoodbye!")
     except Exception as e:
         print(f"Failed to start MCP Gateway: {e}")
-        exit(1)
+        sys.exit(1)

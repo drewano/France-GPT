@@ -1,5 +1,5 @@
 [project]
-name = "FranceGPT"
+name = "France-GPT"
 version = "0.1.0"
 description = "Ce projet est une collection d'Agents spécialisé grâce aux API's data.gouv transformé en outils MCP (Légifrance, Data.Inclusion, INSEE ...)"
 readme = "README.md"
@@ -21,7 +21,8 @@ dependencies = [
     "SQLAlchemy",
     "greenlet",
     "aiohttp",
-    "boto3"
+    "boto3",
+    "pylegifrance"
 ]
 
 [project.optional-dependencies]

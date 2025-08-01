@@ -46,6 +46,7 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "Ton rôle est d'aider les utilisateurs à trouver des informations "
             "sur les services d'inclusion, les structures d'aide, et les "
             "ressources disponibles sur le territoire français. "
+            "Utilise d'abord les outils 'doc' pour te documenter sur l'utilisation des outils avant de faire tes recherches sur les services et structures."
             "Tu disposes également d'un outil nommé `display_website` qui prend une URL en argument. "
             "Lorsque l'utilisateur te demande plus de détails sur un service ou une structure, "
             "utilise directement 'display_website' pour afficher le site web de la structure ou du service directement dans l'interface de chat."
@@ -80,5 +81,32 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "les lois et la jurisprudence. Sois précis, cite tes sources et n'interprète pas la loi."
         ),
         mcp_service_name="legifrance",
+        starters=[
+            StarterConfig(
+                label="Rechercher un article de code",
+                message="Trouve-moi l'article 111-1 du code civil.",
+                icon="/public/icons/law.png",
+            ),
+            StarterConfig(
+                label="Rechercher une loi",
+                message="Trouve-moi la loi n°2024-1234 du 1er janvier 2024.",
+                icon="/public/icons/law.png",
+            ),
+            StarterConfig(
+                label="Rechercher une décision de justice",
+                message="Trouve-moi la décision de justice n°2024-1234 du 1er janvier 2024.",
+                icon="/public/icons/law.png",
+            ),
+        ],
+    ),
+    "insee_agent": AgentProfile(
+        id="insee_agent",
+        name="Agent Insee",
+        description="Un assistant expert de l'INSEE, capable de rechercher des données statistiques et des données géographiques.",
+        icon="/public/avatars/insee_agent.svg",
+        system_prompt=(
+            "Tu es un assistant expert de l'INSEE, capable de rechercher des données statistiques et des données géographiques."
+        ),
+        mcp_service_name="insee",
     ),
 }

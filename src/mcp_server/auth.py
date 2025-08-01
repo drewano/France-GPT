@@ -1,8 +1,9 @@
 import os
 import logging
 import time
-import httpx
 from typing import Generator, Union
+import httpx
+
 
 from src.core.config import BearerAuthConfig, OAuth2ClientCredentialsConfig
 
@@ -14,7 +15,7 @@ class OAuth2ClientCredentialsAuth(httpx.Auth):
         self._access_token: str | None = None
         self._token_expiry_time: float = 0.0
 
-    def _get_new_token(self):
+    def _get_new_token(self) -> None:
         client_id = os.getenv(self.config.client_id_env_var)
         client_secret = os.getenv(self.config.client_secret_env_var)
 
@@ -91,8 +92,5 @@ def create_auth_handler(
             )
             return None
         return BearerAuth(api_key)
-    elif isinstance(auth_config, OAuth2ClientCredentialsConfig):
+    if isinstance(auth_config, OAuth2ClientCredentialsConfig):
         return OAuth2ClientCredentialsAuth(auth_config, logger)
-    else:
-        logger.warning(f"Unsupported authentication type: {type(auth_config)}")
-        return None

@@ -70,16 +70,17 @@ graph TD
     F -- Persistance --> DB
     F -- Stockage Éléments --> S3
 ```
-1.  **Interface Utilisateur (Chainlit)** : L'utilisateur interagit avec l'un des agents spécialisés.
-2.  **Service Agent (FastAPI + Pydantic AI)** :
+
+1. **Interface Utilisateur (Chainlit)** : L'utilisateur interagit avec l'un des agents spécialisés.
+2. **Service Agent (FastAPI + Pydantic AI)** :
     - Reçoit la requête de l'utilisateur.
     - L'**Agent Pydantic AI** sélectionné traite la demande.
     - Si nécessaire, l'agent décide d'utiliser un ou plusieurs outils. Il communique avec le service MCP approprié.
-3.  **Service MCP (FastMCP)** :
+3. **Service MCP (FastMCP)** :
     - Le serveur MCP reçoit la demande d'appel d'outil.
     - Il traduit cet appel en une requête HTTP standard vers l'API gouvernementale externe (ex: Data.Inclusion).
     - Il reçoit la réponse de l'API, la formate et la renvoie à l'agent.
-4.  **Agent & UI** : L'agent reçoit le résultat de l'outil, formule une réponse finale et la streame à l'utilisateur via l'interface Chainlit.
+4. **Agent & UI** : L'agent reçoit le résultat de l'outil, formule une réponse finale et la streame à l'utilisateur via l'interface Chainlit.
 
 ## 🛠️ Technologies Utilisées
 
@@ -100,38 +101,42 @@ Le projet est entièrement conteneurisé avec Docker, ce qui simplifie grandemen
 
 ### Prérequis
 
--   [Docker](https://www.docker.com/get-started)
--   [Docker Compose](https://docs.docker.com/compose/install/)
+- [Docker](https://www.docker.com/get-started)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
 ### Étapes
 
-1.  **Cloner le dépôt :**
+1. **Cloner le dépôt :**
+
     ```bash
     git clone https://github.com/drewano/France-GPT
     cd france-gpt
     ```
 
-2.  **Configurer les variables d'environnement :**
+2. **Configurer les variables d'environnement :**
     Copiez le fichier d'exemple et remplissez les clés d'API nécessaires.
+
     ```bash
     cp .env.example .env
     ```
+
     Ouvrez le fichier `.env` et ajoutez vos clés pour :
     - `DATAINCLUSION_API_KEY`
     - `LEGIFRANCE_OAUTH_CLIENT_ID`
     - `LEGIFRANCE_OAUTH_CLIENT_SECRET`
     - `OPENAI_API_KEY` (ou configurez `OPENAI_API_BASE_URL` si vous utilisez un service compatible comme Ollama)
 
-3.  **Lancer l'application avec Docker Compose :**
+3. **Lancer l'application avec Docker Compose :**
     Cette commande va construire les images Docker et démarrer tous les services (serveurs MCP, agent, base de données).
+
     ```bash
     docker-compose up --build -d
     ```
 
-4.  **Accéder à l'application :**
-    -   **Interface France-GPT (Chainlit)** : [http://localhost:8001](http://localhost:8001)
-    -   Serveur MCP Data.Inclusion (pour test) : `http://localhost:8000/health`
-    -   Serveur MCP Légifrance (pour test) : `http://localhost:8002/health`
+4. **Accéder à l'application :**
+    - **Interface France-GPT (Chainlit)** : [http://localhost:8001](http://localhost:8001)
+    - Serveur MCP Data.Inclusion (pour test) : `http://localhost:8000/health`
+    - Serveur MCP Légifrance (pour test) : `http://localhost:8002/health`
 
     > ✨ Le premier démarrage peut prendre quelques minutes le temps de télécharger les images de base et d'installer les dépendances.
 
@@ -174,26 +179,29 @@ france-GPT/
 ### 1. Le Serveur MCP (`FastMCP`)
 
 Le cœur de la transformation API-vers-outil. Le `mcp_server/server.py` lit la variable `MCP_SERVICES_CONFIG` du fichier `.env`. Pour chaque service défini (comme `datainclusion` ou `legifrance`), il utilise `MCPFactory` pour :
-1.  Charger le fichier `openapi.json` du service.
-2.  Créer un client HTTP authentifié (Bearer ou OAuth2).
-3.  Initialiser un serveur `FastMCP` qui génère automatiquement des outils à partir des endpoints OpenAPI.
-4.  Appliquer le **`ToolTransformer`** : cette étape cruciale utilise le fichier `mappings.json` pour renommer les outils (ex: `list_structures_..._get` devient `list_all_structures`), enrichir leurs descriptions et leurs paramètres pour les rendre plus intuitifs pour un LLM.
+
+1. Charger le fichier `openapi.json` du service.
+2. Créer un client HTTP authentifié (Bearer ou OAuth2).
+3. Initialiser un serveur `FastMCP` qui génère automatiquement des outils à partir des endpoints OpenAPI.
+4. Appliquer le **`ToolTransformer`** : cette étape cruciale utilise le fichier `mappings.json` pour renommer les outils (ex: `list_structures_..._get` devient `list_all_structures`), enrichir leurs descriptions et leurs paramètres pour les rendre plus intuitifs pour un LLM.
 
 ### 2. L'Agent IA (`Pydantic AI`)
 
 Quand un utilisateur interagit, `ui/chat.py` sélectionne un profil d'agent défini dans `core/profiles.py`. La factory `agent/agent.py` crée alors une instance de `pydantic_ai.Agent` :
--   Le **modèle LLM** est configuré (ex: `gpt-4.1-mini`).
--   Le **prompt système** du profil est injecté pour donner à l'agent son rôle et ses instructions.
--   Le **toolset MCP** est connecté en pointant vers l'URL du serveur MCP correspondant (`http://mcp_server:8000/mcp/`).
--   Des **outils d'interface** (`ui_tools.py`) sont également ajoutés, permettant à l'agent d'agir sur l'UI (ex: afficher un site web dans la barre latérale).
+
+- Le **modèle LLM** est configuré (ex: `gpt-4.1-mini`).
+- Le **prompt système** du profil est injecté pour donner à l'agent son rôle et ses instructions.
+- Le **toolset MCP** est connecté en pointant vers l'URL du serveur MCP correspondant (`http://mcp_server:8000/mcp/`).
+- Des **outils d'interface** (`ui_tools.py`) sont également ajoutés, permettant à l'agent d'agir sur l'UI (ex: afficher un site web dans la barre latérale).
 
 ### 3. L'Interface Utilisateur (`Chainlit`)
 
 `Chainlit` gère tout le front-end.
--   **`@cl.set_chat_profiles`** affiche les différents agents disponibles au démarrage.
--   **`@cl.on_message`** intercepte le message de l'utilisateur.
--   La fonction `process_agent_modern_with_history` est appelée. Elle utilise la méthode `agent.iter()` de Pydantic AI, qui est la manière la plus moderne et robuste de gérer une conversation.
--   Elle parcourt le graphe d'exécution de l'agent nœud par nœud (`ModelRequestNode`, `CallToolsNode`, etc.), ce qui permet d'afficher en temps réel les appels d'outils dans des `cl.Step` et de streamer la réponse finale token par token.
+
+- **`@cl.set_chat_profiles`** affiche les différents agents disponibles au démarrage.
+- **`@cl.on_message`** intercepte le message de l'utilisateur.
+- La fonction `process_agent_modern_with_history` est appelée. Elle utilise la méthode `agent.iter()` de Pydantic AI, qui est la manière la plus moderne et robuste de gérer une conversation.
+- Elle parcourt le graphe d'exécution de l'agent nœud par nœud (`ModelRequestNode`, `CallToolsNode`, etc.), ce qui permet d'afficher en temps réel les appels d'outils dans des `cl.Step` et de streamer la réponse finale token par token.
 
 ## 🤝 Contribuer
 

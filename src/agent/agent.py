@@ -74,7 +74,7 @@ def create_agent_from_profile(
         f"{settings.mcp_server.MCP_API_PATH}"
     )
 
-    mcp_server = MCPServerStreamableHTTP(mcp_url)
+    mcp_server = MCPServerStreamableHTTP(url=mcp_url, max_retries=10)
 
     # Initialiser la liste de tous les toolsets
     all_toolsets = []
