@@ -1,7 +1,7 @@
 """
-DataInclusion MCP Server
+France GPT MCP Server
 
-Ce serveur MCP expose l'API data.inclusion.beta.gouv.fr via le protocole Model Context Protocol.
+Ce serveur MCP expose l'API France GPT via le protocole Model Context Protocol.
 Il transforme automatiquement les endpoints OpenAPI en outils MCP.
 """
 
