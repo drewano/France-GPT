@@ -238,30 +238,32 @@ async def process_agent_with_perfect_streaming(
         tool_call_counter = 0
 
         # Utiliser agent.iter() comme recommandé dans la documentation
-        async with agent.iter(
-            message, message_history=message_history or []
-        ) as agent_run:
-            # Parcourir chaque nœud du graphe d'exécution
-            async for node in agent_run:
-                # 1. UserPromptNode - Message utilisateur reçu
-                if Agent.is_user_prompt_node(node):
-                    await _handle_user_prompt_node(node)
+        async with agent:  # <-- Ajout crucial
+            # Utiliser agent.iter() comme recommandé dans la documentation
+            async with agent.iter(
+                message, message_history=message_history or []
+            ) as agent_run:
+                # Parcourir chaque nœud du graphe d'exécution
+                async for node in agent_run:
+                    # 1. UserPromptNode - Message utilisateur reçu
+                    if Agent.is_user_prompt_node(node):
+                        await _handle_user_prompt_node(node)
 
-                # 2. ModelRequestNode - Requête vers le LLM avec streaming des tokens
-                elif Agent.is_model_request_node(node):
-                    response_message = await _handle_model_request_node(
-                        node, agent_run, response_message
-                    )
+                    # 2. ModelRequestNode - Requête vers le LLM avec streaming des tokens
+                    elif Agent.is_model_request_node(node):
+                        response_message = await _handle_model_request_node(
+                            node, agent_run, response_message
+                        )
 
-                # 3. CallToolsNode - Appels d'outils MCP avec affichage transparent
-                elif Agent.is_call_tools_node(node):
-                    tool_call_counter = await _handle_call_tools_node(
-                        node, agent_run, active_tool_steps, tool_call_counter
-                    )
+                    # 3. CallToolsNode - Appels d'outils MCP avec affichage transparent
+                    elif Agent.is_call_tools_node(node):
+                        tool_call_counter = await _handle_call_tools_node(
+                            node, agent_run, active_tool_steps, tool_call_counter
+                        )
 
-                # 4. EndNode - Fin de l'exécution
-                elif Agent.is_end_node(node):
-                    response_message = await _handle_end_node(node, response_message)
+                    # 4. EndNode - Fin de l'exécution
+                    elif Agent.is_end_node(node):
+                        response_message = await _handle_end_node(node, response_message)
 
         # Finaliser le message de réponse s'il existe
         if response_message is not None:
