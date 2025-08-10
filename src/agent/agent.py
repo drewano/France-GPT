@@ -94,4 +94,6 @@ def create_agent_from_profile(
         system_prompt=profile.system_prompt,
         # Configuration des toolsets (MCP + UI)
         toolsets=all_toolsets,
+        # Augmenter le nombre de tentatives de retry pour les outils et la validation de sortie
+        retries=3,
     )

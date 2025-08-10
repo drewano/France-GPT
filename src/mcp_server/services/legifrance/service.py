@@ -19,6 +19,7 @@ from pylegifrance.fonds.code import Code
 # --- Dépendances FastMCP ---
 # Assurez-vous que fastmcp est installé : uv add fastmcp
 from fastmcp import FastMCP
+from pydantic_ai import ModelRetry
 from fastmcp.tools import Tool
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
@@ -143,7 +144,7 @@ async def rechercher_textes_juridiques(mots_cles: str) -> List[Dict[str, str]]:
         return all_candidates
     except (ValueError, AttributeError) as e:
         logger.error("Erreur lors de la recherche: %s", e, exc_info=True)
-        return [{"erreur": f"Une erreur est survenue lors de la recherche: {e}"}]
+        raise ModelRetry(f"Une erreur est survenue lors de la recherche: {e}") from e
 
 # --- Outils 2: Spécialistes de la Consultation ---
 
@@ -159,7 +160,7 @@ async def consulter_article_code(id_article: str) -> Optional[Dict[str, str]]:
         logger.error(
             "Erreur sur consulter_article_code (ID: %s): %s", id_article, e, exc_info=True
         )
-        return {"erreur": f"Impossible de récupérer l'article {id_article}: {e}"}
+        raise ModelRetry(f"Impossible de récupérer l'article {id_article}: {e}") from e
 
 async def consulter_texte_loi_decret(id_texte: str) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une LOI ou d'un DÉCRET via son ID (ex: 'LEGITEXT...')."""
@@ -180,7 +181,7 @@ async def consulter_texte_loi_decret(id_texte: str) -> Optional[Dict[str, str]]:
         logger.error(
             "Erreur sur consulter_texte_loi_decret (ID: %s): %s", id_texte, e, exc_info=True
         )
-        return {"erreur": f"Impossible de récupérer le texte {id_texte}: {e}"}
+        raise ModelRetry(f"Impossible de récupérer le texte {id_texte}: {e}") from e
 
 async def consulter_decision_justice(id_decision: str) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une DÉCISION DE JUSTICE via son ID (ex: 'JURI...')."""
@@ -193,7 +194,7 @@ async def consulter_decision_justice(id_decision: str) -> Optional[Dict[str, str
         logger.error(
             "Erreur sur consulter_decision_justice (ID: %s): %s", id_decision, e, exc_info=True
         )
-        return {"erreur": f"Impossible de récupérer la décision {id_decision}: {e}"}
+        raise ModelRetry(f"Impossible de récupérer la décision {id_decision}: {e}") from e
 
 async def consulter_convention_collective(id_convention: str) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une CONVENTION COLLECTIVE via son ID (ex: 'KALITEXT...')."""
@@ -213,7 +214,7 @@ async def consulter_convention_collective(id_convention: str) -> Optional[Dict[s
             "Erreur sur consulter_convention_collective (ID: %s): %s",
             id_convention, e, exc_info=True
         )
-        return {"erreur": f"Impossible de récupérer la convention {id_convention}: {e}"}
+        raise ModelRetry(f"Impossible de récupérer la convention {id_convention}: {e}") from e
 
 # ==============================================================================
 # === CONFIGURATION DU SERVEUR MCP                                           ===
