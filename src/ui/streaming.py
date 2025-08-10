@@ -107,7 +107,11 @@ async def _handle_model_event(
 
 
 async def _handle_call_tools_node(
-    node, agent_run, active_tool_steps: Dict[str, cl.Step], tool_call_counter: int
+    node,
+    agent_run,
+    active_tool_steps: Dict[str, cl.Step],
+    tool_call_counter: int,
+    parent_step: cl.Step,
 ) -> int:
     """Gère le nœud CallToolsNode avec affichage des outils."""
     logger.debug("🛠️ CallToolsNode: Traitement des outils MCP...")
@@ -118,7 +122,7 @@ async def _handle_call_tools_node(
             if isinstance(event, FunctionToolCallEvent):
                 tool_call_counter += 1
                 tool_call_counter = await _handle_tool_call_event(
-                    event, active_tool_steps, tool_call_counter
+                    event, active_tool_steps, tool_call_counter, parent_step
                 )
             elif isinstance(event, FunctionToolResultEvent):
                 await _handle_tool_result_event(event, active_tool_steps)
@@ -127,7 +131,7 @@ async def _handle_call_tools_node(
 
 
 async def _handle_tool_call_event(
-    event, active_tool_steps: Dict[str, cl.Step], tool_call_counter: int
+    event, active_tool_steps: Dict[str, cl.Step], tool_call_counter: int, parent_step: cl.Step
 ) -> int:
     """Gère un événement d'appel d'outil."""
     tool_name = event.part.tool_name
@@ -142,15 +146,19 @@ async def _handle_tool_call_event(
         type="tool",
         show_input="json" if tool_args else False,
         language="json",
+        parent_id=parent_step.id,
     )
+
+    # Entrer explicitement dans le contexte du step enfant pour l'afficher sous le parent
+    await step.__aenter__()
+
+    # Configurer l'input du step et l'envoyer au client
+    if tool_args:
+        step.input = tool_args
+        await step.update()
 
     # Stocker le Step pour récupérer le résultat plus tard
     active_tool_steps[tool_call_id] = step
-
-    # Configurer l'input du step
-    with step:
-        if tool_args:
-            step.input = tool_args
 
     return tool_call_counter
 
@@ -244,6 +252,9 @@ async def process_agent_with_perfect_streaming(
                 message, message_history=message_history or []
             ) as agent_run:
                 # Parcourir chaque nœud du graphe d'exécution
+                # Créer le step parent pour tous les outils de ce run
+                parent_tools_step: Optional[cl.Step] = None
+
                 async for node in agent_run:
                     # 1. UserPromptNode - Message utilisateur reçu
                     if Agent.is_user_prompt_node(node):
@@ -257,8 +268,20 @@ async def process_agent_with_perfect_streaming(
 
                     # 3. CallToolsNode - Appels d'outils MCP avec affichage transparent
                     elif Agent.is_call_tools_node(node):
+                        # Initialiser le parent step à la première occurrence
+                        if parent_tools_step is None:
+                            parent_tools_step = cl.Step(
+                                name="data_gouv_fr",
+                                type="tool",
+                            )
+                            await parent_tools_step.__aenter__()
+
                         tool_call_counter = await _handle_call_tools_node(
-                            node, agent_run, active_tool_steps, tool_call_counter
+                            node,
+                            agent_run,
+                            active_tool_steps,
+                            tool_call_counter,
+                            parent_tools_step,
                         )
 
                     # 4. EndNode - Fin de l'exécution
@@ -268,6 +291,15 @@ async def process_agent_with_perfect_streaming(
         # Finaliser le message de réponse s'il existe
         if response_message is not None:
             await response_message.update()
+
+        # Compléter le parent step des outils s'il existe
+        try:
+            # parent_tools_step est dans la portée ci-dessus; mypy ignore
+            if 'parent_tools_step' in locals() and locals()['parent_tools_step'] is not None:
+                parent_tools_step = locals()['parent_tools_step']
+                await parent_tools_step.__aexit__(None, None, None)
+        except Exception:
+            pass
 
         # Récupérer l'historique complet (s'assurer que le result n'est pas None)
         if agent_run.result is not None:
@@ -284,6 +316,15 @@ async def process_agent_with_perfect_streaming(
 
     except Exception as e:
         logger.error("❌ Erreur dans le streaming parfait: %s", e, exc_info=True)
+
+        # Tenter de fermer le parent step s'il existe
+        try:
+            if 'parent_tools_step' in locals() and locals()['parent_tools_step'] is not None:
+                parent_tools_step = locals()['parent_tools_step']
+                parent_tools_step.is_error = True  # type: ignore[attr-defined]
+                await parent_tools_step.__aexit__(None, None, None)
+        except Exception:
+            pass
 
         # Nettoyage des steps ouverts en cas d'erreur
         await _cleanup_on_error(active_tool_steps)
