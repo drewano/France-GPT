@@ -109,7 +109,7 @@ class MCPFactory:
             auth_handler = create_auth_handler(self.config.auth, self.logger)
 
         headers = {
-            "User-Agent": "DataInclusion-MCP-Server/1.0",
+            "User-Agent": "FranceGPT-MCP-Server/1.0",
             "Accept": "application/json",
         }
 
@@ -184,18 +184,6 @@ class MCPFactory:
 
         # Configuration des routes MCP
         route_maps = []
-        if self.config.name == "datainclusion":
-            allowed_op_ids = set(self.tool_mappings.keys())
-            for route in self.state.http_routes:
-                if route.operation_id in allowed_op_ids:
-                    route_maps.append(
-                        RouteMap(
-                            methods=[route.method],
-                            pattern=f"^{route.path}$",
-                            mcp_type=MCPType.TOOL,
-                        )
-                    )
-            route_maps.append(RouteMap(mcp_type=MCPType.EXCLUDE))
 
         # Création du transformer temporaire pour le callback
         temp_transformer_config = ToolTransformerConfig(
