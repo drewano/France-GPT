@@ -27,6 +27,7 @@ class AgentProfile(BaseModel):
     icon: str
     system_prompt: str
     mcp_service_name: str
+    tool_call_limit: Optional[int] = None
     starters: Optional[List[StarterConfig]] = None
 
 
@@ -54,6 +55,7 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "Reasoning: high"
         ),
         mcp_service_name="datainclusion",
+        tool_call_limit=10,
         starters=[
             StarterConfig(
                 label="Aide alimentaire",
@@ -91,6 +93,7 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "Reasoning: high"
         ),
         mcp_service_name="legifrance",
+        tool_call_limit=20,
         starters=[
             StarterConfig(
                 label="Rechercher un article de code",
@@ -118,5 +121,6 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "Tu es un assistant expert de l'INSEE, capable de rechercher des données statistiques et des données géographiques."
         ),
         mcp_service_name="insee",
+        tool_call_limit=None,
     ),
 }

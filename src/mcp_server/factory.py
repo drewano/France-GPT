@@ -8,7 +8,6 @@ from typing import Dict, Any, Optional
 from dataclasses import dataclass
 
 from fastmcp import FastMCP
-from fastmcp.server.openapi import RouteMap, MCPType
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 import httpx  # Add this import for httpx.AsyncClient
@@ -22,6 +21,7 @@ from .auth import create_auth_handler  # Import the new auth handler
 @dataclass
 class FactoryState:
     """Container for factory state to reduce instance attributes."""
+
     api_client: Optional[httpx.AsyncClient] = None
     openapi_spec: Optional[Dict[str, Any]] = None
     http_routes: Optional[list] = None
@@ -86,7 +86,9 @@ class MCPFactory:
             self.state.base_url = servers[0]["url"]
             self.logger.info(f"Using base URL from OpenAPI spec: {self.state.base_url}")
         else:
-            self.state.base_url = "http://localhost:8000"  # Default if not found in spec
+            self.state.base_url = (
+                "http://localhost:8000"  # Default if not found in spec
+            )
             self.logger.warning("No servers section found in OpenAPI spec.")
             self.logger.warning(f"Using default base URL: {self.state.base_url}")
 
@@ -102,7 +104,7 @@ class MCPFactory:
 
         self.logger.info("Creating HTTP client...")
         auth_handler = None  # Default to no auth handler
-        
+
         # Only create auth handler if auth config is provided
         if self.config.auth:
             self.logger.info("Creating authentication handler...")
