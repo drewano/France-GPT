@@ -16,6 +16,3 @@ ENV
 __pycache__/
 *.pyc
 *.pyo
-
-# Fichiers Docker
-Dockerfile

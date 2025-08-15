@@ -113,11 +113,11 @@ class OpenAPILoader:
         # Limite la taille des pages pour les outils de listing à 25 éléments maximum
         # Cela s'applique aux outils: list_all_structures, list_all_services, search_services
         self.logger.info("Applying pagination limits to data-listing endpoints...")
-        openapi_spec = self._limit_page_size(openapi_spec, max_size=25)
+        openapi_spec = self._limit_page_size(openapi_spec, max_size=50)
 
         return openapi_spec, http_routes
 
-    def _limit_page_size(self, spec: dict, max_size: int = 25) -> dict:
+    def _limit_page_size(self, spec: dict, max_size: int = 50) -> dict:
         """
         Modifie la spécification OpenAPI pour limiter la taille des pages.
 

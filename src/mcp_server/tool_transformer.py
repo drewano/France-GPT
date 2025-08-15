@@ -2,7 +2,7 @@
 Module de transformation des outils MCP.
 
 Ce module contient la classe ToolTransformer qui encapsule toute la logique pour transformer
-et enrichir les outils MCP générés à partir de la spécification OpenAPI de l'API Data Inclusion.
+et enrichir les outils MCP générés à partir de spécifications OpenAPI.
 
 La classe ToolTransformer permet de :
 - Personnaliser les noms des outils pour une meilleure lisibilité
@@ -297,7 +297,7 @@ class ToolTransformer:
             # Fallback vers le summary si pas de description
             return route.summary.strip()
         # Description par défaut basée sur le nom de l'outil
-        return f"Execute the {new_name} operation on the Data Inclusion API"
+        return f"Execute the {new_name} operation"
 
     def _process_tool_transformation(self, route: HTTPRoute, new_name: str) -> dict:
         """
@@ -335,7 +335,7 @@ class ToolTransformer:
         Returns:
             Un ensemble de tags pour l'outil
         """
-        tool_tags = {"data-inclusion", "api"}
+        tool_tags = {"api"}
 
         # Ajouter des tags spécifiques selon le type d'endpoint
         if "list_all" in new_name or "search" in new_name:
