@@ -23,7 +23,8 @@ dependencies = [
     "aiohttp",
     "boto3",
     "pylegifrance",
-    "pynsee[full]"
+    "pynsee[full]",
+    "matplotlib"
 ]
 
 [project.optional-dependencies]

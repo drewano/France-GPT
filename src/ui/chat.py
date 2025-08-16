@@ -11,7 +11,7 @@ from pydantic_ai.toolsets import FunctionToolset
 
 from src.ui.streaming import process_agent_modern_with_history
 from src.agent.agent import create_agent_from_profile
-from src.agent.ui_tools import display_website
+from src.agent.ui_tools import display_website, fetch_and_display_map
 from src.core.profiles import AGENT_PROFILES
 from src.ui import data_layer # noqa: F401
 
@@ -33,14 +33,15 @@ async def _setup_agent():
     if not profile:
         raise ValueError(f"Profil de chat '{profile_name}' non trouvé.")
 
-    # Créer le toolset d'interface utilisateur
-    ui_toolset = FunctionToolset(tools=[display_website])
-
-    # Créer l'agent avec le toolset d'interface utilisateur
+    if profile.id == "insee_agent":
+        ui_tools_list = [display_website, fetch_and_display_map] # MODIFIÉ
+    else:
+        ui_tools_list = [display_website]
+        
+    ui_toolset = FunctionToolset(tools=ui_tools_list)
     agent = create_agent_from_profile(profile, ui_toolsets=[ui_toolset])
     cl.user_session.set("agent", agent)
     cl.user_session.set("selected_profile_id", profile.id)
-
 
 @cl.set_chat_profiles
 async def chat_profile(user: Optional[cl.User]):

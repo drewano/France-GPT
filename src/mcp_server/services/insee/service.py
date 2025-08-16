@@ -10,6 +10,7 @@ pour des tâches d'analyse de données et de visualisation.
 """
 
 import os
+import json
 import logging
 from typing import List, Dict, Any, Optional
 
@@ -96,40 +97,36 @@ async def get_series_macroeconomiques(idbanks: List[str]) -> pd.DataFrame:
 
 # --- Outils Géographiques ---
 
-async def rechercher_couches_geographiques(mot_cle: str) -> pd.DataFrame:
+async def rechercher_couches_geographiques(mot_cle: str) -> List[Dict[str, Any]]:
     """
     Recherche des couches de données géographiques (cartes) disponibles à partir d'un mot-clé.
-    Exemples de mots-clés: 'commune', 'département', 'région'.
-    Retourne un DataFrame avec les noms ('name') et descriptions des couches correspondantes.
+    Retourne une liste de dictionnaires avec les noms ('id') et descriptions des couches.
     """
     try:
         logger.info("Recherche de couches géographiques pour: '%s'", mot_cle)
-        geo_list = get_geodata_list()
-        mask = geo_list['name'].str.contains(mot_cle, case=False) | geo_list['title'].str.contains(mot_cle, case=False)
+        # AJOUT DE update=True POUR FORCER LA MISE À JOUR DU CACHE
+        geo_list = get_geodata_list(update=True) 
+        
+        string_columns = geo_list.select_dtypes(include=['object']).columns
+        mask = pd.Series(False, index=geo_list.index)
+        
+        for col in string_columns:
+            # CORRECTION : Utiliser le singulier pour la recherche, c'est plus robuste
+            search_term = mot_cle.rstrip('s')
+            mask |= geo_list[col].str.contains(search_term, case=False, na=False)
+        
         results = geo_list[mask]
+        
         if results.empty:
-            return pd.DataFrame({'info': [f"Aucune couche géographique trouvée pour '{mot_cle}'."]})
-        return results
+            return [{'info': f"Aucune couche géographique trouvée pour '{mot_cle}'."}]
+        
+        if 'name' in results.columns:
+            results = results.rename(columns={'name': 'id'})
+
+        return results.to_dict(orient='records')
     except Exception as e:
         logger.error("Erreur dans rechercher_couches_geographiques: %s", e, exc_info=True)
-        return pd.DataFrame({'error': [f"Une erreur est survenue: {e}"]})
-
-async def get_donnees_geographiques(nom_couche: str) -> gpd.GeoDataFrame:
-    """
-    Récupère une couche de données géographiques (une carte) à partir de son nom exact.
-    Utilisez 'rechercher_couches_geographiques' pour trouver le nom de couche pertinent.
-    Retourne un GeoDataFrame geopandas, prêt pour la cartographie.
-    """
-    try:
-        logger.info("Récupération de la couche géographique: '%s'", nom_couche)
-        geodata = get_geodata(nom_couche)
-        if geodata is None or geodata.empty:
-            return gpd.GeoDataFrame({'info': [f"Couche '{nom_couche}' non trouvée ou vide."]})
-        return geodata
-    except Exception as e:
-        logger.error("Erreur dans get_donnees_geographiques: %s", e, exc_info=True)
-        return gpd.GeoDataFrame({'error': [f"Une erreur est survenue: {e}"]}, geometry=None)
-
+        return [{'error': f"Une erreur est survenue: {e}"}]
 # --- Outils de Données Locales (Recensement) ---
 
 async def rechercher_metadonnees_locales(mot_cle: str) -> pd.DataFrame:
@@ -204,7 +201,6 @@ def create_insee_mcp_server() -> FastMCP:
     mcp.add_tool(Tool.from_function(fn=rechercher_donnees_macroeconomiques))
     mcp.add_tool(Tool.from_function(fn=get_series_macroeconomiques))
     mcp.add_tool(Tool.from_function(fn=rechercher_couches_geographiques))
-    mcp.add_tool(Tool.from_function(fn=get_donnees_geographiques))
     mcp.add_tool(Tool.from_function(fn=rechercher_metadonnees_locales))
     mcp.add_tool(Tool.from_function(fn=rechercher_codes_geographiques))
     mcp.add_tool(Tool.from_function(fn=get_donnees_locales))
