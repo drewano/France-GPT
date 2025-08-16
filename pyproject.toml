@@ -22,7 +22,8 @@ dependencies = [
     "greenlet",
     "aiohttp",
     "boto3",
-    "pylegifrance"
+    "pylegifrance",
+    "pynsee[full]"
 ]
 
 [project.optional-dependencies]

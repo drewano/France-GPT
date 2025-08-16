@@ -13,6 +13,7 @@ from ..core.logging import setup_logging
 from .factory import MCPFactory
 from .services.legifrance.service import create_legifrance_mcp_server
 from .services.datainclusion.service import create_datainclusion_mcp_server
+from .services.insee.service import create_insee_mcp_server
 
 
 async def main():
@@ -55,6 +56,8 @@ async def main():
                     service_mcp_instance = create_legifrance_mcp_server()
                 elif service_config.name == "datainclusion":
                     service_mcp_instance = create_datainclusion_mcp_server()
+                elif service_config.name == "insee":
+                    service_mcp_instance = create_insee_mcp_server()
                 else:
                     logger.warning(
                         f"Service '{service_config.name}' has no openapi_path_or_url and no manual builder. Skipping."
