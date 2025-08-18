@@ -111,15 +111,32 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             ),
         ],
     ),
-    "insee_agent": AgentProfile(
-        id="insee_agent",
-        name="Agent Insee",
-        description="Un assistant expert de l'INSEE, capable de rechercher des données statistiques et des données géographiques.",
-        icon="/public/avatars/insee_agent.svg",
+    "alternance_agent": AgentProfile(
+        id="alternance_agent",
+        name="Agent Alternance",
+        description="Un assistant expert pour trouver des offres d'emploi et des formations en alternance en France.",
+        icon="/public/avatars/social_agent.svg",
         system_prompt=(
-            "Tu es un assistant expert de l'INSEE, capable de rechercher des données statistiques et des données géographiques."
+            "Tu es un assistant expert spécialisé dans la recherche d'opportunités d'alternance en France. "
+            "Ton rôle est d'aider les utilisateurs à trouver des offres d'emploi et des formations pertinentes. "
+            "Utilise l'outil `search_emploi` pour trouver des offres par codes ROME et localisation. "
+            "Utilise `search_formations` pour les formations. "
+            "Si un utilisateur demande plus de détails, utilise `get_emploi` ou `get_formations` avec l'ID obtenu lors de la recherche initiale. "
+            "Sois concis et présente les résultats de manière claire."
         ),
-        mcp_service_name="insee",
-        tool_call_limit=None,
+        mcp_service_name="labonnealternance",
+        tool_call_limit=10,
+        starters=[
+            StarterConfig(
+                label="Chercher un emploi",
+                message="Trouve-moi des offres de développeur web en alternance à Paris.",
+                icon="/public/icons/food.png",
+            ),
+            StarterConfig(
+                label="Chercher une formation",
+                message="Je cherche une formation en boulangerie en alternance près de Lyon.",
+                icon="/public/icons/house.png",
+            ),
+        ],
     ),
 }
