@@ -299,3 +299,12 @@ class FormationDetails(FormationSummary):
     educational_content: Optional[str] = Field(default=None, description="Contenu pédagogique de la formation.")
     objective: Optional[str] = Field(default=None, description="Objectifs de la formation.")
     sessions: Optional[List[dict]] = Field(default=None, description="Liste des sessions de la formation.")
+
+
+# --- Modèles utilitaires pour les codes ROME ---
+
+
+class RomeCode(BaseModel):
+    """Représente un code ROME et son libellé."""
+    code: str = Field(description="Le code ROME du métier.")
+    libelle: str = Field(description="Le libellé ou l'intitulé du métier.")

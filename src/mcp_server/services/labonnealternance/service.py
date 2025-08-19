@@ -8,6 +8,8 @@ import os
 import logging
 import httpx
 import functools
+import json
+from pathlib import Path
 from typing import List, Optional
 
 from fastmcp import FastMCP
@@ -22,6 +24,7 @@ from .schemas import (
     FormationSummary,
     JobOfferRead,
     Formation,
+    RomeCode,  # Import du nouveau schéma
 )
 
 
@@ -220,6 +223,61 @@ async def get_formations(id: str) -> FormationDetails:
     )
 
 
+# --- Fonctions utilitaires locales ---
+
+
+@api_call_handler
+async def get_romes(mots_cles: str, nb_resultats: int = 10) -> List[RomeCode]:
+    """
+    Recherche des codes ROME par mots-clés dans un fichier JSON local.
+
+    Cette fonction lit un fichier `romes.json` situé dans le répertoire `data` adjacent,
+    et retourne une liste de codes ROME dont le libellé contient les mots-clés fournis.
+    La recherche est insensible à la casse. Le nombre de résultats est limité.
+
+    Args:
+        mots_cles (str): La chaîne de caractères à rechercher dans les libellés.
+        nb_resultats (int, optional): Le nombre maximum de résultats à retourner. Défaut à 10. Maximum 10.
+
+    Returns:
+        List[RomeCode]: Une liste d'objets RomeCode correspondant aux critères de recherche.
+    """
+    # Limite le nombre de résultats à 10
+    nb_resultats = min(nb_resultats, 10)
+    
+    # Chemin vers le fichier de données
+    data_file_path = Path(__file__).parent / "data" / "romes.json"
+    
+    # Vérifie l'existence du fichier
+    if not data_file_path.exists():
+        logger.warning(f"Fichier de données ROME introuvable: {data_file_path}")
+        return []
+    
+    # Lit et parse le contenu du fichier
+    try:
+        with open(data_file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, IOError) as e:
+        logger.error(f"Erreur lors de la lecture du fichier ROME {data_file_path}: {e}")
+        return []
+
+    # Si le fichier est vide ou mal formé
+    if not isinstance(data, list):
+        logger.warning(f"Fichier de données ROME mal formé ou vide: {data_file_path}")
+        return []
+        
+    # Recherche insensible à la casse
+    mots_cles_lower = mots_cles.lower()
+    results = [
+        RomeCode(code=item['code'], libelle=item['libelle'])
+        for item in data
+        if mots_cles_lower in item.get('libelle', '').lower()
+    ]
+    
+    # Limite le nombre de résultats
+    return results[:nb_resultats]
+
+
 # --- Création du serveur MCP ---
 
 
@@ -234,6 +292,7 @@ def create_labonnealternance_mcp_server() -> FastMCP:
     mcp.add_tool(Tool.from_function(fn=get_emploi))
     mcp.add_tool(Tool.from_function(fn=search_formations))
     mcp.add_tool(Tool.from_function(fn=get_formations))
+    mcp.add_tool(Tool.from_function(fn=get_romes))  # Enregistrement du nouvel outil
 
     @mcp.custom_route("/health", methods=["GET"])
     async def health_check(_request: Request) -> PlainTextResponse:
