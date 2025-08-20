@@ -28,7 +28,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "ruff",
-    "pylint"
+    "pylint",
+    "pytest",
+    "pytest-asyncio"
 ]
 
 [project.urls]
