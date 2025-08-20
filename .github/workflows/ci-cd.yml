@@ -43,7 +43,7 @@ jobs:
     - name: Build Docker images
       run: |
         cp .env.example .env
-        docker-compose build mcp_server agent
+        docker compose build mcp_server agent
 
   push_to_registry:
     runs-on: ubuntu-latest
@@ -76,7 +76,7 @@ jobs:
       - name: Build and push Docker images
         run: |
           cp .env.example .env
-          docker-compose -f docker-compose.yml build
+          docker compose -f docker-compose.yml build
           docker tag france-gpt-agent-ui ${{ env.DOCKER_IMAGE_AGENT }}
           docker tag france-gpt-mcp-server ${{ env.DOCKER_IMAGE_MCP }}
           docker push ${{ env.DOCKER_IMAGE_AGENT }}
