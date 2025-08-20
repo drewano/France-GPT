@@ -10,7 +10,7 @@ authors = [
 ]
 dependencies = [
     "fastmcp",
-    "httpx",
+    "httpx>=0.28.1",
     "python-dotenv",
     "pydantic-ai-slim[mcp,openai,cli,logfire]",
     "pydantic-settings",
