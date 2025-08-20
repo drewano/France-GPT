@@ -308,3 +308,14 @@ class RomeCode(BaseModel):
     """Représente un code ROME et son libellé."""
     code: str = Field(description="Le code ROME du métier.")
     libelle: str = Field(description="Le libellé ou l'intitulé du métier.")
+
+
+# --- Modèles utilitaires pour les codes RNCP ---
+
+
+class RncpCode(BaseModel):
+    """Représente un code RNCP et ses informations associées."""
+    code_rncp: str = Field(alias="Code RNCP", description="Le code RNCP de la certification.")
+    intitule: str = Field(alias="Intitulé de la certification", description="L'intitulé complet de la certification.")
+    certificateur: Optional[Union[str, int]] = Field(alias="Certificateur", description="L'organisme certificateur.")
+    type_diplome: Optional[str] = Field(alias="Type diplôme", description="Le type de diplôme (ex: BP, Titre professionnel).")
