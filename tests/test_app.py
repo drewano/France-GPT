@@ -3,6 +3,7 @@ import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from src.app.factory import create_app
 from fastapi import FastAPI
+import os  # Importer le module os
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -10,6 +11,9 @@ async def fastapi_app() -> FastAPI:
     """
     Fixture pour créer l'instance de l'application FastAPI une seule fois par session de test.
     """
+    # Définir la variable d'environnement requise par Chainlit pour les tests
+    # Cela évite l'erreur "You must provide a JWT secret" lorsque l'authentification est activée.
+    os.environ["CHAINLIT_AUTH_SECRET"] = "a_secret_for_testing"
     return create_app()
 
 
