@@ -4,6 +4,7 @@ services:
   # --- Service 1: Le serveur MCP ---
   # Ce service exécute le serveur FastMCP qui transforme l'API data.inclusion en outils.
   mcp_server:
+    image: france-gpt-mcp-server  # <--- AJOUT : Nom explicite pour l'image
     container_name: france-gpt-mcp-server
     build:
       context: .
@@ -33,6 +34,7 @@ services:
   # --- Service 2: L'Agent IA et l'interface Chainlit/FastAPI ---
   # C'est le service principal, qui fournit l'interface utilisateur et l'API de chat.
   agent:
+    image: france-gpt-agent-ui # <--- AJOUT : Nom explicite pour l'image
     container_name: france-gpt-agent-ui
     build:
       context: .
@@ -78,8 +80,7 @@ services:
       retries: 3
       start_period: 30s
 
-  # --- Service 3: Base de données PostgreSQL ---
-  # Ce service héberge la base de données pour la persistance des conversations et utilisateurs.
+  # ... (le reste du fichier reste inchangé) ...
   postgres:
     image: postgres:15-alpine
     container_name: france-gpt-postgres-db
