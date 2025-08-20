@@ -44,7 +44,7 @@ def _create_llm_model() -> OpenAIModel:
     else:
         # Utiliser le comportement par défaut sans provider personnalisé
         model = OpenAIModel(model_name=settings.agent.AGENT_MODEL_NAME)
-    
+
     return model
 
 

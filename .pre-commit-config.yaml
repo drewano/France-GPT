@@ -1,0 +1,11 @@
+# .pre-commit-config.yaml
+repos:
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    # Trouve la version la plus récente sur https://github.com/astral-sh/ruff-pre-commit/releases
+    rev: v0.5.5
+    hooks:
+        # Exécute le formateur `ruff format`
+        -   id: ruff-format
+        # Exécute le linter `ruff check` avec auto-correction
+        -   id: ruff
+            args: [--fix]

@@ -13,7 +13,7 @@ from src.ui.streaming import process_agent_modern_with_history
 from src.agent.agent import create_agent_from_profile
 from src.agent.ui_tools import display_website
 from src.core.profiles import AGENT_PROFILES
-from src.ui import data_layer # noqa: F401
+from src.ui import data_layer  # noqa: F401
 
 
 async def _setup_agent():
