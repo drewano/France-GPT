@@ -1,3 +1,5 @@
+# src/ui/streaming.py
+
 """
 Module de streaming moderne pour Chainlit + Pydantic-AI.
 
@@ -25,7 +27,12 @@ from pydantic_ai.messages import (
     TextPart,
     TextPartDelta,
     ToolCallPartDelta,
+    ModelResponse,
 )
+from pydantic_ai.usage import UsageLimits
+from pydantic_ai.exceptions import UsageLimitExceeded
+
+from src.agent.agent import create_synthesis_agent
 
 # Configuration du logging
 logger = logging.getLogger("datainclusion.streaming")
@@ -131,7 +138,10 @@ async def _handle_call_tools_node(
 
 
 async def _handle_tool_call_event(
-    event, active_tool_steps: Dict[str, cl.Step], tool_call_counter: int, parent_step: cl.Step
+    event,
+    active_tool_steps: Dict[str, cl.Step],
+    tool_call_counter: int,
+    parent_step: cl.Step,
 ) -> int:
     """Gère un événement d'appel d'outil."""
     tool_name = event.part.tool_name
@@ -214,94 +224,119 @@ async def _cleanup_on_error(active_tool_steps: Dict[str, cl.Step]) -> None:
             pass
 
 
-async def process_agent_with_perfect_streaming(
-    agent: Agent, message: str, message_history: Optional[List[ModelMessage]] = None
+async def _handle_usage_limit_exceeded(
+    agent_run, message: str, message_history: List[ModelMessage]
+) -> List[ModelMessage]:
+    """Gère l'exception UsageLimitExceeded en streamant la réponse de synthèse."""
+    logger.warning("⚠️ Limite d'appels d'outils atteinte. Démarrage de la synthèse.")
+
+    # Récupérer l'historique complet pour donner le contexte à l'agent de synthèse.
+    full_history = agent_run.ctx.state.message_history
+
+    synthesis_agent = create_synthesis_agent()
+    synthesis_prompt = (
+        f"La limite d'appels d'outils a été atteinte. En te basant sur l'historique de "
+        f"conversation, synthétise une réponse finale et complète à la dernière question de l'utilisateur : '{message}'"
+    )
+
+    response_message: Optional[cl.Message] = None
+
+    # Utiliser la même logique de streaming que l'agent principal pour l'agent de synthèse.
+    async with synthesis_agent:
+        async with synthesis_agent.iter(
+            synthesis_prompt, message_history=full_history
+        ) as synthesis_run:
+            async for node in synthesis_run:
+                if Agent.is_model_request_node(node):
+                    response_message = await _handle_model_request_node(
+                        node, synthesis_run, response_message
+                    )
+
+    # Finaliser le message streamé.
+    if response_message:
+        await response_message.update()
+
+    # S'assurer que le résultat du run de synthèse est bien récupéré.
+    if synthesis_run.result:
+        synthesis_text = str(synthesis_run.result.output)
+        # Ajouter la réponse de synthèse à l'historique de la conversation principale.
+        synthesis_response = ModelResponse(parts=[TextPart(content=synthesis_text)])
+        full_history.append(synthesis_response)
+    else:
+        logger.error("Le run de l'agent de synthèse n'a pas produit de résultat.")
+
+    # Retourner l'historique complet pour que la session puisse continuer.
+    return full_history
+
+
+async def process_agent_modern_with_history(
+    agent: Agent,
+    message: str,
+    message_history: Optional[List[ModelMessage]] = None,
+    tool_call_limit: Optional[int] = None,
 ) -> List[ModelMessage]:
     """
-    Traite un agent avec streaming parfait selon les docs Pydantic-AI et Chainlit.
-
-    Cette implémentation utilise:
-    - agent.iter() pour parcourir le graphe d'exécution nœud par nœud
-    - Events streaming de Pydantic-AI pour le temps réel
-    - cl.Step pour afficher les outils MCP de manière transparente
-    - cl.Message.stream_token() pour le streaming des tokens
-
-    Args:
-        agent: Instance de l'agent Pydantic-AI
-        message: Message de l'utilisateur
-        message_history: Historique des messages au format Pydantic-AI
-
-    Returns:
-        Liste mise à jour des messages pour l'historique
+    Point d'entrée principal pour le traitement moderne avec streaming parfait.
     """
+    logger.info("🎯 Traitement moderne avec streaming parfait")
+
+    parent_tools_step: Optional[cl.Step] = None
+    active_tool_steps: Dict[str, cl.Step] = {}
+
     try:
+        usage_limits_config = (
+            UsageLimits(request_limit=tool_call_limit) if tool_call_limit else None
+        )
+
         logger.info("🚀 Démarrage du streaming parfait pour: %s...", message[:50])
 
-        # Ne pas créer le message de réponse tout de suite
-        # Il sera créé seulement quand on commence à streamer du texte
         response_message: Optional[cl.Message] = None
-
-        # Dictionnaire pour tracker les outils en cours
-        active_tool_steps: Dict[str, cl.Step] = {}
         tool_call_counter = 0
 
-        # Utiliser agent.iter() comme recommandé dans la documentation
-        async with agent:  # <-- Ajout crucial
-            # Utiliser agent.iter() comme recommandé dans la documentation
-            async with agent.iter(
-                message, message_history=message_history or []
-            ) as agent_run:
-                # Parcourir chaque nœud du graphe d'exécution
-                # Créer le step parent pour tous les outils de ce run
-                parent_tools_step: Optional[cl.Step] = None
-
-                async for node in agent_run:
-                    # 1. UserPromptNode - Message utilisateur reçu
-                    if Agent.is_user_prompt_node(node):
-                        await _handle_user_prompt_node(node)
-
-                    # 2. ModelRequestNode - Requête vers le LLM avec streaming des tokens
-                    elif Agent.is_model_request_node(node):
-                        response_message = await _handle_model_request_node(
-                            node, agent_run, response_message
-                        )
-
-                    # 3. CallToolsNode - Appels d'outils MCP avec affichage transparent
-                    elif Agent.is_call_tools_node(node):
-                        # Initialiser le parent step à la première occurrence
-                        if parent_tools_step is None:
-                            parent_tools_step = cl.Step(
-                                name="data_gouv_fr",
-                                type="tool",
+        async with agent:
+            try:
+                async with agent.iter(
+                    message,
+                    message_history=message_history or [],
+                    usage_limits=usage_limits_config,
+                ) as agent_run:
+                    async for node in agent_run:
+                        if Agent.is_user_prompt_node(node):
+                            await _handle_user_prompt_node(node)
+                        elif Agent.is_model_request_node(node):
+                            response_message = await _handle_model_request_node(
+                                node, agent_run, response_message
                             )
-                            await parent_tools_step.__aenter__()
+                        elif Agent.is_call_tools_node(node):
+                            if parent_tools_step is None:
+                                parent_tools_step = cl.Step(
+                                    name="data_gouv_fr", type="tool"
+                                )
+                                await parent_tools_step.__aenter__()
+                            tool_call_counter = await _handle_call_tools_node(
+                                node,
+                                agent_run,
+                                active_tool_steps,
+                                tool_call_counter,
+                                parent_tools_step,
+                            )
+                        elif Agent.is_end_node(node):
+                            response_message = await _handle_end_node(
+                                node, response_message
+                            )
 
-                        tool_call_counter = await _handle_call_tools_node(
-                            node,
-                            agent_run,
-                            active_tool_steps,
-                            tool_call_counter,
-                            parent_tools_step,
-                        )
+            except UsageLimitExceeded:
+                # `agent_run` est disponible ici car l'exception est levée à l'intérieur du contexte.
+                return await _handle_usage_limit_exceeded(
+                    agent_run, message, message_history or []
+                )
 
-                    # 4. EndNode - Fin de l'exécution
-                    elif Agent.is_end_node(node):
-                        response_message = await _handle_end_node(node, response_message)
-
-        # Finaliser le message de réponse s'il existe
         if response_message is not None:
             await response_message.update()
 
-        # Compléter le parent step des outils s'il existe
-        try:
-            # parent_tools_step est dans la portée ci-dessus; mypy ignore
-            if 'parent_tools_step' in locals() and locals()['parent_tools_step'] is not None:
-                parent_tools_step = locals()['parent_tools_step']
-                await parent_tools_step.__aexit__(None, None, None)
-        except Exception:
-            pass
+        if parent_tools_step is not None:
+            await parent_tools_step.__aexit__(None, None, None)
 
-        # Récupérer l'historique complet (s'assurer que le result n'est pas None)
         if agent_run.result is not None:
             all_messages = agent_run.result.all_messages()
             trimmed_messages = trim_message_history(all_messages)
@@ -317,103 +352,20 @@ async def process_agent_with_perfect_streaming(
     except Exception as e:
         logger.error("❌ Erreur dans le streaming parfait: %s", e, exc_info=True)
 
-        # Tenter de fermer le parent step s'il existe
-        try:
-            if 'parent_tools_step' in locals() and locals()['parent_tools_step'] is not None:
-                parent_tools_step = locals()['parent_tools_step']
-                parent_tools_step.is_error = True  # type: ignore[attr-defined]
+        if parent_tools_step:
+            try:
+                parent_tools_step.is_error = True
                 await parent_tools_step.__aexit__(None, None, None)
-        except Exception:
-            pass
-
-        # Nettoyage des steps ouverts en cas d'erreur
+            except Exception:
+                pass
         await _cleanup_on_error(active_tool_steps)
 
-        # Message d'erreur à l'utilisateur
         error_msg = cl.Message(
-            content=f"❌ **Erreur lors du traitement:**\n\n{str(e)}\n\n"
-            "Veuillez réessayer ou reformuler votre question."
+            content=f"❌ **Erreur lors du traitement:**\n\n{str(e)}\n\nVeuillez réessayer ou reformuler votre question."
         )
         await error_msg.send()
 
         return message_history or []
 
 
-async def process_agent_fallback_simple(
-    agent: Agent, message: str, message_history: Optional[List[ModelMessage]] = None
-) -> List[ModelMessage]:
-    """
-    Version de fallback simple sans streaming pour la robustesse.
 
-    Args:
-        agent: Instance de l'agent Pydantic-AI
-        message: Message de l'utilisateur
-        message_history: Historique des messages
-
-    Returns:
-        Liste mise à jour des messages
-    """
-    try:
-        logger.info("🔄 Utilisation du fallback simple...")
-
-        # Exécution simple sans streaming
-        result = await agent.run(message, message_history=message_history or [])
-
-        if result is None:
-            raise ValueError("L'agent a retourné un résultat null")
-
-        # Afficher la réponse
-        response_content = str(result.output)
-        response_message = cl.Message(content=response_content)
-        await response_message.send()
-
-        # Retourner l'historique
-        if hasattr(result, "all_messages"):
-            return result.all_messages()
-        logger.warning(
-            "Result n'a pas d'attribut all_messages, retour historique original"
-        )
-        return message_history or []
-
-    except Exception as e:
-        logger.error("❌ Erreur même en fallback: %s", e)
-
-        error_message = cl.Message(
-            content=f"❌ **Erreur système:**\n\n{str(e)}\n\n"
-            "Veuillez contacter l'administrateur si le problème persiste."
-        )
-        await error_message.send()
-
-        return message_history or []
-
-
-async def process_agent_modern_with_history(
-    agent: Agent, message: str, message_history: Optional[List[ModelMessage]] = None
-) -> List[ModelMessage]:
-    """
-    Point d'entrée principal pour le traitement moderne avec streaming parfait.
-
-    Cette fonction est le point d'entrée recommandé qui utilise la meilleure
-    implémentation disponible avec fallback automatique en cas d'erreur.
-
-    Args:
-        agent: Instance de l'agent Pydantic-AI
-        message: Message de l'utilisateur
-        message_history: Historique des messages au format Pydantic-AI
-
-    Returns:
-        Liste mise à jour des messages pour l'historique de session
-    """
-    logger.info("🎯 Traitement moderne avec streaming parfait")
-
-    try:
-        # Tenter le streaming parfait
-        return await process_agent_with_perfect_streaming(
-            agent, message, message_history
-        )
-
-    except Exception as e:
-        logger.warning("⚠️ Échec du streaming parfait, fallback: %s", e)
-
-        # En cas d'échec, utiliser le fallback simple
-        return await process_agent_fallback_simple(agent, message, message_history)

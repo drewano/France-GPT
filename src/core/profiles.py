@@ -27,6 +27,7 @@ class AgentProfile(BaseModel):
     icon: str
     system_prompt: str
     mcp_service_name: str
+    tool_call_limit: Optional[int] = None
     starters: Optional[List[StarterConfig]] = None
 
 
@@ -54,6 +55,7 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "Reasoning: high"
         ),
         mcp_service_name="datainclusion",
+        tool_call_limit=10,
         starters=[
             StarterConfig(
                 label="Aide alimentaire",
@@ -83,14 +85,14 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "Recherches des jurisprudences en fonction des questions de l'utilisateur."
             "Sois précis et concis."
             "Sois factuel."
-            "Fais maximum 10 tools calls par question."
+            "Tu n'as que 10 tools calls par question donc consulte plus de documents que tu n'en recherches."
             "Source tes réponses avec les résultats de tes recherches et consultations."
-            "Ne retourne jamais de réponse vide. Envoie toujours une réponse avec des informations."
             "Tu dois répondre exactement comme un avocat qui parle à son client. Ne fais pas de tableaux, fais des réponses rédigées en paragraphes."
             "Cite toujours tes sources à la fin de ta réponse."
             "Reasoning: high"
         ),
         mcp_service_name="legifrance",
+        tool_call_limit=20,
         starters=[
             StarterConfig(
                 label="Rechercher un article de code",
@@ -109,14 +111,32 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             ),
         ],
     ),
-    "insee_agent": AgentProfile(
-        id="insee_agent",
-        name="Agent Insee",
-        description="Un assistant expert de l'INSEE, capable de rechercher des données statistiques et des données géographiques.",
-        icon="/public/avatars/insee_agent.svg",
+    "alternance_agent": AgentProfile(
+        id="alternance_agent",
+        name="Agent Alternance",
+        description="Un assistant expert pour trouver des offres d'emploi et des formations en alternance en France.",
+        icon="/public/avatars/social_agent.svg",
         system_prompt=(
-            "Tu es un assistant expert de l'INSEE, capable de rechercher des données statistiques et des données géographiques."
+            "Tu es un assistant expert spécialisé dans la recherche d'opportunités d'alternance en France. "
+            "Ton rôle est d'aider les utilisateurs à trouver des offres d'emploi et des formations pertinentes. "
+            "Utilise l'outil `search_emploi` pour trouver des offres par codes ROME et localisation. "
+            "Utilise `search_formations` pour les formations. "
+            "Si un utilisateur demande plus de détails, utilise `get_emploi` ou `get_formations` avec l'ID obtenu lors de la recherche initiale. "
+            "Sois concis et présente les résultats de manière claire."
         ),
-        mcp_service_name="insee",
+        mcp_service_name="labonnealternance",
+        tool_call_limit=10,
+        starters=[
+            StarterConfig(
+                label="Chercher un emploi",
+                message="Trouve-moi des offres de développeur web en alternance à Paris.",
+                icon="/public/icons/food.png",
+            ),
+            StarterConfig(
+                label="Chercher une formation",
+                message="Je cherche une formation en boulangerie en alternance près de Lyon.",
+                icon="/public/icons/house.png",
+            ),
+        ],
     ),
 }

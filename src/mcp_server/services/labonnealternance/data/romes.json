@@ -1,0 +1,6338 @@
+[
+  {
+    "code": "A1413",
+    "libelle": "Brasseur / Brasseuse de bière"
+  },
+  {
+    "code": "A1414",
+    "libelle": "Horticulteur / Horticultrice"
+  },
+  {
+    "code": "A1415",
+    "libelle": "Marin-pêcheur"
+  },
+  {
+    "code": "A1416",
+    "libelle": "Exploitant / Exploitante agricole"
+  },
+  {
+    "code": "A1417",
+    "libelle": "Saliculteur / Salicultrice"
+  },
+  {
+    "code": "A1501",
+    "libelle": "Auxiliaire vétérinaire"
+  },
+  {
+    "code": "A1502",
+    "libelle": "Maréchal-ferrant / Maréchale-ferrante"
+  },
+  {
+    "code": "A1503",
+    "libelle": "Toiletteur / Toiletteuse d'animaux"
+  },
+  {
+    "code": "A1504",
+    "libelle": "Vétérinaire"
+  },
+  {
+    "code": "A1201",
+    "libelle": "Bûcheron / Bûcheronne"
+  },
+  {
+    "code": "A1202",
+    "libelle": "Agent / Agente d'entretien des espaces naturels"
+  },
+  {
+    "code": "A1203",
+    "libelle": "Agent / Agente d'entretien des espaces verts"
+  },
+  {
+    "code": "A1204",
+    "libelle": "Garde de parc naturel"
+  },
+  {
+    "code": "A1205",
+    "libelle": "Sylviculteur / Sylvicultrice"
+  },
+  {
+    "code": "A1301",
+    "libelle": "Technicien / Technicienne de culture maraîchère"
+  },
+  {
+    "code": "A1302",
+    "libelle": "Technicien / Technicienne agricole"
+  },
+  {
+    "code": "A1303",
+    "libelle": "Ingénieur / Ingénieure d'études et de recherche agricoles"
+  },
+  {
+    "code": "A1401",
+    "libelle": "Cueilleur / Cueilleuse de fruits"
+  },
+  {
+    "code": "A1402",
+    "libelle": "Aide agricole en production végétale"
+  },
+  {
+    "code": "A1403",
+    "libelle": "Aide d'élevage agricole"
+  },
+  {
+    "code": "A1404",
+    "libelle": "Aquaculteur / Aquacultrice"
+  },
+  {
+    "code": "A1405",
+    "libelle": "Arboriculteur / Arboricultrice"
+  },
+  {
+    "code": "A1406",
+    "libelle": "Capitaine de pêche"
+  },
+  {
+    "code": "A1407",
+    "libelle": "Eleveur / Eleveuse de bovins"
+  },
+  {
+    "code": "A1408",
+    "libelle": "Eleveur / Eleveuse d'animaux sauvages"
+  },
+  {
+    "code": "A1409",
+    "libelle": "Aviculteur / Avicultrice"
+  },
+  {
+    "code": "A1410",
+    "libelle": "Eleveur / Eleveuse d'ovins"
+  },
+  {
+    "code": "D1406",
+    "libelle": "Directeur / Directrice des ventes"
+  },
+  {
+    "code": "A1411",
+    "libelle": "Eleveur / Eleveuse de porcins"
+  },
+  {
+    "code": "B1101",
+    "libelle": "Artiste Plasticien / Plasticienne"
+  },
+  {
+    "code": "B1201",
+    "libelle": "Céramiste"
+  },
+  {
+    "code": "B1301",
+    "libelle": "Etalagiste"
+  },
+  {
+    "code": "B1302",
+    "libelle": "Décorateur / Décoratrice d'objets d'art"
+  },
+  {
+    "code": "B1303",
+    "libelle": "Graveur / Graveuse d'art"
+  },
+  {
+    "code": "B1401",
+    "libelle": "Vannier / Vannière"
+  },
+  {
+    "code": "A1101",
+    "libelle": "Conducteur / Conductrice d'engins agricoles"
+  },
+  {
+    "code": "D1205",
+    "libelle": "Employé / Employée de pressing"
+  },
+  {
+    "code": "D1206",
+    "libelle": "Cordonnier / Cordonnière"
+  },
+  {
+    "code": "D1207",
+    "libelle": "Retoucheur / Retoucheuse en habillement"
+  },
+  {
+    "code": "D1208",
+    "libelle": "Esthéticien / Esthéticienne"
+  },
+  {
+    "code": "D1209",
+    "libelle": "Fleuriste"
+  },
+  {
+    "code": "D1210",
+    "libelle": "Vendeur / Vendeuse en animalerie"
+  },
+  {
+    "code": "D1211",
+    "libelle": "Vendeur / Vendeuse d'articles de sport et loisirs"
+  },
+  {
+    "code": "D1212",
+    "libelle": "Vendeur / Vendeuse en équipement de la maison"
+  },
+  {
+    "code": "B1402",
+    "libelle": "Relieur / Relieuse d'art"
+  },
+  {
+    "code": "B1501",
+    "libelle": "Facteur / Factrice d’instruments à clavier"
+  },
+  {
+    "code": "B1601",
+    "libelle": "Métallier / Métallière d'art"
+  },
+  {
+    "code": "B1602",
+    "libelle": "Souffleur / Souffleuse de verre"
+  },
+  {
+    "code": "B1603",
+    "libelle": "Opérateur / Opératrice en bijouterie"
+  },
+  {
+    "code": "B1604",
+    "libelle": "Horloger / Horlogère"
+  },
+  {
+    "code": "C1301",
+    "libelle": "Trader"
+  },
+  {
+    "code": "C1302",
+    "libelle": "Gestionnaire des opérations sur les marchés financiers"
+  },
+  {
+    "code": "C1104",
+    "libelle": "Responsable d'agence en assurances"
+  },
+  {
+    "code": "C1105",
+    "libelle": "Actuaire"
+  },
+  {
+    "code": "C1106",
+    "libelle": "Expert / Experte risques en assurances"
+  },
+  {
+    "code": "C1107",
+    "libelle": "Chargé / Chargée d'indemnisations en assurances"
+  },
+  {
+    "code": "C1108",
+    "libelle": "Responsable de département en assurances"
+  },
+  {
+    "code": "C1109",
+    "libelle": "Gestionnaire en assurances"
+  },
+  {
+    "code": "C1110",
+    "libelle": "Souscripteur / Souscriptrice en assurances"
+  },
+  {
+    "code": "C1201",
+    "libelle": "Chargé / Chargée d'accueil en banque"
+  },
+  {
+    "code": "C1202",
+    "libelle": "Analyste de crédits et risques bancaires"
+  },
+  {
+    "code": "C1203",
+    "libelle": "Chargé / Chargée d'affaires bancaires entreprise"
+  },
+  {
+    "code": "C1204",
+    "libelle": "Gestionnaire de produits bancaires"
+  },
+  {
+    "code": "C1205",
+    "libelle": "Conseiller / Conseillère en gestion de patrimoine"
+  },
+  {
+    "code": "C1206",
+    "libelle": "Conseiller / Conseillère de clientèle bancaire"
+  },
+  {
+    "code": "C1207",
+    "libelle": "Directeur / Directrice d'agence bancaire"
+  },
+  {
+    "code": "D1213",
+    "libelle": "Vendeur / Vendeuse grossiste en équipement du foyer"
+  },
+  {
+    "code": "D1214",
+    "libelle": "Vendeur / Vendeuse en prêt-à-porter"
+  },
+  {
+    "code": "D1301",
+    "libelle": "Gérant / Gérante de magasin d'alimentation générale"
+  },
+  {
+    "code": "D1401",
+    "libelle": "Assistant commercial / Assistante commerciale"
+  },
+  {
+    "code": "D1402",
+    "libelle": "Commercial / Commerciale grands comptes et entreprises"
+  },
+  {
+    "code": "D1403",
+    "libelle": "Conseiller commercial / Conseillère commerciale auprès des particuliers"
+  },
+  {
+    "code": "D1404",
+    "libelle": "Vendeur / Vendeuse automobile"
+  },
+  {
+    "code": "D1405",
+    "libelle": "Conseiller / Conseillère en information médicale"
+  },
+  {
+    "code": "D1407",
+    "libelle": "Technico-commercial / Technico-commerciale"
+  },
+  {
+    "code": "F1603",
+    "libelle": "Plombier / Plombière sanitaire"
+  },
+  {
+    "code": "C1303",
+    "libelle": "Gérant / Gérante de portefeuille financier"
+  },
+  {
+    "code": "C1401",
+    "libelle": "Agent administratif / Agente administrative banque ou assurance"
+  },
+  {
+    "code": "C1501",
+    "libelle": "Gestionnaire de copropriété"
+  },
+  {
+    "code": "C1502",
+    "libelle": "Chargé / Chargée de gestion locative en immobilier"
+  },
+  {
+    "code": "C1503",
+    "libelle": "Chargé / Chargée d'affaires immobilières"
+  },
+  {
+    "code": "B1701",
+    "libelle": "Taxidermiste"
+  },
+  {
+    "code": "B1801",
+    "libelle": "Modiste"
+  },
+  {
+    "code": "B1802",
+    "libelle": "Maroquinier / Maroquinière"
+  },
+  {
+    "code": "B1803",
+    "libelle": "Couturier / Couturière"
+  },
+  {
+    "code": "B1804",
+    "libelle": "Brodeur / Brodeuse"
+  },
+  {
+    "code": "B1805",
+    "libelle": "Styliste"
+  },
+  {
+    "code": "B1806",
+    "libelle": "Tapissier / Tapissière d'ameublement"
+  },
+  {
+    "code": "C1101",
+    "libelle": "Chargé / Chargée de produit en assurances"
+  },
+  {
+    "code": "C1102",
+    "libelle": "Conseiller / Conseillère en assurances"
+  },
+  {
+    "code": "C1103",
+    "libelle": "Courtier / Courtière en assurance"
+  },
+  {
+    "code": "D1103",
+    "libelle": "Charcutier-traiteur / Charcutière-traiteuse"
+  },
+  {
+    "code": "D1104",
+    "libelle": "Pâtissier / Pâtissière"
+  },
+  {
+    "code": "D1105",
+    "libelle": "Poissonnier / Poissonnière"
+  },
+  {
+    "code": "D1106",
+    "libelle": "Vendeur / Vendeuse en épicerie"
+  },
+  {
+    "code": "D1107",
+    "libelle": "Vendeur / Vendeuse grossiste en produits frais"
+  },
+  {
+    "code": "D1201",
+    "libelle": "Brocanteur / Brocanteuse"
+  },
+  {
+    "code": "D1202",
+    "libelle": "Coiffeur / Coiffeuse"
+  },
+  {
+    "code": "D1203",
+    "libelle": "Agent / Agente de soins en hydrothérapie"
+  },
+  {
+    "code": "D1204",
+    "libelle": "Agent technico-commercial / Agente technico-commerciale en location de véhicules"
+  },
+  {
+    "code": "D1507",
+    "libelle": "Employé / Employée de rayon libre-service"
+  },
+  {
+    "code": "D1508",
+    "libelle": "Responsable de caisses"
+  },
+  {
+    "code": "D1509",
+    "libelle": "Responsable de département en grande distribution"
+  },
+  {
+    "code": "E1101",
+    "libelle": "Community manager"
+  },
+  {
+    "code": "E1102",
+    "libelle": "Ecrivain / Ecrivaine"
+  },
+  {
+    "code": "E1103",
+    "libelle": "Chargé / Chargée des relations publiques"
+  },
+  {
+    "code": "E1104",
+    "libelle": "Concepteur / Conceptrice de contenus multimedia"
+  },
+  {
+    "code": "E1105",
+    "libelle": "Editeur / Editrice"
+  },
+  {
+    "code": "F1106",
+    "libelle": "Ingénieur / Ingénieure d'études de prix BTP"
+  },
+  {
+    "code": "F1107",
+    "libelle": "Géomètre-topographe"
+  },
+  {
+    "code": "E1303",
+    "libelle": "Chef / Cheffe de fabrication en industrie graphique"
+  },
+  {
+    "code": "E1304",
+    "libelle": "Agent / Agente de façonnage et routage"
+  },
+  {
+    "code": "E1305",
+    "libelle": "Préparateur-correcteur / Préparatrice-correctrice en industrie graphique"
+  },
+  {
+    "code": "E1306",
+    "libelle": "Opérateur / Opératrice de prépresse"
+  },
+  {
+    "code": "E1307",
+    "libelle": "Reprographe"
+  },
+  {
+    "code": "E1308",
+    "libelle": "Technicien / Technicienne des industries graphiques"
+  },
+  {
+    "code": "E1401",
+    "libelle": "Chef / Cheffe de publicité"
+  },
+  {
+    "code": "E1402",
+    "libelle": "Média planneur / Média planneuse"
+  },
+  {
+    "code": "F1101",
+    "libelle": "Architecte du bâtiment"
+  },
+  {
+    "code": "F1102",
+    "libelle": "Architecte d'intérieur"
+  },
+  {
+    "code": "F1103",
+    "libelle": "Diagnostiqueur / Diagnostiqueuse immobilier"
+  },
+  {
+    "code": "F1104",
+    "libelle": "Dessinateur-projeteur / Dessinatrice-projeteuse de la construction"
+  },
+  {
+    "code": "F1105",
+    "libelle": "Géologue"
+  },
+  {
+    "code": "C1504",
+    "libelle": "Conseiller / Conseillère immobilier"
+  },
+  {
+    "code": "D1101",
+    "libelle": "Boucher / Bouchère"
+  },
+  {
+    "code": "D1102",
+    "libelle": "Boulanger / Boulangère"
+  },
+  {
+    "code": "F1402",
+    "libelle": "Extracteur / Extractrice de roches"
+  },
+  {
+    "code": "F1501",
+    "libelle": "Monteur / Monteuse de structures bois"
+  },
+  {
+    "code": "F1502",
+    "libelle": "Monteur / Monteuse en structures métalliques"
+  },
+  {
+    "code": "F1503",
+    "libelle": "Charpentier / Charpentière"
+  },
+  {
+    "code": "F1601",
+    "libelle": "Plâtrier / Plâtrière"
+  },
+  {
+    "code": "F1602",
+    "libelle": "Electricien / Electricienne du bâtiment"
+  },
+  {
+    "code": "F1302",
+    "libelle": "Conducteur / Conductrice d'engins de chantier"
+  },
+  {
+    "code": "F1108",
+    "libelle": "Métreur / Métreuse de la construction"
+  },
+  {
+    "code": "F1201",
+    "libelle": "Conducteur / Conductrice de travaux du bâtiment"
+  },
+  {
+    "code": "F1202",
+    "libelle": "Chef / Cheffe de chantier bâtiment"
+  },
+  {
+    "code": "F1203",
+    "libelle": "Responsable d'exploitation de gisements et de carrières"
+  },
+  {
+    "code": "F1204",
+    "libelle": "Animateur / Animatrice QSE - Qualité Sécurité Environnement BTP"
+  },
+  {
+    "code": "F1301",
+    "libelle": "Grutier / Grutière"
+  },
+  {
+    "code": "E1106",
+    "libelle": "Journaliste"
+  },
+  {
+    "code": "E1107",
+    "libelle": "Chef / Cheffe de projet événementiel"
+  },
+  {
+    "code": "E1108",
+    "libelle": "Traducteur / Traductrice"
+  },
+  {
+    "code": "E1201",
+    "libelle": "Photographe"
+  },
+  {
+    "code": "E1202",
+    "libelle": "Opérateur / Opératrice de laboratoire cinématographique"
+  },
+  {
+    "code": "E1203",
+    "libelle": "Technicien / Technicienne de laboratoire photographique"
+  },
+  {
+    "code": "E1204",
+    "libelle": "Technicien / Technicienne d’exploitation cinématographique"
+  },
+  {
+    "code": "E1205",
+    "libelle": "Designer graphique"
+  },
+  {
+    "code": "E1301",
+    "libelle": "Conducteur / Conductrice de machines d'impression"
+  },
+  {
+    "code": "E1302",
+    "libelle": "Conducteur / Conductrice de machines de façonnage routage"
+  },
+  {
+    "code": "F1604",
+    "libelle": "Plaquiste"
+  },
+  {
+    "code": "D1408",
+    "libelle": "Conseiller / Conseillère clientèle à distance"
+  },
+  {
+    "code": "D1501",
+    "libelle": "Animateur / Animatrice des ventes"
+  },
+  {
+    "code": "D1502",
+    "libelle": "Chef / Cheffe de rayon produits alimentaires"
+  },
+  {
+    "code": "D1503",
+    "libelle": "Chef / Cheffe de rayon de produits non alimentaires"
+  },
+  {
+    "code": "D1504",
+    "libelle": "Directeur / Directrice de magasin de grande distribution"
+  },
+  {
+    "code": "D1505",
+    "libelle": "Hôte / Hôtesse de caisse"
+  },
+  {
+    "code": "D1506",
+    "libelle": "Merchandiser"
+  },
+  {
+    "code": "H1102",
+    "libelle": "Ingénieur / Ingénieure d'affaires en industrie"
+  },
+  {
+    "code": "H1201",
+    "libelle": "Technicien / Technicienne coloriste en industrie"
+  },
+  {
+    "code": "H1202",
+    "libelle": "Dessinateur / Dessinatrice en électricité-électronique"
+  },
+  {
+    "code": "H1203",
+    "libelle": "Dessinateur-projeteur / Dessinatrice-projeteuse en mécanique"
+  },
+  {
+    "code": "H1204",
+    "libelle": "Designer"
+  },
+  {
+    "code": "H1205",
+    "libelle": "Modéliste industriel / Modéliste industrielle"
+  },
+  {
+    "code": "H1206",
+    "libelle": "Ingénieur / Ingénieure R&D en industrie"
+  },
+  {
+    "code": "F1605",
+    "libelle": "Monteur / Monteuse de réseaux électriques"
+  },
+  {
+    "code": "F1606",
+    "libelle": "Peintre en bâtiment"
+  },
+  {
+    "code": "F1607",
+    "libelle": "Menuisier / Menuisière aluminium"
+  },
+  {
+    "code": "F1608",
+    "libelle": "Carreleur / Carreleuse"
+  },
+  {
+    "code": "F1609",
+    "libelle": "Solier / Solière"
+  },
+  {
+    "code": "F1610",
+    "libelle": "Installateur mainteneur / Installatrice mainteneuse en systèmes solaires, thermiques et photovoltaïques"
+  },
+  {
+    "code": "F1611",
+    "libelle": "Façadier / Façadière itéiste"
+  },
+  {
+    "code": "G1502",
+    "libelle": "Employé / Employée d'hôtel"
+  },
+  {
+    "code": "G1503",
+    "libelle": "Gouvernant / Gouvernante d'hôtel"
+  },
+  {
+    "code": "G1202",
+    "libelle": "Animateur / Animatrice d'atelier artistique ou ludique"
+  },
+  {
+    "code": "G1203",
+    "libelle": "Animateur / Animatrice jeunesse"
+  },
+  {
+    "code": "G1204",
+    "libelle": "Educateur sportif / Educatrice sportive"
+  },
+  {
+    "code": "G1205",
+    "libelle": "Opérateur / Opératrice d'attraction"
+  },
+  {
+    "code": "G1206",
+    "libelle": "Croupier / Croupière"
+  },
+  {
+    "code": "G1301",
+    "libelle": "Concepteur / Conceptrice de produits touristiques"
+  },
+  {
+    "code": "G1302",
+    "libelle": "Yield manager"
+  },
+  {
+    "code": "G1303",
+    "libelle": "Conseiller / Conseillère en voyages"
+  },
+  {
+    "code": "G1401",
+    "libelle": "Adjoint / Adjointe de direction en hôtellerie-restauration"
+  },
+  {
+    "code": "G1402",
+    "libelle": "Directeur / Directrice d'établissement en hôtellerie-restauration"
+  },
+  {
+    "code": "G1403",
+    "libelle": "Directeur / Directrice de structure touristique"
+  },
+  {
+    "code": "G1404",
+    "libelle": "Responsable d'établissement de restauration collective"
+  },
+  {
+    "code": "G1501",
+    "libelle": "Employé / Employée d'étage"
+  },
+  {
+    "code": "G1804",
+    "libelle": "Sommelier / Sommelière"
+  },
+  {
+    "code": "H1101",
+    "libelle": "Ingénieur / Ingénieure support technique"
+  },
+  {
+    "code": "H1207",
+    "libelle": "Rédacteur / Rédactrice technique"
+  },
+  {
+    "code": "H1208",
+    "libelle": "Automaticien / Automaticienne en bureau d'études"
+  },
+  {
+    "code": "H1209",
+    "libelle": "Technicien / Technicienne en électricité et électronique études et développement"
+  },
+  {
+    "code": "H1210",
+    "libelle": "Technicien / Technicienne R&D"
+  },
+  {
+    "code": "H1301",
+    "libelle": "Inspecteur / Inspectrice de conformité"
+  },
+  {
+    "code": "H1302",
+    "libelle": "Ingénieur / Ingénieure Hygiène, Sécurité et Environnement en industrie (HSE)"
+  },
+  {
+    "code": "H1401",
+    "libelle": "Responsable ordonnancement-lancement-planification en industrie"
+  },
+  {
+    "code": "G1601",
+    "libelle": "Chef / Cheffe de cuisine"
+  },
+  {
+    "code": "G1602",
+    "libelle": "Commis / Commise de cuisine"
+  },
+  {
+    "code": "G1603",
+    "libelle": "Equipier polyvalent / Equipière polyvalente de restauration rapide"
+  },
+  {
+    "code": "G1604",
+    "libelle": "Pizzaïolo / Pizzaïola"
+  },
+  {
+    "code": "G1605",
+    "libelle": "Plongeur officier / Plongeuse officière de cuisine"
+  },
+  {
+    "code": "G1701",
+    "libelle": "Concierge d'hôtel"
+  },
+  {
+    "code": "F1612",
+    "libelle": "Tailleur / Tailleuse de pierre"
+  },
+  {
+    "code": "F1613",
+    "libelle": "Etancheur / Etancheuse"
+  },
+  {
+    "code": "F1701",
+    "libelle": "Coffreur / Coffreuse"
+  },
+  {
+    "code": "F1702",
+    "libelle": "Ouvrier / Ouvrière en voiries"
+  },
+  {
+    "code": "F1703",
+    "libelle": "Maçon / Maçonne"
+  },
+  {
+    "code": "F1704",
+    "libelle": "Manœuvre bâtiment"
+  },
+  {
+    "code": "F1705",
+    "libelle": "Poseur / Poseuse de canalisations"
+  },
+  {
+    "code": "F1706",
+    "libelle": "Armaturier / Armaturière de l'industrie du béton"
+  },
+  {
+    "code": "G1101",
+    "libelle": "Agent / Agente d'accueil touristique"
+  },
+  {
+    "code": "G1102",
+    "libelle": "Chargé / Chargée de promotion touristique"
+  },
+  {
+    "code": "G1201",
+    "libelle": "Guide-accompagnateur / Guide-accompagnatrice"
+  },
+  {
+    "code": "F1401",
+    "libelle": "Foreur / Foreuse"
+  },
+  {
+    "code": "G1702",
+    "libelle": "Bagagiste en établissement hôtelier"
+  },
+  {
+    "code": "G1703",
+    "libelle": "Réceptionniste"
+  },
+  {
+    "code": "G1801",
+    "libelle": "Barman / Barmaid"
+  },
+  {
+    "code": "G1802",
+    "libelle": "Maître / Maîtresse d'hôtel"
+  },
+  {
+    "code": "G1803",
+    "libelle": "Serveur / Serveuse en restauration"
+  },
+  {
+    "code": "H1303",
+    "libelle": "Technicien / Technicienne en Hygiène, Sécurité, Environnement industriel (HSE)"
+  },
+  {
+    "code": "H1504",
+    "libelle": "Contrôleur / Contrôleuse technique en électricité-électronique"
+  },
+  {
+    "code": "H1505",
+    "libelle": "Nez"
+  },
+  {
+    "code": "H1506",
+    "libelle": "Contrôleur / Contrôleuse technique en métallurgie"
+  },
+  {
+    "code": "H2101",
+    "libelle": "Ouvrier / Ouvrière d'abattoir"
+  },
+  {
+    "code": "H2102",
+    "libelle": "Conducteur / Conductrice de ligne en industrie alimentaire"
+  },
+  {
+    "code": "H2201",
+    "libelle": "Assembleur / Assembleuse d'ouvrages en bois"
+  },
+  {
+    "code": "H2412",
+    "libelle": "Patronnier / Patronnière"
+  },
+  {
+    "code": "H2413",
+    "libelle": "Opérateur / Opératrice de préparation en industrie textile"
+  },
+  {
+    "code": "H2301",
+    "libelle": "Conducteur / Conductrice de ligne en industrie chimique"
+  },
+  {
+    "code": "H2401",
+    "libelle": "Opérateur / Opératrice de fabrication industrie des cuirs, peaux et matériaux associés"
+  },
+  {
+    "code": "H2402",
+    "libelle": "Couturier industriel / Couturière industrielle de l'habillement"
+  },
+  {
+    "code": "H2403",
+    "libelle": "Conducteur / Conductrice de machines de fabrication de produits textiles"
+  },
+  {
+    "code": "H2404",
+    "libelle": "Conducteur / Conductrice de machine de production et transformation des fils"
+  },
+  {
+    "code": "D1225",
+    "libelle": "Responsable d'institut de beauté"
+  },
+  {
+    "code": "H2405",
+    "libelle": "Conducteur / Conductrice de ligne de production de textiles non-tissés"
+  },
+  {
+    "code": "H2406",
+    "libelle": "Conducteur / Conductrice de machines de traitement textile"
+  },
+  {
+    "code": "H2407",
+    "libelle": "Opérateur / Opératrice sur machine de transformation et de finition des cuirs et peaux"
+  },
+  {
+    "code": "H2408",
+    "libelle": "Imprimeur / Imprimeuse textile"
+  },
+  {
+    "code": "H2409",
+    "libelle": "Coupeur / Coupeuse en industrie textile et matériaux souples"
+  },
+  {
+    "code": "H2410",
+    "libelle": "Opérateur / Opératrice de finition en industrie du textile"
+  },
+  {
+    "code": "H2411",
+    "libelle": "Monteur / Monteuse prototypiste cuir et matériaux souples"
+  },
+  {
+    "code": "H2504",
+    "libelle": "Chef / Cheffe d'équipe en industrie"
+  },
+  {
+    "code": "H2505",
+    "libelle": "Chef / Cheffe d'équipe et d'atelier textile"
+  },
+  {
+    "code": "H2601",
+    "libelle": "Bobinier / Bobinière en électricité"
+  },
+  {
+    "code": "H2602",
+    "libelle": "Câbleur / Câbleuse d'armoires"
+  },
+  {
+    "code": "H2603",
+    "libelle": "Opérateur / Opératrice sur machines automatisées en production électrique"
+  },
+  {
+    "code": "H2604",
+    "libelle": "Assembleur / Assembleuse en produits électriques et électroniques"
+  },
+  {
+    "code": "H2605",
+    "libelle": "Monteur-câbleur / Monteuse-câbleuse en électronique"
+  },
+  {
+    "code": "I1202",
+    "libelle": "Agent / Agente d'exploitation de la voirie"
+  },
+  {
+    "code": "I1203",
+    "libelle": "Agent / Agente d'entretien du bâtiment"
+  },
+  {
+    "code": "H2414",
+    "libelle": "Opérateur / Opératrice de préparation ou de finition sur articles de cuirs, peaux ou matériaux associés"
+  },
+  {
+    "code": "H2415",
+    "libelle": "Contrôleur / Contrôleuse en industrie textile"
+  },
+  {
+    "code": "H2501",
+    "libelle": "Chef / Cheffe d'atelier production électricité-électronique"
+  },
+  {
+    "code": "H2502",
+    "libelle": "Responsable d'unité de production industrielle"
+  },
+  {
+    "code": "H2503",
+    "libelle": "Responsable d'îlot de production"
+  },
+  {
+    "code": "I1201",
+    "libelle": "Agent / Agente technique d'affichage"
+  },
+  {
+    "code": "H2202",
+    "libelle": "Conducteur / Conductrice de machines à bois"
+  },
+  {
+    "code": "H2203",
+    "libelle": "Machiniste en fabrications de panneaux de bois"
+  },
+  {
+    "code": "H2204",
+    "libelle": "Contremaître / Contremaîtresse en menuiserie"
+  },
+  {
+    "code": "H2205",
+    "libelle": "Ouvrier / Ouvrière de scierie"
+  },
+  {
+    "code": "H2206",
+    "libelle": "Menuisier / Menuisière"
+  },
+  {
+    "code": "H2207",
+    "libelle": "Ebéniste"
+  },
+  {
+    "code": "H2208",
+    "libelle": "Façonnier / Façonnière d'ouvrages décoratifs en bois et matériaux associés"
+  },
+  {
+    "code": "H2209",
+    "libelle": "Dessinateur / Dessinatrice de structures en bois"
+  },
+  {
+    "code": "H1402",
+    "libelle": "Ingénieur / Ingénieure méthodes et process"
+  },
+  {
+    "code": "H1403",
+    "libelle": "Gestionnaire de flux de production"
+  },
+  {
+    "code": "H1404",
+    "libelle": "Technicien / Technicienne méthodes"
+  },
+  {
+    "code": "H1501",
+    "libelle": "Responsable de laboratoire d'analyse industrielle"
+  },
+  {
+    "code": "H1502",
+    "libelle": "Responsable qualité en industrie"
+  },
+  {
+    "code": "H1503",
+    "libelle": "Technicien / Technicienne de laboratoire d'analyse industrielle"
+  },
+  {
+    "code": "I1309",
+    "libelle": "Electricien / Electricienne de maintenance"
+  },
+  {
+    "code": "I1310",
+    "libelle": "Mécanicien / Mécanicienne de maintenance industrielle"
+  },
+  {
+    "code": "I1401",
+    "libelle": "Technicien / Technicienne de maintenance en informatique"
+  },
+  {
+    "code": "I1402",
+    "libelle": "Technicien / Technicienne de maintenance en appareils électroménagers"
+  },
+  {
+    "code": "I1501",
+    "libelle": "Cordiste"
+  },
+  {
+    "code": "H2701",
+    "libelle": "Technicien / Technicienne énergie"
+  },
+  {
+    "code": "H2801",
+    "libelle": "Agent / Agente de fabrication du verre"
+  },
+  {
+    "code": "H2802",
+    "libelle": "Opérateur / Opératrice de fabrication en matériaux de construction"
+  },
+  {
+    "code": "H2803",
+    "libelle": "Opérateur / Opératrice en Industrie Céramique"
+  },
+  {
+    "code": "H2804",
+    "libelle": "Pilote de centrale de béton"
+  },
+  {
+    "code": "H2805",
+    "libelle": "Technicien / Technicienne de l'industrie du verre"
+  },
+  {
+    "code": "H2901",
+    "libelle": "Ajusteur-monteur / Ajusteuse-monteuse"
+  },
+  {
+    "code": "H3303",
+    "libelle": "Cuisinier / Cuisinière en industrie chimique"
+  },
+  {
+    "code": "H3401",
+    "libelle": "Opérateur / Opératrice de traitement d'abrasion de surface"
+  },
+  {
+    "code": "H2911",
+    "libelle": "Métallier / Métallière"
+  },
+  {
+    "code": "H2912",
+    "libelle": "Régleur / Régleuse d'équipements industriels"
+  },
+  {
+    "code": "H2913",
+    "libelle": "Soudeur / Soudeuse"
+  },
+  {
+    "code": "H2914",
+    "libelle": "Tuyauteur / Tuyauteuse"
+  },
+  {
+    "code": "H3101",
+    "libelle": "Conducteur / Conductrice de machines à papier ou carton"
+  },
+  {
+    "code": "H3102",
+    "libelle": "Conducteur / Conductrice d'installation de pâte à papier"
+  },
+  {
+    "code": "H3201",
+    "libelle": "Plasturgiste"
+  },
+  {
+    "code": "H3202",
+    "libelle": "Monteur régleur / Monteuse régleuse en plasturgie"
+  },
+  {
+    "code": "H3203",
+    "libelle": "Mouleur-stratifieur / Mouleuse-stratifieuse"
+  },
+  {
+    "code": "H3301",
+    "libelle": "Conducteur / Conductrice de ligne de conditionnement"
+  },
+  {
+    "code": "H3302",
+    "libelle": "Agent / Agente de conditionnement"
+  },
+  {
+    "code": "I1503",
+    "libelle": "Technicien / Technicienne en risques technologiques"
+  },
+  {
+    "code": "I1601",
+    "libelle": "Préparateur / Préparatrice de bateau"
+  },
+  {
+    "code": "I1602",
+    "libelle": "Mécanicien / Mécanicienne aéronautique"
+  },
+  {
+    "code": "I1603",
+    "libelle": "Mécanicien-réparateur / Mécanicienne-réparatrice en matériels agricoles"
+  },
+  {
+    "code": "I1604",
+    "libelle": "Mécanicien / Mécanicienne automobile"
+  },
+  {
+    "code": "I1605",
+    "libelle": "Mécanicien / Mécanicienne en mécanique marine ou navale"
+  },
+  {
+    "code": "I1307",
+    "libelle": "Antenniste"
+  },
+  {
+    "code": "I1606",
+    "libelle": "Carrossier-peintre / Carrossière-peintre"
+  },
+  {
+    "code": "I1607",
+    "libelle": "Mécanicien / Mécanicienne motocycles"
+  },
+  {
+    "code": "H3402",
+    "libelle": "Agent / Agente de traitement de surface"
+  },
+  {
+    "code": "H3403",
+    "libelle": "Opérateur / Opératrice de traitement thermique"
+  },
+  {
+    "code": "H3404",
+    "libelle": "Peintre industriel / Peintre industrielle"
+  },
+  {
+    "code": "I1101",
+    "libelle": "Directeur / Directrice de la gestion technique des bâtiments"
+  },
+  {
+    "code": "I1102",
+    "libelle": "Ingénieur / Ingénieure de maintenance industrielle"
+  },
+  {
+    "code": "I1103",
+    "libelle": "Chef / Cheffe d'atelier après-vente des véhicules (auto, moto, VTR)"
+  },
+  {
+    "code": "H2902",
+    "libelle": "Chaudronnier / Chaudronnière"
+  },
+  {
+    "code": "H2903",
+    "libelle": "Tourneur-fraiseur / Tourneuse-fraiseuse"
+  },
+  {
+    "code": "H2904",
+    "libelle": "Forgeron industriel / Forgeronne industrielle"
+  },
+  {
+    "code": "H2905",
+    "libelle": "Cisailleur / Cisailleuse en métallurgie"
+  },
+  {
+    "code": "H2906",
+    "libelle": "Opérateur / Opératrice en fabrication mécanique"
+  },
+  {
+    "code": "H2907",
+    "libelle": "Fondeur / Fondeuse en métallurgie"
+  },
+  {
+    "code": "H2908",
+    "libelle": "Modeleur / Modeleuse"
+  },
+  {
+    "code": "H2909",
+    "libelle": "Assembleur monteur / Assembleuse monteuse"
+  },
+  {
+    "code": "H2910",
+    "libelle": "Mouleur noyauteur / Mouleuse noyauteuse"
+  },
+  {
+    "code": "I1301",
+    "libelle": "Ascensoriste"
+  },
+  {
+    "code": "I1302",
+    "libelle": "Technicien / Technicienne de maintenance d'installations automatisées"
+  },
+  {
+    "code": "I1303",
+    "libelle": "Technicien / Technicienne de maintenance de distributeurs automatiques"
+  },
+  {
+    "code": "I1304",
+    "libelle": "Technicien / Technicienne de maintenance industrielle"
+  },
+  {
+    "code": "I1305",
+    "libelle": "Technicien / Technicienne installation et maintenance électronique"
+  },
+  {
+    "code": "I1306",
+    "libelle": "Frigoriste"
+  },
+  {
+    "code": "I1502",
+    "libelle": "Scaphandrier / Scaphandrière"
+  },
+  {
+    "code": "I1308",
+    "libelle": "Chauffagiste"
+  },
+  {
+    "code": "J1303",
+    "libelle": "Assistant / Assistante médico-technique"
+  },
+  {
+    "code": "J1304",
+    "libelle": "Auxiliaire de puériculture"
+  },
+  {
+    "code": "J1305",
+    "libelle": "Ambulancier / Ambulancière"
+  },
+  {
+    "code": "J1306",
+    "libelle": "Manipulateur / Manipulatrice d'électroradiologie médicale"
+  },
+  {
+    "code": "J1307",
+    "libelle": "Préparateur / Préparatrice en pharmacie"
+  },
+  {
+    "code": "J1401",
+    "libelle": "Audioprothésiste"
+  },
+  {
+    "code": "K1206",
+    "libelle": "Animateur coordinateur socioculturel / Animatrice coordinatrice socioculturelle"
+  },
+  {
+    "code": "K1207",
+    "libelle": "Educateur spécialisé / Educatrice spécialisée"
+  },
+  {
+    "code": "K1301",
+    "libelle": "Educateur / Educatrice en locomotion"
+  },
+  {
+    "code": "J1502",
+    "libelle": "Cadre de santé d'unité de soins ou de service paramédical"
+  },
+  {
+    "code": "J1503",
+    "libelle": "Infirmier / Infirmière anesthésiste (IADE)"
+  },
+  {
+    "code": "J1504",
+    "libelle": "Infirmier / Infirmière de bloc opératoire (IBODE)"
+  },
+  {
+    "code": "J1505",
+    "libelle": "Infirmier / Infirmière de prévention"
+  },
+  {
+    "code": "J1506",
+    "libelle": "Infirmier / Infirmière en soins généraux (IDE)"
+  },
+  {
+    "code": "J1507",
+    "libelle": "Puériculteur / Puéricultrice"
+  },
+  {
+    "code": "K1101",
+    "libelle": "Médiateur familial / Médiatrice familiale"
+  },
+  {
+    "code": "K1102",
+    "libelle": "Mandataire judiciaire à la protection des majeurs (MJPM)"
+  },
+  {
+    "code": "K1103",
+    "libelle": "Conseiller / Conseillère en développement personnel"
+  },
+  {
+    "code": "K1104",
+    "libelle": "Psychologue"
+  },
+  {
+    "code": "K1201",
+    "libelle": "Assistant social / Assistante sociale"
+  },
+  {
+    "code": "K1202",
+    "libelle": "Educateur / Educatrice de jeunes enfants"
+  },
+  {
+    "code": "K1203",
+    "libelle": "Educateur technique spécialisé / Educatrice technique spécialisée"
+  },
+  {
+    "code": "K1204",
+    "libelle": "Médiateur social / Médiatrice sociale"
+  },
+  {
+    "code": "K1205",
+    "libelle": "Agent / Agente d'accueil social"
+  },
+  {
+    "code": "K1404",
+    "libelle": "Chargé / Chargée de mission développement territorial"
+  },
+  {
+    "code": "K1405",
+    "libelle": "Préfet / Préfète"
+  },
+  {
+    "code": "K1502",
+    "libelle": "Inspecteur / Inspectrice du travail"
+  },
+  {
+    "code": "K1503",
+    "libelle": "Contrôleur / Contrôleuse des impôts"
+  },
+  {
+    "code": "K1504",
+    "libelle": "Percepteur / Perceptrice des impôts et du Trésor Public"
+  },
+  {
+    "code": "K1505",
+    "libelle": "Inspecteur / Inspectrice des douanes"
+  },
+  {
+    "code": "K1403",
+    "libelle": "Directeur / Directrice de structure de santé, sociale ou pénitentiaire"
+  },
+  {
+    "code": "K1302",
+    "libelle": "Assistant / Assistante de vie dépendance"
+  },
+  {
+    "code": "K1303",
+    "libelle": "Garde d'enfant"
+  },
+  {
+    "code": "K1304",
+    "libelle": "Employé familial / Employée familiale"
+  },
+  {
+    "code": "K1401",
+    "libelle": "Cadre Dirigeant / Dirigeante d'administration centrale"
+  },
+  {
+    "code": "K1402",
+    "libelle": "Médecin conseil"
+  },
+  {
+    "code": "J1402",
+    "libelle": "Diététicien / Diététicienne"
+  },
+  {
+    "code": "J1403",
+    "libelle": "Ergothérapeute"
+  },
+  {
+    "code": "J1404",
+    "libelle": "Kinésithérapeute"
+  },
+  {
+    "code": "J1405",
+    "libelle": "Opticien / Opticienne"
+  },
+  {
+    "code": "J1406",
+    "libelle": "Orthophoniste"
+  },
+  {
+    "code": "J1407",
+    "libelle": "Orthoptiste"
+  },
+  {
+    "code": "J1408",
+    "libelle": "Ostéopathe"
+  },
+  {
+    "code": "J1409",
+    "libelle": "Pédicure-podologue"
+  },
+  {
+    "code": "J1410",
+    "libelle": "Prothésiste dentaire"
+  },
+  {
+    "code": "J1411",
+    "libelle": "Orthoprothésiste"
+  },
+  {
+    "code": "J1412",
+    "libelle": "Psychomotricien / Psychomotricienne"
+  },
+  {
+    "code": "J1501",
+    "libelle": "Aide-soignant / Aide-soignante"
+  },
+  {
+    "code": "J1101",
+    "libelle": "Médecin du travail et de prévention"
+  },
+  {
+    "code": "J1102",
+    "libelle": "Médecin généraliste"
+  },
+  {
+    "code": "J1103",
+    "libelle": "Dentiste"
+  },
+  {
+    "code": "J1104",
+    "libelle": "Homme sage-femme / Sage-femme"
+  },
+  {
+    "code": "J1201",
+    "libelle": "Biologiste médical / Biologiste médicale"
+  },
+  {
+    "code": "J1202",
+    "libelle": "Pharmacien / Pharmacienne"
+  },
+  {
+    "code": "J1301",
+    "libelle": "Agent / Agente de service hospitalier (ASH)"
+  },
+  {
+    "code": "J1302",
+    "libelle": "Technicien / Technicienne de laboratoires d'analyses médicales"
+  },
+  {
+    "code": "L1202",
+    "libelle": "Musicien / Musicienne"
+  },
+  {
+    "code": "L1203",
+    "libelle": "Comédien / Comédienne"
+  },
+  {
+    "code": "L1204",
+    "libelle": "Artiste de cirque"
+  },
+  {
+    "code": "L1301",
+    "libelle": "Metteur / Metteuse en scène"
+  },
+  {
+    "code": "L1302",
+    "libelle": "Producteur / Productrice de film"
+  },
+  {
+    "code": "L1303",
+    "libelle": "Agent / Agente de talent"
+  },
+  {
+    "code": "K1601",
+    "libelle": "Documentaliste"
+  },
+  {
+    "code": "K1602",
+    "libelle": "Conservateur / Conservatrice du patrimoine"
+  },
+  {
+    "code": "K1701",
+    "libelle": "Combattant / Combattante en milieu terrestre"
+  },
+  {
+    "code": "K1702",
+    "libelle": "Responsable de sécurité civile et de secours"
+  },
+  {
+    "code": "K1703",
+    "libelle": "Responsable Opérationnel / Opérationnelle de la défense"
+  },
+  {
+    "code": "K1704",
+    "libelle": "Officier / Officière de police"
+  },
+  {
+    "code": "K1705",
+    "libelle": "Secouriste"
+  },
+  {
+    "code": "K1706",
+    "libelle": "Agent / Agente de la force publique"
+  },
+  {
+    "code": "K2302",
+    "libelle": "Responsable de collecte de déchets"
+  },
+  {
+    "code": "K2303",
+    "libelle": "Ripeur / Ripeuse"
+  },
+  {
+    "code": "K2304",
+    "libelle": "Agent / Agente de tri des déchets"
+  },
+  {
+    "code": "K2105",
+    "libelle": "Professeur / Professeure de musique"
+  },
+  {
+    "code": "K2106",
+    "libelle": "Professeur / Professeure des écoles"
+  },
+  {
+    "code": "K2107",
+    "libelle": "Professeur / Professeure de collège et de lycée"
+  },
+  {
+    "code": "K2108",
+    "libelle": "Professeur / Professeure des universités"
+  },
+  {
+    "code": "K2109",
+    "libelle": "Professeur / Professeure d'enseignement technologique"
+  },
+  {
+    "code": "K2110",
+    "libelle": "Enseignant / Enseignante de la conduite et de la sécurité routière"
+  },
+  {
+    "code": "K2111",
+    "libelle": "Formateur / Formatrice"
+  },
+  {
+    "code": "K2112",
+    "libelle": "Conseiller / Conseillère d'orientation"
+  },
+  {
+    "code": "K2201",
+    "libelle": "Blanchisseur industriel / Blanchisseuse industrielle"
+  },
+  {
+    "code": "K2202",
+    "libelle": "Laveur / Laveuse de vitres"
+  },
+  {
+    "code": "K2203",
+    "libelle": "Responsable de site nettoyage de locaux"
+  },
+  {
+    "code": "K2204",
+    "libelle": "Agent / Agente de nettoyage industriel"
+  },
+  {
+    "code": "K2301",
+    "libelle": "Agent / Agente d'exploitation des réseaux d'assainissement"
+  },
+  {
+    "code": "L1201",
+    "libelle": "Danseur / Danseuse"
+  },
+  {
+    "code": "L1304",
+    "libelle": "Premier assistant réalisateur / Première assistante réalisatrice"
+  },
+  {
+    "code": "L1401",
+    "libelle": "Sportif professionnel / Sportive professionnelle"
+  },
+  {
+    "code": "L1501",
+    "libelle": "Maquilleur / Maquilleuse spectacle"
+  },
+  {
+    "code": "L1502",
+    "libelle": "Costumier / Costumière"
+  },
+  {
+    "code": "L1503",
+    "libelle": "Accessoiriste"
+  },
+  {
+    "code": "L1504",
+    "libelle": "Eclairagiste"
+  },
+  {
+    "code": "K2305",
+    "libelle": "Agent / Agente de désinsectisation"
+  },
+  {
+    "code": "K2306",
+    "libelle": "Responsable de site éco-industriel"
+  },
+  {
+    "code": "K2401",
+    "libelle": "Chercheur / Chercheuse en sciences humaines et sociales"
+  },
+  {
+    "code": "K2402",
+    "libelle": "Ingénieur / Ingénieure de recherche scientifique"
+  },
+  {
+    "code": "K2501",
+    "libelle": "Gardien / Gardienne d'immeuble"
+  },
+  {
+    "code": "K1707",
+    "libelle": "Policier municipal / Policière municipale"
+  },
+  {
+    "code": "K1802",
+    "libelle": "Chargé / Chargée de développement économique et local"
+  },
+  {
+    "code": "K1901",
+    "libelle": "Notaire"
+  },
+  {
+    "code": "K1902",
+    "libelle": "Clerc de notaire"
+  },
+  {
+    "code": "K1903",
+    "libelle": "Juriste"
+  },
+  {
+    "code": "K1904",
+    "libelle": "Juge"
+  },
+  {
+    "code": "K2101",
+    "libelle": "Conseiller consultant / Conseillère consultante en formation"
+  },
+  {
+    "code": "K2102",
+    "libelle": "Coordinateur / Coordinatrice pédagogique"
+  },
+  {
+    "code": "K2103",
+    "libelle": "Chef / Cheffe d'établissement d'enseignement"
+  },
+  {
+    "code": "K2104",
+    "libelle": "Surveillant / Surveillante en milieu scolaire"
+  },
+  {
+    "code": "K2503",
+    "libelle": "Agent / Agente de prévention et de sécurité"
+  },
+  {
+    "code": "K2601",
+    "libelle": "Porteur / Porteuse funéraire"
+  },
+  {
+    "code": "K2602",
+    "libelle": "Conseiller / Conseillère funéraire"
+  },
+  {
+    "code": "K2603",
+    "libelle": "Thanatopracteur / Thanatopractrice"
+  },
+  {
+    "code": "L1101",
+    "libelle": "DJ"
+  },
+  {
+    "code": "L1102",
+    "libelle": "Mannequin"
+  },
+  {
+    "code": "L1103",
+    "libelle": "Animateur / Animatrice d'antenne"
+  },
+  {
+    "code": "L1505",
+    "libelle": "Opérateur / Opératrice de prise de vues"
+  },
+  {
+    "code": "M1201",
+    "libelle": "Analyste financier / Analyste financière"
+  },
+  {
+    "code": "M1202",
+    "libelle": "Auditeur comptable et financier / Auditrice comptable et financière"
+  },
+  {
+    "code": "M1203",
+    "libelle": "Comptable"
+  },
+  {
+    "code": "M1204",
+    "libelle": "Contrôleur / Contrôleuse de gestion"
+  },
+  {
+    "code": "M1205",
+    "libelle": "Directeur / Directrice des services administratifs et financiers"
+  },
+  {
+    "code": "M1206",
+    "libelle": "Responsable comptabilité"
+  },
+  {
+    "code": "M1207",
+    "libelle": "Trésorier / Trésorière"
+  },
+  {
+    "code": "M1707",
+    "libelle": "Responsable Commercial / Commerciale"
+  },
+  {
+    "code": "M1601",
+    "libelle": "Chargé / Chargée d'accueil"
+  },
+  {
+    "code": "M1602",
+    "libelle": "Agent administratif / Agente administrative"
+  },
+  {
+    "code": "M1603",
+    "libelle": "Facteur / Factrice"
+  },
+  {
+    "code": "M1604",
+    "libelle": "Assistant / Assistante de direction"
+  },
+  {
+    "code": "M1605",
+    "libelle": "Secrétaire technique"
+  },
+  {
+    "code": "M1606",
+    "libelle": "Opérateur / Opératrice de saisie"
+  },
+  {
+    "code": "M1607",
+    "libelle": "Secrétaire"
+  },
+  {
+    "code": "M1608",
+    "libelle": "Secrétaire comptable"
+  },
+  {
+    "code": "M1609",
+    "libelle": "Secrétaire médical / Secrétaire médicale"
+  },
+  {
+    "code": "M1701",
+    "libelle": "Responsable de l'administration des ventes"
+  },
+  {
+    "code": "M1702",
+    "libelle": "Planneur / Planneuse stratégique"
+  },
+  {
+    "code": "M1703",
+    "libelle": "Chef / Cheffe de produit"
+  },
+  {
+    "code": "M1704",
+    "libelle": "Responsable relation client (CRM)"
+  },
+  {
+    "code": "M1705",
+    "libelle": "Responsable marketing"
+  },
+  {
+    "code": "M1706",
+    "libelle": "Chef / Cheffe de promotion des ventes"
+  },
+  {
+    "code": "K2502",
+    "libelle": "Responsable sécurité de site"
+  },
+  {
+    "code": "N1102",
+    "libelle": "Déménageur / Déménageuse"
+  },
+  {
+    "code": "N1104",
+    "libelle": "Pontier / Pontière"
+  },
+  {
+    "code": "N1105",
+    "libelle": "Manutentionnaire"
+  },
+  {
+    "code": "N1201",
+    "libelle": "Affréteur / Affréteuse"
+  },
+  {
+    "code": "M1801",
+    "libelle": "Administrateur / Administratrice de systèmes d'information (SI)"
+  },
+  {
+    "code": "M1802",
+    "libelle": "Expert / Experte systèmes et réseaux informatiques"
+  },
+  {
+    "code": "M1803",
+    "libelle": "Directeur / Directrice des systèmes d'information -DSI-"
+  },
+  {
+    "code": "M1804",
+    "libelle": "Ingénieur / Ingénieure télécoms"
+  },
+  {
+    "code": "M1805",
+    "libelle": "Développeur / Développeuse informatique"
+  },
+  {
+    "code": "M1806",
+    "libelle": "Consultant fonctionnel / Consultante fonctionnelle des systèmes d'information"
+  },
+  {
+    "code": "M1807",
+    "libelle": "Opérateur / Opératrice télécom aux armées"
+  },
+  {
+    "code": "M1301",
+    "libelle": "Dirigeant / Dirigeante d'entreprise privée"
+  },
+  {
+    "code": "M1302",
+    "libelle": "Responsable de Petite ou Moyenne Entreprise -PME-"
+  },
+  {
+    "code": "M1401",
+    "libelle": "Enquêteur / Enquêtrice sondage"
+  },
+  {
+    "code": "M1402",
+    "libelle": "Responsable en organisation en entreprise"
+  },
+  {
+    "code": "M1403",
+    "libelle": "Chargé / Chargée d'études socio-économiques"
+  },
+  {
+    "code": "M1404",
+    "libelle": "Responsable d'enquêtes terrain"
+  },
+  {
+    "code": "M1501",
+    "libelle": "Assistant / Assistante Ressources Humaines (RH)"
+  },
+  {
+    "code": "M1502",
+    "libelle": "Chargé / Chargée de recrutement"
+  },
+  {
+    "code": "M1503",
+    "libelle": "Directeur / Directrice des Ressources Humaines (DRH)"
+  },
+  {
+    "code": "N1202",
+    "libelle": "Agent / Agente de transit"
+  },
+  {
+    "code": "L1506",
+    "libelle": "Machiniste spectacle"
+  },
+  {
+    "code": "L1507",
+    "libelle": "Monteur / Monteuse vidéo"
+  },
+  {
+    "code": "L1508",
+    "libelle": "Régisseur / Régisseuse du son"
+  },
+  {
+    "code": "L1509",
+    "libelle": "Régisseur / Régisseuse de production"
+  },
+  {
+    "code": "M1101",
+    "libelle": "Acheteur / Acheteuse"
+  },
+  {
+    "code": "M1102",
+    "libelle": "Responsable des achats"
+  },
+  {
+    "code": "G1208",
+    "libelle": "Entraîneur / Entraîneure de sport professionnel et de haut niveau"
+  },
+  {
+    "code": "G1209",
+    "libelle": "Animateur / Animatrice de loisirs sportifs"
+  },
+  {
+    "code": "F1110",
+    "libelle": "Dessinateur / Dessinatrice enveloppe du bâtiment"
+  },
+  {
+    "code": "F1615",
+    "libelle": "Poseur / Poseuse de cloisons démontables et mobiles"
+  },
+  {
+    "code": "F1616",
+    "libelle": "Poseur / Poseuse de menuiseries extérieures"
+  },
+  {
+    "code": "F1617",
+    "libelle": "Poseur / Poseuse de véranda"
+  },
+  {
+    "code": "F1618",
+    "libelle": "Poseur / Poseuse de façade vitrée"
+  },
+  {
+    "code": "C1208",
+    "libelle": "Courtier / Courtière en banque"
+  },
+  {
+    "code": "N1301",
+    "libelle": "Responsable logistique"
+  },
+  {
+    "code": "N1302",
+    "libelle": "Responsable entrepôt logistique"
+  },
+  {
+    "code": "N1303",
+    "libelle": "Approvisionneur / Approvisionneuse logistique"
+  },
+  {
+    "code": "N2101",
+    "libelle": "Personnel Navigant Commercial - PNC -"
+  },
+  {
+    "code": "N2102",
+    "libelle": "Pilote de ligne"
+  },
+  {
+    "code": "N4105",
+    "libelle": "Conducteur-livreur / Conductrice-livreuse"
+  },
+  {
+    "code": "N3101",
+    "libelle": "Officier / Officière de port"
+  },
+  {
+    "code": "N3102",
+    "libelle": "Marin"
+  },
+  {
+    "code": "N3103",
+    "libelle": "Matelot de la navigation fluviale"
+  },
+  {
+    "code": "N3201",
+    "libelle": "Responsable d'exploitation transport maritime"
+  },
+  {
+    "code": "N3202",
+    "libelle": "Responsable d'exploitation transport fluvial"
+  },
+  {
+    "code": "K1305",
+    "libelle": "Technicien / Technicienne d'Intervention Sociale et Familiale (TISF)"
+  },
+  {
+    "code": "N3203",
+    "libelle": "Ouvrier / Ouvrière de manutention portuaire"
+  },
+  {
+    "code": "N4101",
+    "libelle": "Conducteur / Conductrice de poids lourd"
+  },
+  {
+    "code": "N4102",
+    "libelle": "Conducteur / Conductrice de transport de particuliers"
+  },
+  {
+    "code": "N4103",
+    "libelle": "Conducteur / Conductrice de bus"
+  },
+  {
+    "code": "N4104",
+    "libelle": "Coursier / Coursière"
+  },
+  {
+    "code": "N4403",
+    "libelle": "Opérateur / Opératrice ferroviaire"
+  },
+  {
+    "code": "L1510",
+    "libelle": "Animateur / Animatrice 3D - films d'animation"
+  },
+  {
+    "code": "A1412",
+    "libelle": "Fromager-affineur / Fromagère-affineuse"
+  },
+  {
+    "code": "F1614",
+    "libelle": "Poseur / Poseuse en fermetures de bâtiment"
+  },
+  {
+    "code": "D1409",
+    "libelle": "Assistant / Assistante administration des ventes"
+  },
+  {
+    "code": "F1109",
+    "libelle": "Assistant / Assistante géomètre"
+  },
+  {
+    "code": "N4201",
+    "libelle": "Responsable d'agence transport routier de marchandises"
+  },
+  {
+    "code": "N4202",
+    "libelle": "Responsable d'exploitation transport routier de personnes"
+  },
+  {
+    "code": "N4203",
+    "libelle": "Agent / Agente d'exploitation en transport routier de marchandises"
+  },
+  {
+    "code": "N4204",
+    "libelle": "Agent / Agente d'exploitation transport routier de personnes"
+  },
+  {
+    "code": "N4301",
+    "libelle": "Conducteur / Conductrice de train"
+  },
+  {
+    "code": "N2201",
+    "libelle": "Agent / Agente d'Escale Commerciale aéroportuaire -AEC-"
+  },
+  {
+    "code": "N2202",
+    "libelle": "Contrôleur aérien / Contrôleuse aérienne"
+  },
+  {
+    "code": "N2203",
+    "libelle": "Agent / Agente de piste"
+  },
+  {
+    "code": "N2204",
+    "libelle": "Agent / Agente de trafic aérien"
+  },
+  {
+    "code": "N2205",
+    "libelle": "Chef / Cheffe d'escale"
+  },
+  {
+    "code": "M1808",
+    "libelle": "Cartographe"
+  },
+  {
+    "code": "M1809",
+    "libelle": "Météorologue"
+  },
+  {
+    "code": "M1810",
+    "libelle": "Technicien / Technicienne d'exploitation informatique"
+  },
+  {
+    "code": "N1101",
+    "libelle": "Cariste"
+  },
+  {
+    "code": "N4302",
+    "libelle": "Contrôleur / Contrôleuse des transports en commun"
+  },
+  {
+    "code": "N4401",
+    "libelle": "Aiguilleur / Aiguilleure du rail"
+  },
+  {
+    "code": "N4402",
+    "libelle": "Conducteur / Conductrice de remontées mécaniques"
+  },
+  {
+    "code": "G1211",
+    "libelle": "Analyste de la performance sportive"
+  },
+  {
+    "code": "A1102",
+    "libelle": "Conducteur / Conductrice d'engins d'exploitation forestière"
+  },
+  {
+    "code": "A1304",
+    "libelle": "Conseiller / Conseillère technique agricole"
+  },
+  {
+    "code": "F1707",
+    "libelle": "Maçon / Maçonne du paysage"
+  },
+  {
+    "code": "A1418",
+    "libelle": "Viticulteur / Viticultrice"
+  },
+  {
+    "code": "F1708",
+    "libelle": "Installateur-poseur / Installatrice-poseuse de piscines préfabriquées"
+  },
+  {
+    "code": "A1419",
+    "libelle": "Ouvrier agricole polyvalent / Ouvrière agricole polyvalente"
+  },
+  {
+    "code": "A1420",
+    "libelle": "Chef / Cheffe de culture responsable d'unité de production agricole"
+  },
+  {
+    "code": "A1421",
+    "libelle": "Palefrenier soigneur / Palefrenière soigneuse"
+  },
+  {
+    "code": "G1210",
+    "libelle": "Enseignant / Enseignante d'équitation"
+  },
+  {
+    "code": "C1505",
+    "libelle": "Responsable d'agence immobilière"
+  },
+  {
+    "code": "D1510",
+    "libelle": "Chef / Cheffe de secteur magasin"
+  },
+  {
+    "code": "E1109",
+    "libelle": "Directeur / Directrice de la communication"
+  },
+  {
+    "code": "F1111",
+    "libelle": "Ingénieur / Ingénieure génie civil"
+  },
+  {
+    "code": "F1112",
+    "libelle": "Ingénieur / Ingénieure calcul et structure"
+  },
+  {
+    "code": "K1307",
+    "libelle": "Animateur / Animatrice petite enfance"
+  },
+  {
+    "code": "K1308",
+    "libelle": "Agent territorial spécialisé / Agente territoriale spécialisée des écoles maternelles (ATSEM)"
+  },
+  {
+    "code": "M1405",
+    "libelle": "Data scientist"
+  },
+  {
+    "code": "M1811",
+    "libelle": "Data engineer"
+  },
+  {
+    "code": "M1812",
+    "libelle": "Responsable de la Sécurité des Systèmes d'Information (RSSI)"
+  },
+  {
+    "code": "G1212",
+    "libelle": "Animateur socio-sportif / Animatrice socio-sportive"
+  },
+  {
+    "code": "M1813",
+    "libelle": "Intégrateur / Intégratrice logiciels métiers"
+  },
+  {
+    "code": "G1213",
+    "libelle": "Chargé / Chargée de développement d'activités sportives"
+  },
+  {
+    "code": "B1612",
+    "libelle": "Concepteur / Conceptrice numérique en bijouterie joaillerie"
+  },
+  {
+    "code": "G1405",
+    "libelle": "Directeur / Directrice de structure sportive"
+  },
+  {
+    "code": "F1113",
+    "libelle": "Responsable énergie"
+  },
+  {
+    "code": "F1114",
+    "libelle": "Conseiller / Conseillère en rénovation énergétique"
+  },
+  {
+    "code": "F1620",
+    "libelle": "Installateur / Installatrice chauffage et climatisation"
+  },
+  {
+    "code": "G1608",
+    "libelle": "Ecailler / Ecaillère"
+  },
+  {
+    "code": "H1211",
+    "libelle": "Attaché / Attachée de recherche clinique (ARC)"
+  },
+  {
+    "code": "H1507",
+    "libelle": "Chargé / Chargée des affaires réglementaires"
+  },
+  {
+    "code": "K1309",
+    "libelle": "Assistant familial / Assistante familiale"
+  },
+  {
+    "code": "H2103",
+    "libelle": "Opérateur / Opératrice de transformation des viandes"
+  },
+  {
+    "code": "G1214",
+    "libelle": "Directeur sportif / Directrice sportive"
+  },
+  {
+    "code": "G1207",
+    "libelle": "Surveillant / Surveillante de baignade"
+  },
+  {
+    "code": "C1111",
+    "libelle": "Mandataire en assurance"
+  },
+  {
+    "code": "E1206",
+    "libelle": "UX - UI Designer"
+  },
+  {
+    "code": "F1619",
+    "libelle": "Couvreur / Couvreuse"
+  },
+  {
+    "code": "F1709",
+    "libelle": "Démolisseur / Démolisseuse"
+  },
+  {
+    "code": "G1606",
+    "libelle": "Cuisinier / Cuisinière de collectivité"
+  },
+  {
+    "code": "G1607",
+    "libelle": "Employé / Employée de restauration collective"
+  },
+  {
+    "code": "J1105",
+    "libelle": "Médecin coordonnateur"
+  },
+  {
+    "code": "J1308",
+    "libelle": "Brancardier / Brancardière"
+  },
+  {
+    "code": "J1309",
+    "libelle": "Agent / Agente de stérilisation de service hospitalier"
+  },
+  {
+    "code": "K1306",
+    "libelle": "Accompagnant Educatif et Social (AES) / Accompagnante Educative et Sociale (AES)"
+  },
+  {
+    "code": "F1205",
+    "libelle": "Directeur / Directrice de travaux du bâtiment"
+  },
+  {
+    "code": "K1310",
+    "libelle": "Assistant maternel / Assistante maternelle"
+  },
+  {
+    "code": "K1406",
+    "libelle": "Secrétaire de mairie"
+  },
+  {
+    "code": "K2113",
+    "libelle": "Accompagnant / Accompagnante des élèves en situation de handicap (AESH)"
+  },
+  {
+    "code": "K2403",
+    "libelle": "Biostatisticien / Biostatisticienne"
+  },
+  {
+    "code": "K2504",
+    "libelle": "Agent / Agente de sécurité événementielle"
+  },
+  {
+    "code": "B1605",
+    "libelle": "Bijoutier / Bijoutière"
+  },
+  {
+    "code": "B1607",
+    "libelle": "Lapidaire / Diamantaire"
+  },
+  {
+    "code": "G1216",
+    "libelle": "Moniteur / Monitrice de sport nature"
+  },
+  {
+    "code": "G1217",
+    "libelle": "Moniteur / Monitrice en salle de sport"
+  },
+  {
+    "code": "B1608",
+    "libelle": "Orfèvre planeur / Orfèvre planeuse"
+  },
+  {
+    "code": "H3405",
+    "libelle": "Polisseur / Polisseuse en bijouterie ou joaillerie ou orfèvrerie"
+  },
+  {
+    "code": "H3406",
+    "libelle": "Opérateur / Opératrice en polissage de bijouterie ou d'orfèvrerie"
+  },
+  {
+    "code": "C1112",
+    "libelle": "Agent général / Agente générale d'assurance"
+  },
+  {
+    "code": "G1218",
+    "libelle": "Préparateur / Préparatrice physique"
+  },
+  {
+    "code": "B1609",
+    "libelle": "Responsable d'atelier en bijouterie ou joaillerie"
+  },
+  {
+    "code": "B1610",
+    "libelle": "Sertisseur / Sertisseuse en bijouterie ou joaillerie"
+  },
+  {
+    "code": "B1611",
+    "libelle": "Trieur / Trieuse de pierres et perles"
+  },
+  {
+    "code": "G1215",
+    "libelle": "Educateur sportif / Educatrice sportive Santé"
+  },
+  {
+    "code": "B1606",
+    "libelle": "Joaillier / Joaillière"
+  },
+  {
+    "code": "K2116",
+    "libelle": "Responsable d'unité d'enseignement de la conduite de véhicule"
+  },
+  {
+    "code": "D1231",
+    "libelle": "Spa Praticien / Spa Praticienne"
+  },
+  {
+    "code": "M1822",
+    "libelle": "Ingénieur / Ingénieure systèmes et réseaux informatiques"
+  },
+  {
+    "code": "G1809",
+    "libelle": "Barista"
+  },
+  {
+    "code": "F1122",
+    "libelle": "Ingénieur / Ingénieure Chantier nucléaire"
+  },
+  {
+    "code": "I1204",
+    "libelle": "Agent / Agente d'entretien des piscines"
+  },
+  {
+    "code": "H2418",
+    "libelle": "Opérateur / Opératrice sur machine de production et transformation des fils"
+  },
+  {
+    "code": "L1205",
+    "libelle": "Artiste-interprète"
+  },
+  {
+    "code": "B1304",
+    "libelle": "Artisan démonstrateur / Artisane démonstratrice"
+  },
+  {
+    "code": "K1605",
+    "libelle": "Commissaire d'exposition"
+  },
+  {
+    "code": "I1613",
+    "libelle": "Mécanicien / Mécanicienne des véhicules des transports routiers"
+  },
+  {
+    "code": "A1207",
+    "libelle": "Chef / Cheffe d'équipe d'entretien d'espaces naturels"
+  },
+  {
+    "code": "A1208",
+    "libelle": "Jardinier / Jardinière paysagiste"
+  },
+  {
+    "code": "H2419",
+    "libelle": "Passementier / Passementière en industrie textile"
+  },
+  {
+    "code": "K2505",
+    "libelle": "Enquêteur privé / Enquêtrice privée"
+  },
+  {
+    "code": "N1205",
+    "libelle": "Responsable de service transit"
+  },
+  {
+    "code": "K2404",
+    "libelle": "Chargé / Chargée de recherche en industrie pharmaceutique"
+  },
+  {
+    "code": "M1708",
+    "libelle": "Directeur / Directrice de l'accès au marché en industrie pharmaceutique"
+  },
+  {
+    "code": "M1709",
+    "libelle": "Chef / Cheffe de gamme en industrie pharmaceutique"
+  },
+  {
+    "code": "D1411",
+    "libelle": "Responsable Efficacité Commerciale (SFE) en industrie pharmaceutique"
+  },
+  {
+    "code": "G1220",
+    "libelle": "Educateur sportif / Educatrice sportive spécialisé(e) en activités physiques et sportives adaptées"
+  },
+  {
+    "code": "H1213",
+    "libelle": "Responsable du développement clinique en industrie pharmaceutique"
+  },
+  {
+    "code": "I1311",
+    "libelle": "Technicien / Technicienne installation réseaux câblés fibre optique"
+  },
+  {
+    "code": "H1510",
+    "libelle": "Technicien / Technicienne de laboratoire de contrôle en industrie pharmaceutique"
+  },
+  {
+    "code": "H1214",
+    "libelle": "Agent / Agente de laboratoire de recherche industrielle"
+  },
+  {
+    "code": "H1212",
+    "libelle": "Ingénieur / Ingénieure brevet en industrie"
+  },
+  {
+    "code": "H1215",
+    "libelle": "Bioinformaticien / Bioinformaticienne en études, recherche et développement"
+  },
+  {
+    "code": "M1610",
+    "libelle": "Intendant / Intendante du sport"
+  },
+  {
+    "code": "G1219",
+    "libelle": "Recruteur sportif / Recruteuse sportive"
+  },
+  {
+    "code": "L1402",
+    "libelle": "Arbitre professionnel / Professionnelle de discipline sportive"
+  },
+  {
+    "code": "M1711",
+    "libelle": "Directeur / Directrice du marketing"
+  },
+  {
+    "code": "H1511",
+    "libelle": "Chargé / Chargée de validation-qualification en industrie pharmaceutique"
+  },
+  {
+    "code": "H1216",
+    "libelle": "Responsable des études épidémiologiques"
+  },
+  {
+    "code": "H1217",
+    "libelle": "Technicien / Technicienne formulation en industrie pharmaceutique"
+  },
+  {
+    "code": "M1406",
+    "libelle": "Responsable RSE - Responsabilité Sociétale de l'Entreprise"
+  },
+  {
+    "code": "M1504",
+    "libelle": "Responsable formation professionnelle en entreprise"
+  },
+  {
+    "code": "K2114",
+    "libelle": "Formateur / Formatrice qualité"
+  },
+  {
+    "code": "K1709",
+    "libelle": "Commissaire de police"
+  },
+  {
+    "code": "M1505",
+    "libelle": "Chargé / Chargée de formation en entreprise"
+  },
+  {
+    "code": "K1603",
+    "libelle": "Bibliothécaire"
+  },
+  {
+    "code": "N1106",
+    "libelle": "Agent / Agente de quai manutentionnaire"
+  },
+  {
+    "code": "J1106",
+    "libelle": "Responsable médical / Responsable médicale en région (RMR-MSL) en industrie pharmaceutique"
+  },
+  {
+    "code": "M1710",
+    "libelle": "Responsable régional / Responsable régionale des relations scientifiques médicales"
+  },
+  {
+    "code": "H1512",
+    "libelle": "Directeur / Directrice de zone en industrie pharmaceutique"
+  },
+  {
+    "code": "M1408",
+    "libelle": "Responsable des études pharmaco-économiques en industrie pharmaceutique"
+  },
+  {
+    "code": "K1311",
+    "libelle": "Assistant / Assistante de vie aux familles"
+  },
+  {
+    "code": "K1312",
+    "libelle": "Accueillant familial / Accueillante familiale thérapeutique auprès d'adultes"
+  },
+  {
+    "code": "H1509",
+    "libelle": "Responsable des affaires règlementaires en industrie pharmaceutique"
+  },
+  {
+    "code": "M1712",
+    "libelle": "Directeur / Directrice de l'information promotionnelle du médicament en industrie pharmaceutique"
+  },
+  {
+    "code": "A1423",
+    "libelle": "Œnologue"
+  },
+  {
+    "code": "H1218",
+    "libelle": "Responsable de projet recherche et développement"
+  },
+  {
+    "code": "M1407",
+    "libelle": "Responsable de la veille scientifique et technique en industrie pharmaceutique"
+  },
+  {
+    "code": "H1220",
+    "libelle": "Responsable formulation en industrie pharmaceutique"
+  },
+  {
+    "code": "H1104",
+    "libelle": "Directeur / Directrice des affaires médicales pharmaceutiques"
+  },
+  {
+    "code": "H1222",
+    "libelle": "Responsable médical / Responsable médicale des études cliniques en industrie pharmaceutique"
+  },
+  {
+    "code": "K1407",
+    "libelle": "Directeur / Directrice d'établissement médicosocial"
+  },
+  {
+    "code": "K1408",
+    "libelle": "Responsable de secteur d'aide à domicile"
+  },
+  {
+    "code": "K1409",
+    "libelle": "Responsable de structure sanitaire et sociale"
+  },
+  {
+    "code": "J1509",
+    "libelle": "Responsable de secteur coordinateur / Responsable de secteur coordinatrice"
+  },
+  {
+    "code": "J1508",
+    "libelle": "Infirmier / Infirmière en Pratique Avancée (IPA)"
+  },
+  {
+    "code": "D1412",
+    "libelle": "Délégué médical hospitalier / Déléguée médicale hospitalière"
+  },
+  {
+    "code": "J1510",
+    "libelle": "Infirmier coordinateur / Infirmière coordinatrice (IDEC)"
+  },
+  {
+    "code": "G1609",
+    "libelle": "Cuisinier / Cuisinière"
+  },
+  {
+    "code": "H1508",
+    "libelle": "Assureur / Assureuse qualité industrie"
+  },
+  {
+    "code": "H1515",
+    "libelle": "Auditeur / Auditrice qualité en industrie"
+  },
+  {
+    "code": "H1519",
+    "libelle": "Responsable éthique-déontologie-conformité en industrie pharmaceutique"
+  },
+  {
+    "code": "K2406",
+    "libelle": "Directeur / Directrice de recherche en industrie pharmaceutique"
+  },
+  {
+    "code": "N4106",
+    "libelle": "Commis coursier / Commise coursière en douane"
+  },
+  {
+    "code": "G1704",
+    "libelle": "Agent / Agente de réservation en hôtellerie"
+  },
+  {
+    "code": "H1224",
+    "libelle": "Technicien / Technicienne de laboratoire de recherche-développement"
+  },
+  {
+    "code": "H1517",
+    "libelle": "Responsable de laboratoire de contrôle en industrie pharmaceutique"
+  },
+  {
+    "code": "H1518",
+    "libelle": "Responsable assurance qualité en industrie"
+  },
+  {
+    "code": "G1610",
+    "libelle": "Pâtissier / Pâtissière de restaurant"
+  },
+  {
+    "code": "G1103",
+    "libelle": "Directeur / Directrice de parc régional"
+  },
+  {
+    "code": "N1203",
+    "libelle": "Technicien / Technicienne gestion douanière"
+  },
+  {
+    "code": "N4108",
+    "libelle": "Conducteur accompagnateur / Conductrice accompagnatrice de personnes à mobilité réduite"
+  },
+  {
+    "code": "J1203",
+    "libelle": "Directeur / Directrice de laboratoire d'analyses vétérinaires"
+  },
+  {
+    "code": "G1221",
+    "libelle": "Responsable des attractions"
+  },
+  {
+    "code": "G1407",
+    "libelle": "Econome en hôtellerie-restauration"
+  },
+  {
+    "code": "N1304",
+    "libelle": "Directeur / Directrice logistique"
+  },
+  {
+    "code": "N1204",
+    "libelle": "Coordinateur / Coordinatrice transit en import - export"
+  },
+  {
+    "code": "I1403",
+    "libelle": "Technicien / Technicienne Datacenter"
+  },
+  {
+    "code": "M1816",
+    "libelle": "Technicien / Technicienne réseaux informatiques et télécoms"
+  },
+  {
+    "code": "H1516",
+    "libelle": "Expert / Experte métrologue"
+  },
+  {
+    "code": "H1521",
+    "libelle": "Technicien / Technicienne de validation-qualification"
+  },
+  {
+    "code": "N4110",
+    "libelle": "Releveur / Releveuse de compteurs"
+  },
+  {
+    "code": "N4107",
+    "libelle": "Conducteur livreur / Conductrice livreuse de béton prêt à l'emploi"
+  },
+  {
+    "code": "N4111",
+    "libelle": "Conducteur / Conductrice super poids lourd de l'armée"
+  },
+  {
+    "code": "I1610",
+    "libelle": "Responsable atelier carrosserie"
+  },
+  {
+    "code": "G1224",
+    "libelle": "Maître-nageur sauveteur / Maître-nageuse sauveteuse"
+  },
+  {
+    "code": "D1215",
+    "libelle": "Posticheur / Posticheuse"
+  },
+  {
+    "code": "D1216",
+    "libelle": "Coiffeur barbier / Coiffeuse barbière"
+  },
+  {
+    "code": "H1304",
+    "libelle": "Responsable environnement en industrie"
+  },
+  {
+    "code": "H1306",
+    "libelle": "Ingénieur / Ingénieure sûreté en industrie nucléaire"
+  },
+  {
+    "code": "F1120",
+    "libelle": "Economiste de la construction"
+  },
+  {
+    "code": "N4113",
+    "libelle": "Conducteur routier international / Conductrice routière internationale"
+  },
+  {
+    "code": "H1305",
+    "libelle": "Vérificateur / Vérificatrice de conformité industrielle"
+  },
+  {
+    "code": "I1205",
+    "libelle": "Installateur vérificateur / Installatrice vérificatrice d'extincteurs"
+  },
+  {
+    "code": "H2416",
+    "libelle": "Gainier industriel / Gainière industrielle"
+  },
+  {
+    "code": "H2703",
+    "libelle": "Technicien / Technicienne de maintenance de batteries de véhicules électriques"
+  },
+  {
+    "code": "G1225",
+    "libelle": "Ouvreur / Ouvreuse de salle de spectacles"
+  },
+  {
+    "code": "M1409",
+    "libelle": "Ingénieur / Ingénieure économiste en entreprise"
+  },
+  {
+    "code": "M1819",
+    "libelle": "Ingénieur / Ingénieure sécurité informatique"
+  },
+  {
+    "code": "M1814",
+    "libelle": "Scrum Master"
+  },
+  {
+    "code": "M1818",
+    "libelle": "Ingénieur / Ingénieure d'étude informatique"
+  },
+  {
+    "code": "M1820",
+    "libelle": "Expert / Experte méthodes et qualité informatique"
+  },
+  {
+    "code": "M1815",
+    "libelle": "Spécialiste test et validation logiciel ou application"
+  },
+  {
+    "code": "M1840",
+    "libelle": "Directeur / Directrice de projets des territoires connectés"
+  },
+  {
+    "code": "D1419",
+    "libelle": "Courtier / Courtière en vins"
+  },
+  {
+    "code": "I1616",
+    "libelle": "Mécanicien / Mécanicienne d'engins de chantier et de travaux publics"
+  },
+  {
+    "code": "F1622",
+    "libelle": "Monteur / Monteuse en éclairage public"
+  },
+  {
+    "code": "F1623",
+    "libelle": "Monteur / Monteuse installation réseaux mobiles"
+  },
+  {
+    "code": "H2302",
+    "libelle": "Conducteur / Conductrice de procédé de fabrication en industrie pharmaceutique"
+  },
+  {
+    "code": "H2303",
+    "libelle": "Opérateur / Opératrice de fabrication en industrie pharmaceutique"
+  },
+  {
+    "code": "I1313",
+    "libelle": "Hydraulicien industriel / Hydraulicienne industrielle"
+  },
+  {
+    "code": "I1316",
+    "libelle": "Technicien / Technicienne de maintenance Chauffage, Ventilation et Climatisation - CVC"
+  },
+  {
+    "code": "H2508",
+    "libelle": "Ingénieur / Ingénieure exploitation nucléaire"
+  },
+  {
+    "code": "H1225",
+    "libelle": "Ingénieur / Ingénieure développement nucléaire"
+  },
+  {
+    "code": "F1206",
+    "libelle": "Chef / Cheffe d'équipe bâtiment"
+  },
+  {
+    "code": "K2310",
+    "libelle": "Ambassadeur / Ambassadrice du tri"
+  },
+  {
+    "code": "H2607",
+    "libelle": "Chef / Cheffe d'atelier de bobinage électrique"
+  },
+  {
+    "code": "H2608",
+    "libelle": "Bobinier / Bobinière en matériels électroniques"
+  },
+  {
+    "code": "K1313",
+    "libelle": "Employé / Employée au pair"
+  },
+  {
+    "code": "M1827",
+    "libelle": "Ingénieur / Ingénieure DevOps"
+  },
+  {
+    "code": "A1209",
+    "libelle": "Elagueur / Elagueuse"
+  },
+  {
+    "code": "H1103",
+    "libelle": "Responsable d'affaires en industrie pharmaceutique"
+  },
+  {
+    "code": "H1221",
+    "libelle": "Responsable des partenariats de recherche en industrie pharmaceutique"
+  },
+  {
+    "code": "M1411",
+    "libelle": "Consultant / Consultante en énergie renouvelable"
+  },
+  {
+    "code": "K1604",
+    "libelle": "Directeur / Directrice d'établissement culturel"
+  },
+  {
+    "code": "I1612",
+    "libelle": "Technicien expert / Technicienne experte après-vente automobile"
+  },
+  {
+    "code": "C1113",
+    "libelle": "Expert / Experte en assurances dommages automobile"
+  },
+  {
+    "code": "G1233",
+    "libelle": "Préparateur mental / Préparatrice mentale du sport"
+  },
+  {
+    "code": "N1113",
+    "libelle": "Préparateur / Préparatrice au drive"
+  },
+  {
+    "code": "M1835",
+    "libelle": "Architecte systèmes et réseaux des territoires connectés"
+  },
+  {
+    "code": "M1848",
+    "libelle": "Analyste Concepteur / Conceptrice informatique"
+  },
+  {
+    "code": "D1221",
+    "libelle": "Vendeur / Vendeuse de produits culturels et ludiques"
+  },
+  {
+    "code": "H1405",
+    "libelle": "Responsable supply chain en industrie"
+  },
+  {
+    "code": "N1112",
+    "libelle": "Chef cariste / Cheffe cariste"
+  },
+  {
+    "code": "N1206",
+    "libelle": "Courtier / Courtière affrètement maritime"
+  },
+  {
+    "code": "N1207",
+    "libelle": "Chef / Cheffe de groupe affrètement"
+  },
+  {
+    "code": "N4126",
+    "libelle": "Conducteur / Conductrice de transport routier en convoi exceptionnel"
+  },
+  {
+    "code": "N4124",
+    "libelle": "Conducteur / Conductrice de taxi moto"
+  },
+  {
+    "code": "G1406",
+    "libelle": "Directeur / Directrice d'équipement sportif"
+  },
+  {
+    "code": "K1606",
+    "libelle": "Responsable de la conservation préventive"
+  },
+  {
+    "code": "G1408",
+    "libelle": "Directeur / Directrice de structure d'hébergement touristique"
+  },
+  {
+    "code": "H2606",
+    "libelle": "Monteur-bobinier / Monteuse-bobinière en électricité"
+  },
+  {
+    "code": "A1506",
+    "libelle": "Soigneur animalier / Soigneuse animalière"
+  },
+  {
+    "code": "A1426",
+    "libelle": "Educateur canin / Educatrice canine"
+  },
+  {
+    "code": "G1104",
+    "libelle": "Consultant / Consultante tourisme"
+  },
+  {
+    "code": "G1105",
+    "libelle": "Directeur / Directrice d'office du tourisme"
+  },
+  {
+    "code": "A1427",
+    "libelle": "Goémonier / Goémonière"
+  },
+  {
+    "code": "A1212",
+    "libelle": "Chef / Cheffe d'équipe de travaux forestiers"
+  },
+  {
+    "code": "K1211",
+    "libelle": "Conseiller / Conseillère d'Insertion et de Probation -CIP-"
+  },
+  {
+    "code": "H2420",
+    "libelle": "Repasseur / Repasseuse en industrie textile et de l'habillement"
+  },
+  {
+    "code": "H2427",
+    "libelle": "Effileur / Effileuse en dentelles"
+  },
+  {
+    "code": "M1817",
+    "libelle": "Administrateur / Administratrice sécurité informatique"
+  },
+  {
+    "code": "M1830",
+    "libelle": "Administrateur / Administratrice réseaux - télécoms"
+  },
+  {
+    "code": "M1834",
+    "libelle": "Administrateur / Administratrice de site internet"
+  },
+  {
+    "code": "G1414",
+    "libelle": "Directeur / Directrice d'exploitation de site de divertissement"
+  },
+  {
+    "code": "L1512",
+    "libelle": "Régisseur / Régisseuse de spectacles"
+  },
+  {
+    "code": "L1305",
+    "libelle": "Directeur / Directrice artistique spectacle"
+  },
+  {
+    "code": "D1222",
+    "libelle": "Masseur / Masseuse bien-être"
+  },
+  {
+    "code": "K1212",
+    "libelle": "Ministre du culte"
+  },
+  {
+    "code": "B1613",
+    "libelle": "Orfèvre"
+  },
+  {
+    "code": "B1615",
+    "libelle": "Orfèvre tourneur repousseur / Orfèvre tourneuse repousseuse"
+  },
+  {
+    "code": "E1207",
+    "libelle": "Motion designer"
+  },
+  {
+    "code": "D1217",
+    "libelle": "Socio-coiffeur / Socio-coiffeuse"
+  },
+  {
+    "code": "M1821",
+    "libelle": "Analyste d'application informatique"
+  },
+  {
+    "code": "M1824",
+    "libelle": "Développeur / Développeuse décisionnel - Business Intelligence"
+  },
+  {
+    "code": "M1831",
+    "libelle": "Développeur / Développeuse - jeux vidéo"
+  },
+  {
+    "code": "L1207",
+    "libelle": "Cascadeur / Cascadeuse"
+  },
+  {
+    "code": "I1312",
+    "libelle": "Technicien / Technicienne réseaux mobiles"
+  },
+  {
+    "code": "M1843",
+    "libelle": "Administrateur / Administratrice de serveurs"
+  },
+  {
+    "code": "M1849",
+    "libelle": "Administrateur / Administratrice de messagerie"
+  },
+  {
+    "code": "A1424",
+    "libelle": "Pisciculteur / Piscicultrice"
+  },
+  {
+    "code": "A1428",
+    "libelle": "Algoculteur / Algocultrice"
+  },
+  {
+    "code": "A1430",
+    "libelle": "Ouvrier / Ouvrière aquacole"
+  },
+  {
+    "code": "A1431",
+    "libelle": "Ouvrier / Ouvrière piscicole"
+  },
+  {
+    "code": "M1850",
+    "libelle": "Architecte multimédias interactifs"
+  },
+  {
+    "code": "M1837",
+    "libelle": "Développeur / Développeuse multimédia"
+  },
+  {
+    "code": "H3407",
+    "libelle": "Metteur au bain / Metteuse au bain argenture - dorure en orfèvrerie"
+  },
+  {
+    "code": "H3408",
+    "libelle": "Metteur au point polisseur / Metteuse au point polisseuse sur matrice en orfèvrerie"
+  },
+  {
+    "code": "H2104",
+    "libelle": "Fromager industriel / Fromagère industrielle"
+  },
+  {
+    "code": "G1228",
+    "libelle": "Guide de haute montagne"
+  },
+  {
+    "code": "I1104",
+    "libelle": "Ingénieur / Ingénieure infrastructures télécoms réseaux mobiles"
+  },
+  {
+    "code": "K2405",
+    "libelle": "Attaché / Attachée de recherche clinique en milieu hospitalier"
+  },
+  {
+    "code": "J1110",
+    "libelle": "Médecin légiste"
+  },
+  {
+    "code": "I1615",
+    "libelle": "Dépanneur-remorqueur / Dépanneuse-remorqueuse de véhicules"
+  },
+  {
+    "code": "I1617",
+    "libelle": "Contrôleur / Contrôleuse technique de véhicules"
+  },
+  {
+    "code": "G1222",
+    "libelle": "Guide-conférencier / Guide-conférencière"
+  },
+  {
+    "code": "G1106",
+    "libelle": "Animateur / Animatrice du patrimoine"
+  },
+  {
+    "code": "N4115",
+    "libelle": "Conducteur / Conductrice de véhicules Super Lourds"
+  },
+  {
+    "code": "M1842",
+    "libelle": "Qualiticien / Qualiticienne logiciel en informatique"
+  },
+  {
+    "code": "M1851",
+    "libelle": "Analyste décisionnel - Business Intelligence"
+  },
+  {
+    "code": "K2308",
+    "libelle": "Opérateur / Opératrice de tri en récupération et revalorisation"
+  },
+  {
+    "code": "H2426",
+    "libelle": "Chef / Cheffe d'équipe en atelier de coupe"
+  },
+  {
+    "code": "H2705",
+    "libelle": "Pilote de ligne de production de composants et de cellules pour batteries de véhicules électriques"
+  },
+  {
+    "code": "E1110",
+    "libelle": "Directeur / Directrice de la rédaction"
+  },
+  {
+    "code": "E1111",
+    "libelle": "Game master"
+  },
+  {
+    "code": "K1723",
+    "libelle": "Conducteur / Conductrice Véhicule Léger de l'armée"
+  },
+  {
+    "code": "G1411",
+    "libelle": "Directeur / Directrice d'hôtel"
+  },
+  {
+    "code": "F1710",
+    "libelle": "Magasinier / Magasinière en négoce des matériaux de construction"
+  },
+  {
+    "code": "D1413",
+    "libelle": "Délégué / Déléguée pharmaceutique"
+  },
+  {
+    "code": "A1505",
+    "libelle": "Animalier / Animalière de laboratoire"
+  },
+  {
+    "code": "A1422",
+    "libelle": "Caviste de chai"
+  },
+  {
+    "code": "H1514",
+    "libelle": "Chargé / Chargée de pharmacovigilance en industrie pharmaceutique"
+  },
+  {
+    "code": "N4118",
+    "libelle": "Conducteur / Conductrice enlèvement de déchets"
+  },
+  {
+    "code": "A1210",
+    "libelle": "Ouvrier forestier / Ouvrière forestière"
+  },
+  {
+    "code": "M1832",
+    "libelle": "Homologateur / Homologatrice fonctionnel de logiciel"
+  },
+  {
+    "code": "N1109",
+    "libelle": "Eclusier-barragiste / Eclusière-barragiste"
+  },
+  {
+    "code": "H2506",
+    "libelle": "Chef / Cheffe de production en industrie agroalimentaire"
+  },
+  {
+    "code": "H2507",
+    "libelle": "Responsable de ligne de production industrielle"
+  },
+  {
+    "code": "H1106",
+    "libelle": "Responsable support technique clients"
+  },
+  {
+    "code": "M1852",
+    "libelle": "Analyste d'étude informatique"
+  },
+  {
+    "code": "M1838",
+    "libelle": "Urbaniste des systèmes d'information"
+  },
+  {
+    "code": "M1853",
+    "libelle": "Chef / Cheffe de projet étude et développement informatique"
+  },
+  {
+    "code": "K1105",
+    "libelle": "Art thérapeute"
+  },
+  {
+    "code": "H2704",
+    "libelle": "Technicien démonteur / Technicienne démonteuse de batteries de véhicules électriques"
+  },
+  {
+    "code": "H2422",
+    "libelle": "Tapissier industriel / Tapissière industrielle"
+  },
+  {
+    "code": "I1614",
+    "libelle": "Préparateur / Préparatrice en peinture automobile"
+  },
+  {
+    "code": "H1219",
+    "libelle": "Responsable opérationnel / Responsable opérationnelle des études cliniques en industrie pharmaceutique"
+  },
+  {
+    "code": "H1223",
+    "libelle": "Coordinateur / Coordinatrice d'études cliniques en industrie pharmaceutique"
+  },
+  {
+    "code": "M1714",
+    "libelle": "Chargé / Chargée de l'information promotionnelle du médicament en industrie pharmaceutique"
+  },
+  {
+    "code": "F1621",
+    "libelle": "Ramoneur / Ramoneuse"
+  },
+  {
+    "code": "K2407",
+    "libelle": "Climatologue"
+  },
+  {
+    "code": "K1906",
+    "libelle": "Délégué / Déléguée à la protection des données - Data Protection Officer"
+  },
+  {
+    "code": "G1706",
+    "libelle": "Chef / Cheffe de réception en hôtellerie"
+  },
+  {
+    "code": "I1107",
+    "libelle": "Responsable d'atelier de mécanique parcs et jardins"
+  },
+  {
+    "code": "I1618",
+    "libelle": "Mécanicien / Mécanicienne en matériels motorisés de parcs et jardins"
+  },
+  {
+    "code": "I1619",
+    "libelle": "Mécanicien / Mécanicienne cycles"
+  },
+  {
+    "code": "M1716",
+    "libelle": "Directeur / Directrice marketing digital"
+  },
+  {
+    "code": "J1107",
+    "libelle": "Médecin scolaire"
+  },
+  {
+    "code": "J1109",
+    "libelle": "Médecin de la Protection Maternelle et Infantile -PMI-"
+  },
+  {
+    "code": "N4114",
+    "libelle": "Conducteur livreur avitailleur / Conductrice livreuse avitailleuse en carburant"
+  },
+  {
+    "code": "I1611",
+    "libelle": "Préparateur / Préparatrice de véhicules automobiles"
+  },
+  {
+    "code": "M1833",
+    "libelle": "Ingénieur / Ingénieure sécurité web"
+  },
+  {
+    "code": "M1856",
+    "libelle": "Expert / Experte en cybersécurité"
+  },
+  {
+    "code": "B1102",
+    "libelle": "Mosaïste d'art"
+  },
+  {
+    "code": "F1624",
+    "libelle": "Staffeur Stuqueur / Staffeuse Stuqueuse"
+  },
+  {
+    "code": "A1206",
+    "libelle": "Concepteur / Conceptrice paysagiste"
+  },
+  {
+    "code": "B1103",
+    "libelle": "Sculpteur / Sculptrice ornemaniste sur pierre"
+  },
+  {
+    "code": "A1213",
+    "libelle": "Conducteur / Conductrice de travaux forestiers"
+  },
+  {
+    "code": "H2417",
+    "libelle": "Chef / Cheffe de rame textile"
+  },
+  {
+    "code": "A1425",
+    "libelle": "Ramendeur / Ramendeuse"
+  },
+  {
+    "code": "N1108",
+    "libelle": "Conducteur / Conductrice de grue mobile"
+  },
+  {
+    "code": "J1204",
+    "libelle": "Directeur / Directrice de laboratoire d'analyses de biologie médicale"
+  },
+  {
+    "code": "M1611",
+    "libelle": "Secrétaire Facturier / Facturière"
+  },
+  {
+    "code": "M1825",
+    "libelle": "Coordinateur / Coordinatrice de production web"
+  },
+  {
+    "code": "G1227",
+    "libelle": "Guide-interprète"
+  },
+  {
+    "code": "I1506",
+    "libelle": "Chef / Cheffe d'équipe cordiste"
+  },
+  {
+    "code": "N4120",
+    "libelle": "Chauffeur-livreur préparateur / Chauffeuse-livreuse préparatrice de commandes"
+  },
+  {
+    "code": "M1613",
+    "libelle": "Télésecrétaire"
+  },
+  {
+    "code": "N1110",
+    "libelle": "Magasinier / Magasinière"
+  },
+  {
+    "code": "G1707",
+    "libelle": "Responsable de vestiaire"
+  },
+  {
+    "code": "M1836",
+    "libelle": "Ingénieur concepteur / Ingénieure conceptrice informatique"
+  },
+  {
+    "code": "G1409",
+    "libelle": "Manager en restauration rapide"
+  },
+  {
+    "code": "H2425",
+    "libelle": "Fileur / Fileuse en industrie textile"
+  },
+  {
+    "code": "K1711",
+    "libelle": "Surveillant pénitentiaire / Surveillante pénitentiaire"
+  },
+  {
+    "code": "N4122",
+    "libelle": "Convoyeur / Convoyeuse de véhicules ou matériels lourds"
+  },
+  {
+    "code": "G1708",
+    "libelle": "Voiturier / Voiturière"
+  },
+  {
+    "code": "N4131",
+    "libelle": "Chauffeur / Chauffeuse de direction"
+  },
+  {
+    "code": "M1616",
+    "libelle": "Auxiliaire de gestion des écoles de conduite"
+  },
+  {
+    "code": "N1115",
+    "libelle": "Opérateur / Opératrice logistique en entrepôt"
+  },
+  {
+    "code": "K1719",
+    "libelle": "Chef / Cheffe de police municipale"
+  },
+  {
+    "code": "N1116",
+    "libelle": "Agent / Agente de quai de messagerie"
+  },
+  {
+    "code": "K1210",
+    "libelle": "Educateur / Educatrice de la protection judiciaire de la jeunesse"
+  },
+  {
+    "code": "K1905",
+    "libelle": "Huissier / Huissière de justice"
+  },
+  {
+    "code": "M1612",
+    "libelle": "Assistant / Assistante de service juridique"
+  },
+  {
+    "code": "K2307",
+    "libelle": "Agent / Agente de propreté urbaine"
+  },
+  {
+    "code": "G1806",
+    "libelle": "Chef sommelier / Cheffe sommelière"
+  },
+  {
+    "code": "M1208",
+    "libelle": "Responsable contrôle de gestion"
+  },
+  {
+    "code": "M1209",
+    "libelle": "Conseiller / Conseillère en gestion"
+  },
+  {
+    "code": "A1429",
+    "libelle": "Apiculteur / Apicultrice"
+  },
+  {
+    "code": "K1712",
+    "libelle": "Conducteur / Conductrice de véhicule de combat"
+  },
+  {
+    "code": "K1713",
+    "libelle": "Tireur / Tireuse d'engin blindé"
+  },
+  {
+    "code": "K1714",
+    "libelle": "Missilier / Missilière artillerie"
+  },
+  {
+    "code": "M1828",
+    "libelle": "Chef de projet / Cheffe de projet (Project Management Officer)"
+  },
+  {
+    "code": "K1715",
+    "libelle": "Officier / Officière des forces armées"
+  },
+  {
+    "code": "M1826",
+    "libelle": "Ingénieur / Ingénieure supervision IT Datacenter"
+  },
+  {
+    "code": "M1839",
+    "libelle": "Architecte systèmes et réseaux"
+  },
+  {
+    "code": "K1908",
+    "libelle": "Responsable de service contentieux et recouvrement"
+  },
+  {
+    "code": "K2408",
+    "libelle": "Mathématicien / Mathématicienne"
+  },
+  {
+    "code": "K2409",
+    "libelle": "Astronome"
+  },
+  {
+    "code": "K2410",
+    "libelle": "Astrophysicien / Astrophysicienne"
+  },
+  {
+    "code": "L1513",
+    "libelle": "Scénographe"
+  },
+  {
+    "code": "G1611",
+    "libelle": "Steward / Hôtesse de train"
+  },
+  {
+    "code": "M1857",
+    "libelle": "Urbaniste Datacenter"
+  },
+  {
+    "code": "E1112",
+    "libelle": "Chargé / Chargée de communication"
+  },
+  {
+    "code": "N4123",
+    "libelle": "Conducteur livreur installateur / Conductrice livreuse installatrice"
+  },
+  {
+    "code": "M1615",
+    "libelle": "Distributeur / Distributrice de prospectus et imprimés"
+  },
+  {
+    "code": "G1231",
+    "libelle": "Accompagnateur / Accompagnatrice en écotourisme"
+  },
+  {
+    "code": "H2210",
+    "libelle": "Tonnelier / Tonnelière"
+  },
+  {
+    "code": "N2206",
+    "libelle": "Pilote de drone"
+  },
+  {
+    "code": "C1506",
+    "libelle": "Responsable de projet immobilier"
+  },
+  {
+    "code": "A1211",
+    "libelle": "Chef / Cheffe d'équipe paysagiste"
+  },
+  {
+    "code": "I1318",
+    "libelle": "Instrumentiste Industriel / Industrielle"
+  },
+  {
+    "code": "D1416",
+    "libelle": "Commercial / Commerciale auprès d'une clientèle d'entreprises"
+  },
+  {
+    "code": "D1218",
+    "libelle": "Formateur coiffeur / Formatrice coiffeuse"
+  },
+  {
+    "code": "K2115",
+    "libelle": "Conseiller principal / Conseillère principale d'éducation"
+  },
+  {
+    "code": "K2117",
+    "libelle": "Inspecteur / Inspectrice de l'Education Nationale -IEN-"
+  },
+  {
+    "code": "M1715",
+    "libelle": "Directeur commercial / Directrice commerciale"
+  },
+  {
+    "code": "D1417",
+    "libelle": "Chef / Cheffe des ventes"
+  },
+  {
+    "code": "M1841",
+    "libelle": "Ingénieur informaticien / Ingénieure informaticienne"
+  },
+  {
+    "code": "M1858",
+    "libelle": "Chef / Cheffe de projet TMA - Tierce Maintenance Applicative"
+  },
+  {
+    "code": "N4130",
+    "libelle": "Conducteur / Conductrice de voiture radar à conduite externalisée"
+  },
+  {
+    "code": "N1111",
+    "libelle": "Conducteur / Conductrice de pont roulant"
+  },
+  {
+    "code": "N1114",
+    "libelle": "Conducteur / Conductrice d'engins lourds de manutention"
+  },
+  {
+    "code": "K1724",
+    "libelle": "Mécanicien / Mécanicienne d'engins blindés"
+  },
+  {
+    "code": "I1620",
+    "libelle": "Mécanicien-réparateur / Mécanicienne-réparatrice d'engins de levage et de manutention"
+  },
+  {
+    "code": "K1718",
+    "libelle": "Mécanicien / Mécanicienne de systèmes d'armes"
+  },
+  {
+    "code": "E1113",
+    "libelle": "Responsable e-commerce"
+  },
+  {
+    "code": "N1305",
+    "libelle": "Ingénieur / Ingénieure logistique"
+  },
+  {
+    "code": "N3204",
+    "libelle": "Chef / Cheffe d'équipe de manutention portuaire"
+  },
+  {
+    "code": "B1403",
+    "libelle": "Restaurateur / Restauratrice de livres anciens"
+  },
+  {
+    "code": "K2309",
+    "libelle": "Technicien / Technicienne réutilisation recyclage"
+  },
+  {
+    "code": "G1234",
+    "libelle": "Musher guide de randonnée en traîneau"
+  },
+  {
+    "code": "K1410",
+    "libelle": "Directeur régional / Directrice régionale des services pénitentiaires"
+  },
+  {
+    "code": "M1854",
+    "libelle": "Administrateur / Administratrice réseau informatique"
+  },
+  {
+    "code": "D1418",
+    "libelle": "Négociant / Négociante en bois"
+  },
+  {
+    "code": "M1614",
+    "libelle": "Standardiste"
+  },
+  {
+    "code": "I1105",
+    "libelle": "Responsable de maintenance et d'exploitation"
+  },
+  {
+    "code": "M1410",
+    "libelle": "Responsable Green IT"
+  },
+  {
+    "code": "M1413",
+    "libelle": "Chargé / Chargée de mission RSE - Responsabilité Sociétale de l'Entreprise"
+  },
+  {
+    "code": "D1219",
+    "libelle": "Vendeur / Vendeuse conseil en jardinerie"
+  },
+  {
+    "code": "F1117",
+    "libelle": "Ingénieur / Ingénieure d'étude CVC"
+  },
+  {
+    "code": "K1722",
+    "libelle": "Conducteur / Conductrice d'autorité de l'armée"
+  },
+  {
+    "code": "H1308",
+    "libelle": "Animateur / Animatrice en Hygiène Sécurité Environnement (HSE)"
+  },
+  {
+    "code": "F1126",
+    "libelle": "Assistant / Assistante maîtrise d'œuvre en architecture"
+  },
+  {
+    "code": "H1309",
+    "libelle": "Technicien / Technicienne en radioprotection"
+  },
+  {
+    "code": "M1823",
+    "libelle": "Consultant / Consultante avant-vente"
+  },
+  {
+    "code": "D1420",
+    "libelle": "Cadre Technico-commercial / Technico-commerciale"
+  },
+  {
+    "code": "K2506",
+    "libelle": "Convoyeur / Convoyeuse de fonds"
+  },
+  {
+    "code": "K1607",
+    "libelle": "Conservateur / Conservatrice des antiquités et objets d'art"
+  },
+  {
+    "code": "H3305",
+    "libelle": "Conducteur / Conductrice de machines de conditionnement"
+  },
+  {
+    "code": "I1106",
+    "libelle": "Responsable de maintenance réseaux des territoires connectés"
+  },
+  {
+    "code": "D1109",
+    "libelle": "Chef boucher / Cheffe bouchère"
+  },
+  {
+    "code": "F1625",
+    "libelle": "Monteur / Monteuse en agencement"
+  },
+  {
+    "code": "M1210",
+    "libelle": "Commissaire aux comptes"
+  },
+  {
+    "code": "M1844",
+    "libelle": "Analyste en cybersécurité"
+  },
+  {
+    "code": "F1125",
+    "libelle": "BIM Manager"
+  },
+  {
+    "code": "F1116",
+    "libelle": "Ingénieur / Ingénieure démantèlement nucléaire"
+  },
+  {
+    "code": "I1504",
+    "libelle": "Décontaminateur / Décontamineuse nucléaire et radiologique"
+  },
+  {
+    "code": "I1505",
+    "libelle": "Technicien / Technicienne déchet nucléaire"
+  },
+  {
+    "code": "H2702",
+    "libelle": "Conducteur / Conductrice de bloc nucléaire"
+  },
+  {
+    "code": "I1507",
+    "libelle": "Opérateur / Opératrice démantèlement nucléaire"
+  },
+  {
+    "code": "K1720",
+    "libelle": "Gardien / Gardienne de compagnie républicaine de sécurité"
+  },
+  {
+    "code": "M1859",
+    "libelle": "Chef / Cheffe de projet maîtrise d'œuvre informatique"
+  },
+  {
+    "code": "G1107",
+    "libelle": "Hôte / Hôtesse d'accueil et d'animation de croisière"
+  },
+  {
+    "code": "H1108",
+    "libelle": "Technicien / Technicienne support client en industrie"
+  },
+  {
+    "code": "N4132",
+    "libelle": "Contrôleur / Contrôleuse de bus"
+  },
+  {
+    "code": "I1317",
+    "libelle": "Technicien / Technicienne de maintenance fibre optique"
+  },
+  {
+    "code": "I1319",
+    "libelle": "Technicien / Technicienne de maintenance réseaux mobiles"
+  },
+  {
+    "code": "H2917",
+    "libelle": "Soudeur / Soudeuse MIG MAG"
+  },
+  {
+    "code": "M1861",
+    "libelle": "Développeur / Développeuse logiciel ou d'application"
+  },
+  {
+    "code": "K1721",
+    "libelle": "Technicien / Technicienne en investigation criminelle"
+  },
+  {
+    "code": "B1614",
+    "libelle": "Monteur / Monteuse en orfèvrerie"
+  },
+  {
+    "code": "N4129",
+    "libelle": "Conducteur / Conductrice de corbillard"
+  },
+  {
+    "code": "F1207",
+    "libelle": "Chef / Cheffe d'équipe travaux publics"
+  },
+  {
+    "code": "H2211",
+    "libelle": "Opérateur / Opératrice de sciage bois"
+  },
+  {
+    "code": "G1232",
+    "libelle": "Opérateur / Opératrice de parcours acrobatique dans les arbres"
+  },
+  {
+    "code": "H1107",
+    "libelle": "Directeur / Directrice assistance technique"
+  },
+  {
+    "code": "A1507",
+    "libelle": "Ostéopathe animalier / Ostéopathe animalière"
+  },
+  {
+    "code": "M1845",
+    "libelle": "Architecte IoT - Internet des Objets"
+  },
+  {
+    "code": "M1846",
+    "libelle": "Ingénieur / Ingénieure Cybersécurité Datacenter"
+  },
+  {
+    "code": "K1208",
+    "libelle": "Moniteur éducateur / Monitrice éducatrice"
+  },
+  {
+    "code": "K1209",
+    "libelle": "Coordonnateur / Coordonnatrice de projet socioéducatif"
+  },
+  {
+    "code": "K2118",
+    "libelle": "Directeur / Directrice d'école primaire"
+  },
+  {
+    "code": "I1405",
+    "libelle": "Administrateur / Administratrice bureautique"
+  },
+  {
+    "code": "M1617",
+    "libelle": "Médecin responsable de la Documentation et de l'Information Médicale (Médecin responsable -DIM-)"
+  },
+  {
+    "code": "J1413",
+    "libelle": "Physiothérapeute"
+  },
+  {
+    "code": "J1511",
+    "libelle": "Infirmier / Infirmière scolaire"
+  },
+  {
+    "code": "M1412",
+    "libelle": "Ergonome"
+  },
+  {
+    "code": "J1512",
+    "libelle": "Infirmier / Infirmière de santé au travail"
+  },
+  {
+    "code": "M1855",
+    "libelle": "Développeur / Développeuse web"
+  },
+  {
+    "code": "G1410",
+    "libelle": "Directeur / Directrice de la restauration"
+  },
+  {
+    "code": "G1229",
+    "libelle": "Guide-accompagnateur / Guide-accompagnatrice de pêche"
+  },
+  {
+    "code": "K1708",
+    "libelle": "Gardien / Gardienne de la paix"
+  },
+  {
+    "code": "H1513",
+    "libelle": "Responsable de pharmacovigilance en industrie pharmaceutique"
+  },
+  {
+    "code": "D1414",
+    "libelle": "Responsable de zone internationale"
+  },
+  {
+    "code": "H1406",
+    "libelle": "Ingénieur / Ingénieure supply chain en industrie"
+  },
+  {
+    "code": "H1105",
+    "libelle": "Chef de projets santé / Cheffe de projets santé"
+  },
+  {
+    "code": "N4109",
+    "libelle": "Conducteur / Conductrice d'autocar ligne régulière"
+  },
+  {
+    "code": "N4119",
+    "libelle": "Conducteur / Conductrice de tramway"
+  },
+  {
+    "code": "N4127",
+    "libelle": "Conducteur / Conductrice de car tourisme"
+  },
+  {
+    "code": "I1404",
+    "libelle": "Conseiller / Conseillère support technique informatique"
+  },
+  {
+    "code": "K1717",
+    "libelle": "Technicien électronicien / Technicienne électronicienne des armées"
+  },
+  {
+    "code": "M1829",
+    "libelle": "Ingénieur / Ingénieure systèmes et réseaux des territoires connectés"
+  },
+  {
+    "code": "M1847",
+    "libelle": "Expert / Experte en communication et réseaux"
+  },
+  {
+    "code": "M1860",
+    "libelle": "Architecte cloud"
+  },
+  {
+    "code": "F1115",
+    "libelle": "Vulcanologue"
+  },
+  {
+    "code": "F1118",
+    "libelle": "Sismologue"
+  },
+  {
+    "code": "F1119",
+    "libelle": "Pédologue"
+  },
+  {
+    "code": "F1124",
+    "libelle": "Hydrologue"
+  },
+  {
+    "code": "F1123",
+    "libelle": "Glaciologue"
+  },
+  {
+    "code": "N4112",
+    "libelle": "Chauffeur / Chauffeuse VTC"
+  },
+  {
+    "code": "G1223",
+    "libelle": "Animateur / Animatrice en site de divertissement"
+  },
+  {
+    "code": "M1713",
+    "libelle": "Responsable d'associations de patients en industrie pharmaceutique"
+  },
+  {
+    "code": "K1710",
+    "libelle": "Officier de police judiciaire / Officière de police judiciaire"
+  },
+  {
+    "code": "H1520",
+    "libelle": "Ingénieur / Ingénieure assurance qualité en industrie"
+  },
+  {
+    "code": "K2205",
+    "libelle": "Agent / Agente de propreté de locaux"
+  },
+  {
+    "code": "D1108",
+    "libelle": "Chef boulanger / Cheffe boulangère"
+  },
+  {
+    "code": "N1107",
+    "libelle": "Chef / Cheffe d'équipe en déménagement"
+  },
+  {
+    "code": "I1608",
+    "libelle": "Démonteur / Démonteuse de véhicules hors d'usage"
+  },
+  {
+    "code": "D1302",
+    "libelle": "Responsable de boutique"
+  },
+  {
+    "code": "D1220",
+    "libelle": "Gérant / Gérante salon de coiffure"
+  },
+  {
+    "code": "G1807",
+    "libelle": "Gérant / Gérante de bar-tabac"
+  },
+  {
+    "code": "G1808",
+    "libelle": "Chef barman / Cheffe barmaid"
+  },
+  {
+    "code": "G1705",
+    "libelle": "Chef / Cheffe concierge d'hôtel"
+  },
+  {
+    "code": "G1810",
+    "libelle": "Chef / Cheffe de rang"
+  },
+  {
+    "code": "G1805",
+    "libelle": "Gérant / Gérante de café, bar-brasserie"
+  },
+  {
+    "code": "N4128",
+    "libelle": "Conducteur / Conductrice de navette de moins de 9 personnes"
+  },
+  {
+    "code": "H1307",
+    "libelle": "Responsable de la conformité industrielle"
+  },
+  {
+    "code": "L1208",
+    "libelle": "Mascotte-personnage"
+  },
+  {
+    "code": "G1412",
+    "libelle": "Directeur / Directrice de parc à thème"
+  },
+  {
+    "code": "G1413",
+    "libelle": "Directeur / Directrice de restaurant"
+  },
+  {
+    "code": "I1320",
+    "libelle": "Technicien / Technicienne de maintenance d'équipements connectés"
+  },
+  {
+    "code": "I1609",
+    "libelle": "Peintre automobile"
+  },
+  {
+    "code": "G1230",
+    "libelle": "Guide de tourisme équestre"
+  },
+  {
+    "code": "H1522",
+    "libelle": "Technicien / Technicienne en contrôles et essais non destructifs (CND END)"
+  },
+  {
+    "code": "F1121",
+    "libelle": "Architecte du patrimoine national"
+  },
+  {
+    "code": "L1511",
+    "libelle": "Technicien / Technicienne spectacle en site de divertissement"
+  },
+  {
+    "code": "G1226",
+    "libelle": "Chef / Cheffe de bassin"
+  },
+  {
+    "code": "K1907",
+    "libelle": "Commissaire-priseur / Commissaire-priseure"
+  },
+  {
+    "code": "L1206",
+    "libelle": "Cavalier / Cavalière de spectacle"
+  },
+  {
+    "code": "M1506",
+    "libelle": "Manager de proximité"
+  },
+  {
+    "code": "H2424",
+    "libelle": "Chef / Cheffe de ligne chromo en industrie textile"
+  },
+  {
+    "code": "H3304",
+    "libelle": "Chef / Cheffe de ligne conditionnement"
+  },
+  {
+    "code": "H2915",
+    "libelle": "Chef soudeur / Cheffe soudeuse"
+  },
+  {
+    "code": "H2916",
+    "libelle": "Soudeur / Soudeuse Tungsten Inert Gas -TIG-"
+  },
+  {
+    "code": "I1314",
+    "libelle": "Monteur installateur / Monteuse installatrice d'équipements connectés"
+  },
+  {
+    "code": "I1315",
+    "libelle": "Monteur raccordeur / Monteuse raccordeuse fibre optique"
+  },
+  {
+    "code": "N4117",
+    "libelle": "Conducteur / Conductrice d'attelage"
+  },
+  {
+    "code": "N2207",
+    "libelle": "Agent / Agente d'accompagnement du transport"
+  },
+  {
+    "code": "M1414",
+    "libelle": "Ingénieur statisticien / Ingénieure statisticienne"
+  },
+  {
+    "code": "J1111",
+    "libelle": "Gynécologue"
+  },
+  {
+    "code": "G1108",
+    "libelle": "Directeur / Directrice de pays d'accueil touristique"
+  },
+  {
+    "code": "M1862",
+    "libelle": "Responsable d'exploitation fibre optique"
+  },
+  {
+    "code": "M1863",
+    "libelle": "Evaluateur / Evaluatrice sécurité des systèmes et produits informatiques"
+  },
+  {
+    "code": "H2421",
+    "libelle": "Opérateur / Opératrice de fabrication de produits textiles"
+  },
+  {
+    "code": "J1108",
+    "libelle": "Médecin régulateur"
+  },
+  {
+    "code": "M1507",
+    "libelle": "Gestionnaire paie"
+  },
+  {
+    "code": "H2423",
+    "libelle": "Mécanicien / Mécanicienne industrie textile et de l'habillement"
+  },
+  {
+    "code": "D1415",
+    "libelle": "Chargé / Chargée de relation client"
+  },
+  {
+    "code": "F1504",
+    "libelle": "Charpentier / Charpentière de marine"
+  },
+  {
+    "code": "N4121",
+    "libelle": "Aide-livreur / Aide-livreuse"
+  },
+  {
+    "code": "K1716",
+    "libelle": "Chef / Cheffe de service pénitentiaire"
+  },
+  {
+    "code": "K2509",
+    "libelle": "Opérateur / Opératrice en télésurveillance"
+  },
+  {
+    "code": "I1208",
+    "libelle": "Patrouilleur autoroutier / Patrouilleuse autoroutière"
+  },
+  {
+    "code": "A1441",
+    "libelle": "Pépiniériste"
+  },
+  {
+    "code": "A1432",
+    "libelle": "Osiériculteur / Osiéricultrice"
+  },
+  {
+    "code": "A1436",
+    "libelle": "Conducteur / Conductrice de travaux en entreprise de travaux agricoles"
+  },
+  {
+    "code": "J1133",
+    "libelle": "Stomatologue"
+  },
+  {
+    "code": "B1616",
+    "libelle": "Opérateur / Opératrice en horlogerie"
+  },
+  {
+    "code": "K2137",
+    "libelle": "Assistant / Assistante pédagogique en milieu scolaire"
+  },
+  {
+    "code": "A1311",
+    "libelle": "Technicien forestier / Technicienne forestière"
+  },
+  {
+    "code": "A1446",
+    "libelle": "Maître / Maîtresse de chai"
+  },
+  {
+    "code": "I1629",
+    "libelle": "Technicien / Technicienne de réparation et pose de vitrage des véhicules"
+  },
+  {
+    "code": "N4305",
+    "libelle": "Conducteur / Conductrice de métro"
+  },
+  {
+    "code": "K2127",
+    "libelle": "Professeur / Professeure d'enseignement général pour déficients sensoriels"
+  },
+  {
+    "code": "L1518",
+    "libelle": "Chef habilleur / Cheffe habilleuse"
+  },
+  {
+    "code": "K1419",
+    "libelle": "Responsable du service des assemblées"
+  },
+  {
+    "code": "D1239",
+    "libelle": "Perceur corporel / Perceuse corporelle"
+  },
+  {
+    "code": "J1312",
+    "libelle": "Assistant / Assistante dentaire"
+  },
+  {
+    "code": "N3205",
+    "libelle": "Assistant / Assistante d'exploitation du transport fluvial"
+  },
+  {
+    "code": "H1241",
+    "libelle": "Architecte système hydrogène"
+  },
+  {
+    "code": "B1702",
+    "libelle": "Technicien / Technicienne en ostéologie-moulage"
+  },
+  {
+    "code": "M1221",
+    "libelle": "Responsable financement de projet"
+  },
+  {
+    "code": "F1133",
+    "libelle": "Chargé / Chargée d'affaires foncières"
+  },
+  {
+    "code": "H1529",
+    "libelle": "Chargé / Chargée de matériovigilance"
+  },
+  {
+    "code": "A1510",
+    "libelle": "Préparateur / Préparatrice d'équidés"
+  },
+  {
+    "code": "I1207",
+    "libelle": "Agent / Agente de maintenance de mobilier urbain et publicitaire"
+  },
+  {
+    "code": "M1509",
+    "libelle": "Responsable paie et administration du personnel"
+  },
+  {
+    "code": "E1411",
+    "libelle": "Chargé / Chargée de développement du patrimoine publicitaire"
+  },
+  {
+    "code": "M1212",
+    "libelle": "Gestionnaire de lits"
+  },
+  {
+    "code": "D1422",
+    "libelle": "Chargé / Chargée de recouvrement de créances"
+  },
+  {
+    "code": "J1118",
+    "libelle": "Radiologue"
+  },
+  {
+    "code": "M1214",
+    "libelle": "Négociateur / Négociatrice en devises"
+  },
+  {
+    "code": "J1134",
+    "libelle": "Ophtalmologue"
+  },
+  {
+    "code": "A1447",
+    "libelle": "Herboriste"
+  },
+  {
+    "code": "H1532",
+    "libelle": "Responsable de contrôle non destructif en industrie"
+  },
+  {
+    "code": "M1893",
+    "libelle": "Technicien / Technicienne de la météorologie"
+  },
+  {
+    "code": "N2208",
+    "libelle": "Contrôleur / Contrôleuse de la circulation et de la défense aérienne"
+  },
+  {
+    "code": "D1235",
+    "libelle": "Plagiste"
+  },
+  {
+    "code": "E1122",
+    "libelle": "Transcripteur adaptateur / Transcriptrice adaptatrice"
+  },
+  {
+    "code": "K1501",
+    "libelle": "Agent / Agente d'administration principal(e) des douanes"
+  },
+  {
+    "code": "K1801",
+    "libelle": "Conseiller / Conseillère en insertion professionnelle"
+  },
+  {
+    "code": "N1103",
+    "libelle": "Préparateur / Préparatrice de commandes"
+  },
+  {
+    "code": "D1410",
+    "libelle": "Attaché commercial / Attachée commerciale"
+  },
+  {
+    "code": "N4116",
+    "libelle": "Conducteur / Conductrice de transport routier de marchandises dangereuses"
+  },
+  {
+    "code": "N4125",
+    "libelle": "Conducteur / Conductrice de transport routier d'animaux vivants"
+  },
+  {
+    "code": "J1127",
+    "libelle": "Médecin urgentiste"
+  },
+  {
+    "code": "K1909",
+    "libelle": "Greffier / Greffière"
+  },
+  {
+    "code": "K1510",
+    "libelle": "Contrôleur / Contrôleuse du Trésor public"
+  },
+  {
+    "code": "E1314",
+    "libelle": "Conducteur / Conductrice de machines à pelliculer"
+  },
+  {
+    "code": "I1335",
+    "libelle": "Electromécanicien / Electromécanicienne d'équipements industriels"
+  },
+  {
+    "code": "I1330",
+    "libelle": "Technicien / Technicienne d'installation de centrales téléphoniques"
+  },
+  {
+    "code": "E1413",
+    "libelle": "Chef / Cheffe de projet publicitaire"
+  },
+  {
+    "code": "E1414",
+    "libelle": "Chargé / Chargée de diffusion publicitaire"
+  },
+  {
+    "code": "E1409",
+    "libelle": "Acheteur / Acheteuse média"
+  },
+  {
+    "code": "H2710",
+    "libelle": "Responsable technique d'installation hydrogène"
+  },
+  {
+    "code": "F1626",
+    "libelle": "Calorifugeur / Calorifugeuse"
+  },
+  {
+    "code": "F1630",
+    "libelle": "Technicien / Technicienne de désenfumage"
+  },
+  {
+    "code": "N4303",
+    "libelle": "Conducteur / Conductrice d'engins de manœuvre du réseau ferré"
+  },
+  {
+    "code": "K2319",
+    "libelle": "Technicien / Technicienne hygiéniste"
+  },
+  {
+    "code": "D1236",
+    "libelle": "Repasseur / Repasseuse"
+  },
+  {
+    "code": "B1404",
+    "libelle": "Canneur rempailleur / Canneuse rempailleuse"
+  },
+  {
+    "code": "A1310",
+    "libelle": "Technicien / Technicienne de production animale"
+  },
+  {
+    "code": "M1876",
+    "libelle": "Technicien / Technicienne Cloud"
+  },
+  {
+    "code": "I1334",
+    "libelle": "Electronicien / Electronicienne de maintenance aéronautique"
+  },
+  {
+    "code": "A1445",
+    "libelle": "Pêcheur sous-marin / Pêcheuse sous-marine"
+  },
+  {
+    "code": "D1438",
+    "libelle": "Assistant / Assistante e-commerce"
+  },
+  {
+    "code": "H1531",
+    "libelle": "Opérateur / Opératrice de laboratoire d'analyse industrielle"
+  },
+  {
+    "code": "L1516",
+    "libelle": "Coiffeur / Coiffeuse spectacle"
+  },
+  {
+    "code": "D1228",
+    "libelle": "Employé / Employée de laverie automatique"
+  },
+  {
+    "code": "D1511",
+    "libelle": "Opérateur / Opératrice de station service"
+  },
+  {
+    "code": "F1505",
+    "libelle": "Echafaudeur / Echafaudeuse"
+  },
+  {
+    "code": "H2509",
+    "libelle": "Ingénieur / Ingénieure de fonderie ou de forge"
+  },
+  {
+    "code": "H2510",
+    "libelle": "Directeur / Directrice de production industrielle"
+  },
+  {
+    "code": "D1227",
+    "libelle": "Acheteur vendeur / Acheteuse vendeuse d'or, de métaux précieux"
+  },
+  {
+    "code": "D1233",
+    "libelle": "Galeriste"
+  },
+  {
+    "code": "J1135",
+    "libelle": "Urologue"
+  },
+  {
+    "code": "A1444",
+    "libelle": "Aide agricole en production fruitière"
+  },
+  {
+    "code": "L1211",
+    "libelle": "Chorégraphe"
+  },
+  {
+    "code": "H1533",
+    "libelle": "Ingénieur / Ingénieure CND END"
+  },
+  {
+    "code": "I1322",
+    "libelle": "Technicien / Technicienne de maintenance des automates bancaires"
+  },
+  {
+    "code": "I1409",
+    "libelle": "Agent / Agente de maintenance en bureautique"
+  },
+  {
+    "code": "K2604",
+    "libelle": "Agent / Agente de crématorium"
+  },
+  {
+    "code": "K2605",
+    "libelle": "Maître / Maîtresse de cérémonie funéraire"
+  },
+  {
+    "code": "F1131",
+    "libelle": "Géomètre du cadastre"
+  },
+  {
+    "code": "A1442",
+    "libelle": "Eleveur / Eleveuse de lapins"
+  },
+  {
+    "code": "M1873",
+    "libelle": "Spécialiste IA embarquée"
+  },
+  {
+    "code": "J1415",
+    "libelle": "Enseignant / Enseignante en activité physique adaptée (EAPA)"
+  },
+  {
+    "code": "J1414",
+    "libelle": "Coordinateur / Coordinatrice en activité physique adaptée"
+  },
+  {
+    "code": "J1112",
+    "libelle": "Oncologue"
+  },
+  {
+    "code": "K1314",
+    "libelle": "Auxiliaire de vie sociale auprès d'enfants"
+  },
+  {
+    "code": "D1114",
+    "libelle": "Torréfacteur / Torréfactrice"
+  },
+  {
+    "code": "L1517",
+    "libelle": "Chef coiffeur / Cheffe coiffeuse spectacle"
+  },
+  {
+    "code": "K2321",
+    "libelle": "Egoutier / Egoutière"
+  },
+  {
+    "code": "H2918",
+    "libelle": "Affûteur / Affûteuse d'outillage industriel"
+  },
+  {
+    "code": "H3105",
+    "libelle": "Technicien / Technicienne de production en industrie papetière"
+  },
+  {
+    "code": "H3103",
+    "libelle": "Opérateur / Opératrice de production de pâte à papier"
+  },
+  {
+    "code": "H3104",
+    "libelle": "Opérateur / Opératrice de production de papier carton"
+  },
+  {
+    "code": "C1209",
+    "libelle": "Spécialiste de la vérification client"
+  },
+  {
+    "code": "K1227",
+    "libelle": "Directeur / Directrice technique de l'administration pénitentiaire"
+  },
+  {
+    "code": "F1209",
+    "libelle": "Chef / Cheffe de chantier travaux publics"
+  },
+  {
+    "code": "M1225",
+    "libelle": "Aide-comptable"
+  },
+  {
+    "code": "E1126",
+    "libelle": "Auteur / Auteure de jeux de société"
+  },
+  {
+    "code": "K1727",
+    "libelle": "Chargé / Chargée du guidage d’aéronef militaire"
+  },
+  {
+    "code": "M1719",
+    "libelle": "Chargé / Chargée des relations avec les influenceurs"
+  },
+  {
+    "code": "E1315",
+    "libelle": "Conducteur / Conductrice de machines de reliure automatique"
+  },
+  {
+    "code": "I1116",
+    "libelle": "Responsable d'exploitation de stationnement"
+  },
+  {
+    "code": "J1117",
+    "libelle": "Hématologue"
+  },
+  {
+    "code": "J1120",
+    "libelle": "Médecin phlébologue"
+  },
+  {
+    "code": "F1132",
+    "libelle": "Acousticien / Acousticienne du bâtiment"
+  },
+  {
+    "code": "G1415",
+    "libelle": "Gérant / Gérante de gîte et chambres d'hôtes"
+  },
+  {
+    "code": "G1416",
+    "libelle": "Directeur / Directrice d'hôtellerie de plein air"
+  },
+  {
+    "code": "K2133",
+    "libelle": "Sociologue"
+  },
+  {
+    "code": "K2134",
+    "libelle": "Démographe"
+  },
+  {
+    "code": "K2140",
+    "libelle": "Historien / Historienne"
+  },
+  {
+    "code": "K2135",
+    "libelle": "Ethnologue"
+  },
+  {
+    "code": "K2143",
+    "libelle": "Anthropologue"
+  },
+  {
+    "code": "K2125",
+    "libelle": "Archéologue"
+  },
+  {
+    "code": "E1309",
+    "libelle": "Responsable d'atelier de façonnage routage"
+  },
+  {
+    "code": "H1525",
+    "libelle": "Biologiste de contrôle fabrication en industrie"
+  },
+  {
+    "code": "H2304",
+    "libelle": "Opérateur / Opératrice de fabrication des industries chimiques"
+  },
+  {
+    "code": "K2322",
+    "libelle": "Technicien / Technicienne en traitement des eaux"
+  },
+  {
+    "code": "A1437",
+    "libelle": "Champignonniste"
+  },
+  {
+    "code": "A1433",
+    "libelle": "Maraîcher / Maraîchère"
+  },
+  {
+    "code": "A1440",
+    "libelle": "Cultivateur urbain / Cultivatrice urbaine"
+  },
+  {
+    "code": "K2120",
+    "libelle": "Directeur / Directrice d'établissement d'enseignement supérieur"
+  },
+  {
+    "code": "M1426",
+    "libelle": "Chief digital officer - Responsable de la transformation digitale"
+  },
+  {
+    "code": "M1884",
+    "libelle": "Ingénieur / Ingénieure systèmes, réseaux et sécurité informatique"
+  },
+  {
+    "code": "M1867",
+    "libelle": "Responsable des systèmes d'information (SI)"
+  },
+  {
+    "code": "M1878",
+    "libelle": "Responsable de la production informatique"
+  },
+  {
+    "code": "M1874",
+    "libelle": "Spécialiste support"
+  },
+  {
+    "code": "K2507",
+    "libelle": "Agent / Agente d'exploitation et de sûreté aéroportuaire"
+  },
+  {
+    "code": "K2508",
+    "libelle": "Agent / Agente de protection rapprochée"
+  },
+  {
+    "code": "D1436",
+    "libelle": "Assistant / Assistante de régulation médicale (ARM)"
+  },
+  {
+    "code": "J1310",
+    "libelle": "Auxiliaire ambulancier / Auxiliaire ambulancière"
+  },
+  {
+    "code": "J1311",
+    "libelle": "Transporteur / Transporteuse de produits de santé"
+  },
+  {
+    "code": "D1428",
+    "libelle": "Superviseur / Superviseuse technique et logistique en assistance de régulation médicale"
+  },
+  {
+    "code": "D1432",
+    "libelle": "Assistant / Assistante service clients"
+  },
+  {
+    "code": "E1123",
+    "libelle": "Interprète"
+  },
+  {
+    "code": "E1312",
+    "libelle": "Lecteur-correcteur / Lectrice-correctrice"
+  },
+  {
+    "code": "E1121",
+    "libelle": "Secrétaire de rédaction"
+  },
+  {
+    "code": "E1120",
+    "libelle": "Chef / Cheffe de projets traduction"
+  },
+  {
+    "code": "E1116",
+    "libelle": "Responsable d'édition en presse"
+  },
+  {
+    "code": "E1114",
+    "libelle": "Reporter / Reportrice"
+  },
+  {
+    "code": "G1240",
+    "libelle": "Animateur / Animatrice nature environnement"
+  },
+  {
+    "code": "H2105",
+    "libelle": "Agent / Agente de production en industrie alimentaire"
+  },
+  {
+    "code": "B1810",
+    "libelle": "Fourreur / Fourreuse"
+  },
+  {
+    "code": "B1813",
+    "libelle": "Tailleur / Tailleuse"
+  },
+  {
+    "code": "N3104",
+    "libelle": "Conducteur / Conductrice de navigation fluviale"
+  },
+  {
+    "code": "E1311",
+    "libelle": "Régleur / Régleuse de machines de façonnage routage"
+  },
+  {
+    "code": "E1313",
+    "libelle": "Agent / Agente d'encadrement en industrie graphique"
+  },
+  {
+    "code": "I1406",
+    "libelle": "Superviseur / Superviseuse hot line en informatique"
+  },
+  {
+    "code": "M1869",
+    "libelle": "Gestionnaire de parc informatique"
+  },
+  {
+    "code": "M1871",
+    "libelle": "Gestionnaire d'applications système d'information"
+  },
+  {
+    "code": "M1875",
+    "libelle": "Coordinateur / Coordinatrice Maitrise d'Ouvrage Système d'Information (MOA SI)"
+  },
+  {
+    "code": "M1881",
+    "libelle": "Chef / Cheffe de projet Maîtrise d'Ouvrage des Systèmes d'Information (MOA)"
+  },
+  {
+    "code": "M1870",
+    "libelle": "Directeur / Directrice de projet en informatique"
+  },
+  {
+    "code": "K1220",
+    "libelle": "Médiateur / Médiatrice en santé"
+  },
+  {
+    "code": "K1226",
+    "libelle": "Chargé / Chargée de médiation interculturelle"
+  },
+  {
+    "code": "K2130",
+    "libelle": "Professeur / Professeure de Français Langue Etrangère (FLE)"
+  },
+  {
+    "code": "K2129",
+    "libelle": "Professeur / Professeure en soutien scolaire"
+  },
+  {
+    "code": "K2122",
+    "libelle": "Professeur / Professeure à domicile"
+  },
+  {
+    "code": "K1213",
+    "libelle": "Médiateur culturel / Médiatrice culturelle"
+  },
+  {
+    "code": "E1118",
+    "libelle": "Présentateur / Présentatrice journaliste"
+  },
+  {
+    "code": "D1433",
+    "libelle": "Commercial / Commerciale export"
+  },
+  {
+    "code": "K1414",
+    "libelle": "Chargé / Chargée de mission santé publique"
+  },
+  {
+    "code": "M1880",
+    "libelle": "Spécialiste e-santé"
+  },
+  {
+    "code": "K1221",
+    "libelle": "Ecoutant social / Ecoutante sociale"
+  },
+  {
+    "code": "K1225",
+    "libelle": "Conseiller / Conseillère en économie sociale et familiale (CESF)"
+  },
+  {
+    "code": "K1810",
+    "libelle": "Agent / Agente de développement d'habitat social"
+  },
+  {
+    "code": "A1434",
+    "libelle": "Tabaculteur / Tabacultrice"
+  },
+  {
+    "code": "G1242",
+    "libelle": "Médiateur / Médiatrice scientifique"
+  },
+  {
+    "code": "N1208",
+    "libelle": "Opérateur / Opératrice de traitement de valeurs"
+  },
+  {
+    "code": "H2215",
+    "libelle": "Caissier / Caissière de l'emballage industriel"
+  },
+  {
+    "code": "K2311",
+    "libelle": "Responsable des déchets"
+  },
+  {
+    "code": "H2212",
+    "libelle": "Technicien / Technicienne de fabrication en industrie du bois"
+  },
+  {
+    "code": "K2318",
+    "libelle": "Agent / Agente de déchetterie"
+  },
+  {
+    "code": "E1128",
+    "libelle": "Directeur / Directrice de création"
+  },
+  {
+    "code": "L1308",
+    "libelle": "Directeur / Directrice de production audiovisuelle et cinéma"
+  },
+  {
+    "code": "L1306",
+    "libelle": "Réalisateur / Réalisatrice audiovisuel"
+  },
+  {
+    "code": "L1514",
+    "libelle": "Chef opérateur / Cheffe opératrice image"
+  },
+  {
+    "code": "L1522",
+    "libelle": "Opérateur / Opératrice d'effets visuels physiques audiovisuel et cinéma"
+  },
+  {
+    "code": "L1523",
+    "libelle": "Artificier / Artificière spectacle"
+  },
+  {
+    "code": "K1219",
+    "libelle": "Directeur / Directrice de centre socioculturel"
+  },
+  {
+    "code": "G1237",
+    "libelle": "Directeur / Directrice d'accueil de loisirs sans hébergement"
+  },
+  {
+    "code": "K1413",
+    "libelle": "Directeur / Directrice d'établissement à caractère social"
+  },
+  {
+    "code": "K1421",
+    "libelle": "Directeur / Directrice de centre hospitalier"
+  },
+  {
+    "code": "K1415",
+    "libelle": "Directeur / Directrice d'établissement privé de santé"
+  },
+  {
+    "code": "K1422",
+    "libelle": "Directeur général / Directrice générale d'établissement public"
+  },
+  {
+    "code": "M1890",
+    "libelle": "Responsable d'opérations en station météorologique"
+  },
+  {
+    "code": "F1128",
+    "libelle": "Géotechnicien / Géotechnicienne"
+  },
+  {
+    "code": "F1129",
+    "libelle": "Ingénieur / Ingénieure réservoir"
+  },
+  {
+    "code": "F1143",
+    "libelle": "Géophysicien / Géophysicienne"
+  },
+  {
+    "code": "F1138",
+    "libelle": "Géothermicien / Géothermicienne"
+  },
+  {
+    "code": "H1534",
+    "libelle": "Ingénieur / Ingénieure d'analyse industrielle"
+  },
+  {
+    "code": "H1527",
+    "libelle": "Ingénieur / Ingénieure qualité en industrie"
+  },
+  {
+    "code": "D1304",
+    "libelle": "Responsable de station de lavage"
+  },
+  {
+    "code": "J1121",
+    "libelle": "Gastro-entérologue"
+  },
+  {
+    "code": "H2213",
+    "libelle": "Menuisier / Menuisière en construction nautique"
+  },
+  {
+    "code": "F1208",
+    "libelle": "Conducteur / Conductrice de travaux publics"
+  },
+  {
+    "code": "F1210",
+    "libelle": "Directeur / Directrice de travaux TP - Travaux Publics"
+  },
+  {
+    "code": "K2147",
+    "libelle": "Chef / Cheffe de travaux dans l'enseignement technique"
+  },
+  {
+    "code": "F1134",
+    "libelle": "Domoticien / Domoticienne"
+  },
+  {
+    "code": "L1527",
+    "libelle": "Chef constructeur / Cheffe constructrice en décors"
+  },
+  {
+    "code": "L1526",
+    "libelle": "Régisseur / Régisseuse de scène"
+  },
+  {
+    "code": "L1525",
+    "libelle": "Chef / Cheffe machiniste spectacle"
+  },
+  {
+    "code": "L1515",
+    "libelle": "Technicien / Technicienne plateau"
+  },
+  {
+    "code": "I1324",
+    "libelle": "Technicien / Technicienne d'installation d'équipements industriels"
+  },
+  {
+    "code": "H1526",
+    "libelle": "Technicien / Technicienne qualité-surveillance d'installations industrielles"
+  },
+  {
+    "code": "I1321",
+    "libelle": "Technicien / Technicienne de maintenance d'éoliennes"
+  },
+  {
+    "code": "M1216",
+    "libelle": "Secrétaire général / Secrétaire générale"
+  },
+  {
+    "code": "G1241",
+    "libelle": "Directeur / Directrice de centre de séjour de vacances"
+  },
+  {
+    "code": "K1218",
+    "libelle": "Responsable de maison de quartier"
+  },
+  {
+    "code": "K1216",
+    "libelle": "Responsable de structure multi accueil petite enfance"
+  },
+  {
+    "code": "K1222",
+    "libelle": "Coordinateur / Coordinatrice d'équipes de médiation"
+  },
+  {
+    "code": "K2144",
+    "libelle": "Directeur / Directrice d'école paramédicale"
+  },
+  {
+    "code": "H1524",
+    "libelle": "Qualiticien / Qualiticienne en industrie"
+  },
+  {
+    "code": "K2320",
+    "libelle": "Chargé / Chargée du traitement des déchets"
+  },
+  {
+    "code": "M1303",
+    "libelle": "Directeur / Directrice de filiale"
+  },
+  {
+    "code": "K1725",
+    "libelle": "Responsable des opérations militaires en milieu maritime"
+  },
+  {
+    "code": "K2316",
+    "libelle": "Responsable d'usine de production d'eau potable"
+  },
+  {
+    "code": "F1142",
+    "libelle": "Océanographe"
+  },
+  {
+    "code": "M1430",
+    "libelle": "Chargé / Chargée d'études commerciales"
+  },
+  {
+    "code": "H1226",
+    "libelle": "Rédacteur médical / Rédactrice médicale en industrie pharmaceutique"
+  },
+  {
+    "code": "K2136",
+    "libelle": "Professeur territorial / Professeure territoriale d'enseignement artistique"
+  },
+  {
+    "code": "F1711",
+    "libelle": "Poseur / Poseuse de voies ferrées"
+  },
+  {
+    "code": "I1323",
+    "libelle": "Technicien / Technicienne de maintenance ferroviaire"
+  },
+  {
+    "code": "K2314",
+    "libelle": "Technicien / Technicienne de maintenance de systèmes d'irrigation"
+  },
+  {
+    "code": "N4304",
+    "libelle": "Responsable d'équipe d'agents de conduite du réseau ferré"
+  },
+  {
+    "code": "F1629",
+    "libelle": "Electricien / Electricienne ferroviaire"
+  },
+  {
+    "code": "I1326",
+    "libelle": "Responsable d'équipe maintenance"
+  },
+  {
+    "code": "I1332",
+    "libelle": "Chef / Cheffe d'atelier de maintenance industrielle"
+  },
+  {
+    "code": "I1333",
+    "libelle": "Chef / Cheffe d'équipe d'installation industrielle"
+  },
+  {
+    "code": "F1628",
+    "libelle": "Installateur / Installatrice de bornes de recharges électriques"
+  },
+  {
+    "code": "F1627",
+    "libelle": "Poseur / Poseuse de compteurs"
+  },
+  {
+    "code": "I1209",
+    "libelle": "Technicien / Technicienne d'installation de panneau digital"
+  },
+  {
+    "code": "K2146",
+    "libelle": "Responsable d'internat"
+  },
+  {
+    "code": "K1217",
+    "libelle": "Animateur socioéducatif / Animatrice socioéducative"
+  },
+  {
+    "code": "M1217",
+    "libelle": "Intendant / Intendante d'établissement scolaire (lycée, collège...)"
+  },
+  {
+    "code": "K2128",
+    "libelle": "Formateur / Formatrice aux métiers de l'éducation et de la sécurité routière"
+  },
+  {
+    "code": "K2138",
+    "libelle": "Animateur / Animatrice de stages permis à points"
+  },
+  {
+    "code": "K1417",
+    "libelle": "Responsable des affaires générales"
+  },
+  {
+    "code": "E1117",
+    "libelle": "Wedding planner"
+  },
+  {
+    "code": "L1104",
+    "libelle": "Animateur / Animatrice événementiel"
+  },
+  {
+    "code": "E1406",
+    "libelle": "Influenceur / Influenceuse web"
+  },
+  {
+    "code": "E1404",
+    "libelle": "Assistant / Assistante en publicité"
+  },
+  {
+    "code": "K1223",
+    "libelle": "Technicien / Technicienne de l'administration pénitentiaire"
+  },
+  {
+    "code": "M1417",
+    "libelle": "Intervenant / Intervenante en Prévention des Risques Professionnels - IPRP"
+  },
+  {
+    "code": "H2709",
+    "libelle": "Conducteur / Conductrice d'installation d'incinération"
+  },
+  {
+    "code": "K2317",
+    "libelle": "Technicien / Technicienne d'exploitation d'eau potable"
+  },
+  {
+    "code": "H1530",
+    "libelle": "Technicien / Technicienne de la qualité de l'eau"
+  },
+  {
+    "code": "D1423",
+    "libelle": "Conseiller / Conseillère produits en véhicules"
+  },
+  {
+    "code": "L1309",
+    "libelle": "Coordinateur / Coordinatrice d'intimité"
+  },
+  {
+    "code": "L1307",
+    "libelle": "Assistant / Assistante mise en scène"
+  },
+  {
+    "code": "I1206",
+    "libelle": "Chef / Cheffe d'équipe en mobilier urbain et publicitaire"
+  },
+  {
+    "code": "I1109",
+    "libelle": "Responsable de parc de véhicules"
+  },
+  {
+    "code": "I1111",
+    "libelle": "Responsable technique après-vente des véhicules"
+  },
+  {
+    "code": "I1118",
+    "libelle": "Responsable de site SMAVA (service multimarques de l'après-vente automobile)"
+  },
+  {
+    "code": "I1115",
+    "libelle": "Responsable de site(s) de vente et de réparation cycles"
+  },
+  {
+    "code": "I1410",
+    "libelle": "Responsable Service Après-Vente -SAV- en électroménager"
+  },
+  {
+    "code": "K2124",
+    "libelle": "Formateur / Formatrice conduite d'engins motorisés et de levage"
+  },
+  {
+    "code": "K2141",
+    "libelle": "Formateur / Formatrice conduite d'engins de travaux publics"
+  },
+  {
+    "code": "I1112",
+    "libelle": "Chef / Cheffe d'atelier engins de levage et de manutention"
+  },
+  {
+    "code": "I1108",
+    "libelle": "Chef / Cheffe d'atelier engins de chantier"
+  },
+  {
+    "code": "I1110",
+    "libelle": "Chef / Cheffe d'atelier machines agricoles"
+  },
+  {
+    "code": "I1117",
+    "libelle": "Chef / Cheffe d'atelier après-vente cycles"
+  },
+  {
+    "code": "E1208",
+    "libelle": "Chef / Cheffe de studio de photographie"
+  },
+  {
+    "code": "E1209",
+    "libelle": "Responsable de laboratoire photographique"
+  },
+  {
+    "code": "E1125",
+    "libelle": "Concepteur / Conceptrice de jeux vidéo"
+  },
+  {
+    "code": "L1524",
+    "libelle": "Chef décorateur / Cheffe décoratrice spectacle"
+  },
+  {
+    "code": "F1139",
+    "libelle": "Décorateur / Décoratrice d'intérieur"
+  },
+  {
+    "code": "F1140",
+    "libelle": "Concepteur / Conceptrice agencement"
+  },
+  {
+    "code": "K2323",
+    "libelle": "Responsable propreté urbaine"
+  },
+  {
+    "code": "D1303",
+    "libelle": "Responsable de station-service"
+  },
+  {
+    "code": "J1115",
+    "libelle": "Pédiatre"
+  },
+  {
+    "code": "I1508",
+    "libelle": "Désamianteur / Désamianteuse"
+  },
+  {
+    "code": "H1238",
+    "libelle": "Chef / Cheffe de projet conception industrielle en mécanique"
+  },
+  {
+    "code": "G1306",
+    "libelle": "Billettiste voyages"
+  },
+  {
+    "code": "I1325",
+    "libelle": "Technicien-cuisiniste / Technicienne-cuisiniste en cuisines professionnelles"
+  },
+  {
+    "code": "J1130",
+    "libelle": "Oto-rhino-laryngologiste (ORL)"
+  },
+  {
+    "code": "B1503",
+    "libelle": "Facteur / Factrice d'instruments à vent"
+  },
+  {
+    "code": "D1305",
+    "libelle": "Responsable de magasin cycles"
+  },
+  {
+    "code": "D1238",
+    "libelle": "Chef / Cheffe d'agence de location de véhicules"
+  },
+  {
+    "code": "D1234",
+    "libelle": "Chargé / Chargée de location de matériel de transport ou de loisirs"
+  },
+  {
+    "code": "G1304",
+    "libelle": "Responsable d'agence de voyages"
+  },
+  {
+    "code": "G1307",
+    "libelle": "Responsable de ventes de voyages en plateau d'affaires"
+  },
+  {
+    "code": "G1308",
+    "libelle": "Chef / Cheffe de produit touristique"
+  },
+  {
+    "code": "M1718",
+    "libelle": "Chargé / Chargée de marketing digital"
+  },
+  {
+    "code": "I1113",
+    "libelle": "Chef / Cheffe d'atelier en démontage recyclage de VHU"
+  },
+  {
+    "code": "I1119",
+    "libelle": "Responsable de centre de démontage recyclage des VHU"
+  },
+  {
+    "code": "I1114",
+    "libelle": "Responsable de centre de contrôle technique de véhicules"
+  },
+  {
+    "code": "K1734",
+    "libelle": "Spécialiste du soutien armement nucléaire"
+  },
+  {
+    "code": "H2708",
+    "libelle": "Technicien / Technicienne d'exploitation nucléaire"
+  },
+  {
+    "code": "H2707",
+    "libelle": "Technicien / Technicienne essais en industrie nucléaire"
+  },
+  {
+    "code": "K2312",
+    "libelle": "Ingénieur / Ingénieure responsable propreté nettoiement"
+  },
+  {
+    "code": "K2315",
+    "libelle": "Inspecteur / Inspectrice de salubrité publique"
+  },
+  {
+    "code": "K1506",
+    "libelle": "Inspecteur / Inspectrice de la concurrence, de la consommation et de la répression des fraudes"
+  },
+  {
+    "code": "K1511",
+    "libelle": "Inspecteur / Inspectrice des impôts"
+  },
+  {
+    "code": "K1512",
+    "libelle": "Chef / Cheffe de poste du Trésor public"
+  },
+  {
+    "code": "K1509",
+    "libelle": "Adjoint / Adjointe de contrôle de la concurrence, de la consommation et de la répression des fraudes"
+  },
+  {
+    "code": "B1502",
+    "libelle": "Facteur / Factrice d'instruments de musique anciens"
+  },
+  {
+    "code": "B1504",
+    "libelle": "Facteur / Factrice de percussions"
+  },
+  {
+    "code": "B1505",
+    "libelle": "Luthier / Luthière"
+  },
+  {
+    "code": "G1235",
+    "libelle": "Animateur / Animatrice de séjour de vacances"
+  },
+  {
+    "code": "J1125",
+    "libelle": "Endocrinologue"
+  },
+  {
+    "code": "J1128",
+    "libelle": "Pneumologue"
+  },
+  {
+    "code": "J1132",
+    "libelle": "Neurologue"
+  },
+  {
+    "code": "E1403",
+    "libelle": "Consultant / Consultante média"
+  },
+  {
+    "code": "M1717",
+    "libelle": "Responsable innovation"
+  },
+  {
+    "code": "M1886",
+    "libelle": "Chef / Cheffe de projet Web"
+  },
+  {
+    "code": "H1233",
+    "libelle": "Chef de projet / Cheffe de projet design"
+  },
+  {
+    "code": "E1115",
+    "libelle": "Chef / Cheffe de projet jeux vidéo"
+  },
+  {
+    "code": "K2119",
+    "libelle": "Consultant / Consultante en ingénierie pédagogique"
+  },
+  {
+    "code": "H1230",
+    "libelle": "Ingénieur / Ingénieure essais vérification et validation (V&V) en milieu nucléaire"
+  },
+  {
+    "code": "I1327",
+    "libelle": "Technicien / Technicienne de maintenance en matériel biomédical"
+  },
+  {
+    "code": "K1738",
+    "libelle": "Spécialiste du soutien ou de la formation propulsion nucléaire"
+  },
+  {
+    "code": "D1224",
+    "libelle": "Chargé / Chargée de location d'engins et de matériel de chantier"
+  },
+  {
+    "code": "D1421",
+    "libelle": "Conseiller commercial / Conseillère commerciale en véhicules industriels"
+  },
+  {
+    "code": "D1430",
+    "libelle": "Conseiller vendeur / Conseillère vendeuse de véhicules de loisirs"
+  },
+  {
+    "code": "K1508",
+    "libelle": "Agent / Agente de conservation des hypothèques"
+  },
+  {
+    "code": "K1513",
+    "libelle": "Chargé / Chargée de l'exécution de la dépense publique"
+  },
+  {
+    "code": "L1519",
+    "libelle": "Technicien / Technicienne vidéo"
+  },
+  {
+    "code": "I1329",
+    "libelle": "Technicien / Technicienne de maintenance en audio-vidéo professionnelle"
+  },
+  {
+    "code": "I1408",
+    "libelle": "Technicien-réparateur / Technicienne-réparatrice d'appareils photographiques"
+  },
+  {
+    "code": "I1407",
+    "libelle": "Réparateur / Réparatrice en produits de télécommunication et multimédia"
+  },
+  {
+    "code": "H1234",
+    "libelle": "Responsable de service de rédaction technique"
+  },
+  {
+    "code": "B1811",
+    "libelle": "Sellier-garnisseur / Sellière-garnisseuse"
+  },
+  {
+    "code": "B1809",
+    "libelle": "Sellier / Sellière"
+  },
+  {
+    "code": "I1331",
+    "libelle": "Nivoculteur / Nivocultrice"
+  },
+  {
+    "code": "F1303",
+    "libelle": "Conducteur / Conductrice d'engin de damage"
+  },
+  {
+    "code": "A1443",
+    "libelle": "Cidrier / Cidrière"
+  },
+  {
+    "code": "K1108",
+    "libelle": "Intervenant / Intervenante en médecine non conventionnelle"
+  },
+  {
+    "code": "K2148",
+    "libelle": "Directeur / Directrice pédagogique"
+  },
+  {
+    "code": "M1508",
+    "libelle": "Conseiller / Conseillère en gestion de carrière"
+  },
+  {
+    "code": "M1510",
+    "libelle": "Chargé / Chargée de mission RH diversité handicap"
+  },
+  {
+    "code": "M1511",
+    "libelle": "Responsable Qualité de Vie au Travail"
+  },
+  {
+    "code": "M1218",
+    "libelle": "Directeur / Directrice de l'environnement de travail"
+  },
+  {
+    "code": "M1427",
+    "libelle": "Animateur / Animatrice de réseau d'entreprises"
+  },
+  {
+    "code": "M1416",
+    "libelle": "Animateur / Animatrice qualité services"
+  },
+  {
+    "code": "D1427",
+    "libelle": "Conseiller vendeur / Conseillère vendeuse d'autocars"
+  },
+  {
+    "code": "D1223",
+    "libelle": "Conseiller / Conseillère de vente en pièces de rechange et accessoires de véhicules"
+  },
+  {
+    "code": "D1434",
+    "libelle": "Conseiller commercial / Conseillère commerciale motocycles"
+  },
+  {
+    "code": "D1243",
+    "libelle": "Acheteur vendeur / Acheteuse vendeuse en dépôt-vente"
+  },
+  {
+    "code": "D1110",
+    "libelle": "Vendeur ambulant / Vendeuse ambulante"
+  },
+  {
+    "code": "D1424",
+    "libelle": "Conseiller vendeur / Conseillère vendeuse à domicile"
+  },
+  {
+    "code": "I1623",
+    "libelle": "Conseiller / Conseillère client après-vente des véhicules"
+  },
+  {
+    "code": "D1437",
+    "libelle": "Gérant / Gérante de négoce automobile"
+  },
+  {
+    "code": "H1227",
+    "libelle": "Maquettiste en électronique"
+  },
+  {
+    "code": "H1239",
+    "libelle": "Technicien / Technicienne en conception électronique, électrique"
+  },
+  {
+    "code": "F1130",
+    "libelle": "Contrôleur / Contrôleuse technique de la construction (CTC)"
+  },
+  {
+    "code": "H1235",
+    "libelle": "Technicien / Technicienne en conception industrielle en mécanique"
+  },
+  {
+    "code": "H1528",
+    "libelle": "Technicien / Technicienne qualité en industrie"
+  },
+  {
+    "code": "F1141",
+    "libelle": "Ingénieur / Ingénieure études conception électrique"
+  },
+  {
+    "code": "F1137",
+    "libelle": "Chargé / Chargée de méthodes BTP"
+  },
+  {
+    "code": "G1613",
+    "libelle": "Restaurateur ambulant / Restauratrice ambulante"
+  },
+  {
+    "code": "G1612",
+    "libelle": "Crêpier / Crêpière"
+  },
+  {
+    "code": "D1118",
+    "libelle": "Glacier / Glacière"
+  },
+  {
+    "code": "D1115",
+    "libelle": "Chocolatier / Chocolatière"
+  },
+  {
+    "code": "D1117",
+    "libelle": "Chef pâtissier / Cheffe pâtissière"
+  },
+  {
+    "code": "M1887",
+    "libelle": "Product builder no code"
+  },
+  {
+    "code": "E1405",
+    "libelle": "Référenceur / Référenceuse web"
+  },
+  {
+    "code": "M1428",
+    "libelle": "Directeur / Directrice qualité services"
+  },
+  {
+    "code": "M1304",
+    "libelle": "Directeur / Directrice d'unité de services au public"
+  },
+  {
+    "code": "K1815",
+    "libelle": "Chargé / Chargée de mission emploi formation"
+  },
+  {
+    "code": "K1812",
+    "libelle": "Chargé / Chargée de projet emploi"
+  },
+  {
+    "code": "K1814",
+    "libelle": "Chargé / Chargée d'emploi en entreprise de travail temporaire"
+  },
+  {
+    "code": "K2139",
+    "libelle": "Chargé / Chargée de bilan professionnel"
+  },
+  {
+    "code": "D1425",
+    "libelle": "Conseiller vendeur / Conseillère vendeuse de véhicules poids lourds"
+  },
+  {
+    "code": "D1426",
+    "libelle": "Vendeur / Vendeuse en véhicules de collection"
+  },
+  {
+    "code": "I1627",
+    "libelle": "Technicien expert / Technicienne experte après vente motocycles"
+  },
+  {
+    "code": "I1628",
+    "libelle": "Conseiller / Conseillère technique cycles"
+  },
+  {
+    "code": "A1214",
+    "libelle": "Patrouilleur modeleur / Patrouilleuse modeleuse VTT"
+  },
+  {
+    "code": "I1626",
+    "libelle": "Préparateur / Préparatrice en tôlerie automobile"
+  },
+  {
+    "code": "I1625",
+    "libelle": "Débosseleur / Débosseleuse"
+  },
+  {
+    "code": "K1735",
+    "libelle": "Architecte système de force, d’arme ou équipement militaire"
+  },
+  {
+    "code": "K1729",
+    "libelle": "Opérateur / Opératrice en pyrotechnie militaire"
+  },
+  {
+    "code": "H1236",
+    "libelle": "Dessinateur-projeteur / Dessinatrice-projeteuse en électricité-électronique"
+  },
+  {
+    "code": "H1228",
+    "libelle": "Projeteur / Projeteuse chef de groupe en électricité-électronique"
+  },
+  {
+    "code": "M1892",
+    "libelle": "Ingénieur / Ingénieure en informatique embarquée"
+  },
+  {
+    "code": "M1889",
+    "libelle": "Ingénieur / Ingénieure en Intelligence Artificielle (IA)"
+  },
+  {
+    "code": "D1111",
+    "libelle": "Chef / Cheffe de laboratoire en charcuterie"
+  },
+  {
+    "code": "A1438",
+    "libelle": "Pêcheur / Pêcheuse à pied"
+  },
+  {
+    "code": "M1866",
+    "libelle": "Pentesteur / Pentesteuse"
+  },
+  {
+    "code": "D1113",
+    "libelle": "Commercial itinérant / Commerciale itinérante en entreprise de commerce de gros"
+  },
+  {
+    "code": "M1421",
+    "libelle": "Panéliste"
+  },
+  {
+    "code": "M1418",
+    "libelle": "Recruteur / Recruteuse de donateurs"
+  },
+  {
+    "code": "M1425",
+    "libelle": "Agent recenseur / Agente recenseuse"
+  },
+  {
+    "code": "K2411",
+    "libelle": "Musicologue"
+  },
+  {
+    "code": "K2126",
+    "libelle": "Conseiller / Conseillère en validation des acquis de l'expérience"
+  },
+  {
+    "code": "K1107",
+    "libelle": "Conseiller / Conseillère d’orientation psychologue"
+  },
+  {
+    "code": "K1224",
+    "libelle": "Encadrant / Encadrante technique d'insertion socioprofessionnelle"
+  },
+  {
+    "code": "K1215",
+    "libelle": "Moniteur / Monitrice d’atelier en milieu de travail protégé"
+  },
+  {
+    "code": "H1523",
+    "libelle": "Responsable Qualité Sécurité Environnement -QSE- en industrie"
+  },
+  {
+    "code": "M1415",
+    "libelle": "Auditeur social / Auditrice sociale"
+  },
+  {
+    "code": "I1621",
+    "libelle": "Tôlier / Tôlière en carrosserie automobile"
+  },
+  {
+    "code": "I1622",
+    "libelle": "Technicien expert / Technicienne experte après-vente de véhicules de transport routier"
+  },
+  {
+    "code": "I1624",
+    "libelle": "Mécanicien réparateur / Mécanicienne réparatrice de véhicules anciens et historiques"
+  },
+  {
+    "code": "D1230",
+    "libelle": "Responsable d'agence de location de matériel de transport"
+  },
+  {
+    "code": "K1731",
+    "libelle": "Responsable des opérations militaires en milieu aéroterrestre"
+  },
+  {
+    "code": "K1736",
+    "libelle": "Spécialiste de l’aide au déploiement des forces combattantes"
+  },
+  {
+    "code": "M1879",
+    "libelle": "Ingénieur / Ingénieure Cloud computing"
+  },
+  {
+    "code": "G1238",
+    "libelle": "Animateur / Animatrice d'atelier multimédia"
+  },
+  {
+    "code": "M1305",
+    "libelle": "Fablab Manager"
+  },
+  {
+    "code": "L1521",
+    "libelle": "Chef / Cheffe accessoiriste"
+  },
+  {
+    "code": "E1415",
+    "libelle": "Directeur / Directrice de la production publicitaire"
+  },
+  {
+    "code": "E1407",
+    "libelle": "Traffic manager"
+  },
+  {
+    "code": "D1435",
+    "libelle": "Responsable de plateau de centre d'appels"
+  },
+  {
+    "code": "K2121",
+    "libelle": "Directeur / Directrice de conservatoire musique et danse"
+  },
+  {
+    "code": "L1210",
+    "libelle": "Orchestrateur / Orchestratrice"
+  },
+  {
+    "code": "K1910",
+    "libelle": "Commissaire à la Cour des comptes"
+  },
+  {
+    "code": "K1214",
+    "libelle": "Conseiller / Conseillère en génétique"
+  },
+  {
+    "code": "M1885",
+    "libelle": "Responsable télécoms"
+  },
+  {
+    "code": "E1408",
+    "libelle": "Responsable trafic création"
+  },
+  {
+    "code": "M1512",
+    "libelle": "Directeur / Directrice des relations sociales"
+  },
+  {
+    "code": "M1429",
+    "libelle": "Consultant / Consultante en management"
+  },
+  {
+    "code": "M1424",
+    "libelle": "Consultant / Consultante en intelligence économique"
+  },
+  {
+    "code": "M1420",
+    "libelle": "Responsable en intelligence économique"
+  },
+  {
+    "code": "M1872",
+    "libelle": "Consultant décisionnel / Consultante décisionnelle - Business Intelligence"
+  },
+  {
+    "code": "K1412",
+    "libelle": "Chargé / Chargée de mission aux relations internationales"
+  },
+  {
+    "code": "K1418",
+    "libelle": "Ambassadeur / Ambassadrice"
+  },
+  {
+    "code": "F1135",
+    "libelle": "Chargé / Chargée d'affaires BTP"
+  },
+  {
+    "code": "K1732",
+    "libelle": "Spécialiste des systèmes de communication opérationnels"
+  },
+  {
+    "code": "K1733",
+    "libelle": "Combattant / Combattante des forces spéciales militaires"
+  },
+  {
+    "code": "K1737",
+    "libelle": "Combattant / Combattante en milieu maritime"
+  },
+  {
+    "code": "H2706",
+    "libelle": "Opérateur / Opératrice de production en énergie nucléaire"
+  },
+  {
+    "code": "G1239",
+    "libelle": "Responsable d'animation"
+  },
+  {
+    "code": "M1883",
+    "libelle": "Analyste SOC (Security Operations Center)"
+  },
+  {
+    "code": "D1232",
+    "libelle": "Formateur / Formatrice en esthétisme"
+  },
+  {
+    "code": "D1240",
+    "libelle": "Prothésiste ongulaire"
+  },
+  {
+    "code": "D1241",
+    "libelle": "Conseiller / Conseillère en image personnelle"
+  },
+  {
+    "code": "B1807",
+    "libelle": "Assistant / Assistante styliste"
+  },
+  {
+    "code": "B1812",
+    "libelle": "Modéliste"
+  },
+  {
+    "code": "L1520",
+    "libelle": "Concepteur / Conceptrice de costumes"
+  },
+  {
+    "code": "I1328",
+    "libelle": "Conseiller / Conseillère en hydraulique agricole"
+  },
+  {
+    "code": "K2313",
+    "libelle": "Technicien chargé / Technicienne chargée de la police des eaux"
+  },
+  {
+    "code": "G1236",
+    "libelle": "Animateur / Animatrice de club de vacances"
+  },
+  {
+    "code": "D1112",
+    "libelle": "Chef charcutier-traiteur / Cheffe charcutière-traiteuse"
+  },
+  {
+    "code": "L1209",
+    "libelle": "Performeur / Performeuse de cabaret"
+  },
+  {
+    "code": "L1403",
+    "libelle": "Cavalier / Cavalière d'entraînement"
+  },
+  {
+    "code": "A1439",
+    "libelle": "Eleveur / Eleveuse d'équidés"
+  },
+  {
+    "code": "M1224",
+    "libelle": "Economiste financier / Economiste financière"
+  },
+  {
+    "code": "M1215",
+    "libelle": "Contrôleur comptable et financier / Contrôleuse comptable et financière"
+  },
+  {
+    "code": "M1211",
+    "libelle": "Expert-comptable / Experte-comptable"
+  },
+  {
+    "code": "M1220",
+    "libelle": "Credit manager"
+  },
+  {
+    "code": "M1219",
+    "libelle": "Conseiller / Conseillère en fusion et acquisition"
+  },
+  {
+    "code": "K1804",
+    "libelle": "Conseiller / Conseillère en création d'entreprise"
+  },
+  {
+    "code": "K1803",
+    "libelle": "Animateur / Animatrice de développement régional"
+  },
+  {
+    "code": "K2131",
+    "libelle": "Lecteur / Lectrice de langues dans l'enseignement supérieur"
+  },
+  {
+    "code": "E1119",
+    "libelle": "Concepteur rédacteur / Conceptrice rédactrice"
+  },
+  {
+    "code": "E1127",
+    "libelle": "Brand content manager"
+  },
+  {
+    "code": "E1129",
+    "libelle": "Directeur / Directrice artistique communication"
+  },
+  {
+    "code": "E1210",
+    "libelle": "Web designer"
+  },
+  {
+    "code": "M1864",
+    "libelle": "Product Owner"
+  },
+  {
+    "code": "E1412",
+    "libelle": "Directeur / Directrice média"
+  },
+  {
+    "code": "E1211",
+    "libelle": "Dessinateur-illustrateur / Dessinatrice-illustratrice"
+  },
+  {
+    "code": "H1229",
+    "libelle": "Roughman / Roughwoman en design"
+  },
+  {
+    "code": "B1814",
+    "libelle": "Directeur / Directrice de collection"
+  },
+  {
+    "code": "B1808",
+    "libelle": "Premier / Première d'atelier"
+  },
+  {
+    "code": "G1305",
+    "libelle": "Assistant / Assistante chef de produit tourisme"
+  },
+  {
+    "code": "D1229",
+    "libelle": "Responsable de pressing"
+  },
+  {
+    "code": "D1226",
+    "libelle": "Nettoyeur / Nettoyeuse en cuir et peausserie"
+  },
+  {
+    "code": "A1308",
+    "libelle": "Technicien / Technicienne de l'insémination animale"
+  },
+  {
+    "code": "A1309",
+    "libelle": "Technicien / Technicienne d'élevage équin"
+  },
+  {
+    "code": "A1305",
+    "libelle": "Technicien / Technicienne des services vétérinaires"
+  },
+  {
+    "code": "A1509",
+    "libelle": "Comportementaliste animalier / Comportementaliste animalière"
+  },
+  {
+    "code": "A1508",
+    "libelle": "Dresseur animalier / Dresseuse animalière"
+  },
+  {
+    "code": "A1435",
+    "libelle": "Eleveur / Eleveuse d'animaux de compagnie"
+  },
+  {
+    "code": "A1511",
+    "libelle": "Gardien / Gardienne d'animaux"
+  },
+  {
+    "code": "K1805",
+    "libelle": "Chargé / Chargée de développement social"
+  },
+  {
+    "code": "K1808",
+    "libelle": "Chargé / Chargée de développement culturel"
+  },
+  {
+    "code": "K1811",
+    "libelle": "Chargé / Chargée de projet en aménagement du territoire"
+  },
+  {
+    "code": "K1807",
+    "libelle": "Urbaniste"
+  },
+  {
+    "code": "F1127",
+    "libelle": "Architecte-urbaniste"
+  },
+  {
+    "code": "A1313",
+    "libelle": "Chargé / Chargée de mission environnement"
+  },
+  {
+    "code": "E1410",
+    "libelle": "Responsable programmatique"
+  },
+  {
+    "code": "M1419",
+    "libelle": "Data analyst"
+  },
+  {
+    "code": "M1868",
+    "libelle": "Architecte base de données"
+  },
+  {
+    "code": "M1882",
+    "libelle": "Architecte sécurité informatique"
+  },
+  {
+    "code": "M1894",
+    "libelle": "Gestionnaire de base de données"
+  },
+  {
+    "code": "M1423",
+    "libelle": "Chief Data Officer"
+  },
+  {
+    "code": "M1865",
+    "libelle": "Ingénieur / Ingénieure blockchain"
+  },
+  {
+    "code": "D1242",
+    "libelle": "Linger / Lingère"
+  },
+  {
+    "code": "H1231",
+    "libelle": "Patronnier / Patronnière en chaussures"
+  },
+  {
+    "code": "H1232",
+    "libelle": "Technicien / Technicienne d'études en industrie des matériaux souples"
+  },
+  {
+    "code": "H1240",
+    "libelle": "Agent / Agente de finissage couleurs et effets cuirs et peaux"
+  },
+  {
+    "code": "J1113",
+    "libelle": "Dermatologue"
+  },
+  {
+    "code": "J1123",
+    "libelle": "Médecin des armées"
+  },
+  {
+    "code": "J1126",
+    "libelle": "Médecin du sport"
+  },
+  {
+    "code": "D1116",
+    "libelle": "Négociant / Négociante en bétail"
+  },
+  {
+    "code": "J1131",
+    "libelle": "Psychiatre"
+  },
+  {
+    "code": "K1420",
+    "libelle": "Directeur / Directrice d'établissement pénitentiaire"
+  },
+  {
+    "code": "K1730",
+    "libelle": "Spécialiste de la protection des forces, installations ou matériels sensibles de l’Etat"
+  },
+  {
+    "code": "K1416",
+    "libelle": "Directeur / Directrice des services pénitentiaires d'insertion et de probation (DSPIP)"
+  },
+  {
+    "code": "H2214",
+    "libelle": "Mérandier / Mérandière"
+  },
+  {
+    "code": "A1312",
+    "libelle": "Directeur / Directrice environnement"
+  },
+  {
+    "code": "A1307",
+    "libelle": "Ingénieur forestier / Ingénieure forestière"
+  },
+  {
+    "code": "A1306",
+    "libelle": "Chargé / Chargée de mission biodiversité"
+  },
+  {
+    "code": "K1809",
+    "libelle": "Responsable de développement territorial"
+  },
+  {
+    "code": "K1806",
+    "libelle": "Chargé / Chargée de développement social et urbain"
+  },
+  {
+    "code": "K1813",
+    "libelle": "Chargé / Chargée de mission eaux pluviales"
+  },
+  {
+    "code": "H1237",
+    "libelle": "Ingénieur / Ingénieure énergies renouvelables"
+  },
+  {
+    "code": "M1877",
+    "libelle": "Développeur / Développeuse blockchain"
+  },
+  {
+    "code": "E1124",
+    "libelle": "Social media manager - Responsable des médias sociaux"
+  },
+  {
+    "code": "D1429",
+    "libelle": "Assistant / Assistante import-export"
+  },
+  {
+    "code": "D1431",
+    "libelle": "Assistant / Assistante achat"
+  },
+  {
+    "code": "M1619",
+    "libelle": "Approvisionneur / Approvisionneuse points de distribution"
+  },
+  {
+    "code": "M1620",
+    "libelle": "Superviseur / Superviseuse de distributeurs d'imprimés"
+  },
+  {
+    "code": "E1310",
+    "libelle": "Contrôleur / Contrôleuse qualité en industrie graphique"
+  },
+  {
+    "code": "K1411",
+    "libelle": "Médecin conseil en santé publique"
+  },
+  {
+    "code": "J1124",
+    "libelle": "Médecin Anesthésiste Réanimateur / Réanimatrice (MAR)"
+  },
+  {
+    "code": "J1119",
+    "libelle": "Chirurgien / Chirurgienne"
+  },
+  {
+    "code": "J1122",
+    "libelle": "Chirurgien plasticien / Chirurgienne plasticienne"
+  },
+  {
+    "code": "J1129",
+    "libelle": "Allergologue"
+  },
+  {
+    "code": "J1114",
+    "libelle": "Rhumatologue"
+  },
+  {
+    "code": "J1116",
+    "libelle": "Gériatre"
+  },
+  {
+    "code": "D1237",
+    "libelle": "Socio-esthéticien / Socio-esthéticienne"
+  },
+  {
+    "code": "K1106",
+    "libelle": "Sophrologue"
+  },
+  {
+    "code": "K2142",
+    "libelle": "Animateur-coordinateur / Animatrice-coordinatrice de formation"
+  },
+  {
+    "code": "K2145",
+    "libelle": "Formateur / Formatrice de formateurs"
+  },
+  {
+    "code": "K2132",
+    "libelle": "Responsable ingénierie de la formation professionnelle"
+  },
+  {
+    "code": "K2123",
+    "libelle": "Responsable programme enseignement supérieur"
+  },
+  {
+    "code": "F1136",
+    "libelle": "Chef / Cheffe de projet éolien"
+  },
+  {
+    "code": "M1891",
+    "libelle": "Ingénieur / Ingénieure prévisionniste météorologue"
+  },
+  {
+    "code": "M1888",
+    "libelle": "Spécialiste en modélisation climatique"
+  },
+  {
+    "code": "K1728",
+    "libelle": "Régulateur / Régulatrice de secours en montagne"
+  },
+  {
+    "code": "K1726",
+    "libelle": "Pisteur / Pisteuse secouriste"
+  },
+  {
+    "code": "K2510",
+    "libelle": "Agent / Agente cynophile de sécurité"
+  },
+  {
+    "code": "M1618",
+    "libelle": "Agent / Agente de liaison courrier"
+  },
+  {
+    "code": "M1621",
+    "libelle": "Assistant / Assistante de gestion administrative"
+  },
+  {
+    "code": "M1213",
+    "libelle": "Assistant / Assistante comptable"
+  },
+  {
+    "code": "M1222",
+    "libelle": "Assistant / Assistante de contrôle budgétaire"
+  },
+  {
+    "code": "M1223",
+    "libelle": "Chef / Cheffe des services administratifs et financiers"
+  },
+  {
+    "code": "K1507",
+    "libelle": "Chef / Cheffe de centre des impôts"
+  },
+  {
+    "code": "M1422",
+    "libelle": "Directeur / Directrice d'études socio-économiques"
+  }
+]

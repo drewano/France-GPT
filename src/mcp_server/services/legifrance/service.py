@@ -4,6 +4,7 @@ Service MCP pour interagir avec l'API Légifrance via la bibliothèque pylegifra
 Ce module expose plusieurs outils via FastMCP pour rechercher et consulter des
 textes juridiques (lois, décrets, jurisprudence, etc.).
 """
+
 import os
 import logging
 from typing import List, Dict, Any, Optional
@@ -28,6 +29,7 @@ from starlette.responses import PlainTextResponse
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 # --- Initialisation du Client Légifrance ---
 def _get_legifrance_client() -> LegifranceClient:
     """
@@ -50,6 +52,7 @@ def _get_legifrance_client() -> LegifranceClient:
     logger.info("Client Legifrance initialisé.")
     return new_client
 
+
 # --- Instanciation des services API ---
 try:
     client = _get_legifrance_client()
@@ -60,6 +63,7 @@ except ValueError as e:
     logger.error("Erreur critique lors de l'initialisation des services: %s", e)
     # Cette exception arrêtera le programme si les clés ne sont pas configurées.
     raise
+
 
 # --- Fonction de formatage partagée pour les documents complets ---
 def _format_full_document_output(document: Any) -> Dict[str, str]:
@@ -73,33 +77,35 @@ def _format_full_document_output(document: Any) -> Dict[str, str]:
     # pylegifrance fournit directement le HTML complet ou le texte brut.
     # La propriété .texte_html a une logique interne pour assembler le contenu.
     contenu_html = (
-        getattr(document, 'texte_html', '') or
-        getattr(document, 'content_html', '') or
-        getattr(document, 'content', '') or
-        getattr(document, 'text', '') or
-        'Contenu non disponible'
+        getattr(document, "texte_html", "")
+        or getattr(document, "content_html", "")
+        or getattr(document, "content", "")
+        or getattr(document, "text", "")
+        or "Contenu non disponible"
     )
 
-    doc_id = getattr(document, 'id', 'ID non disponible')
+    doc_id = getattr(document, "id", "ID non disponible")
     titre = (
-        getattr(document, 'title', '') or
-        getattr(document, 'titre', '') or
-        'Titre non disponible'
+        getattr(document, "title", "")
+        or getattr(document, "titre", "")
+        or "Titre non disponible"
     )
 
     # L'URL est disponible sur l'objet Article, mais pas toujours sur les autres
-    url = getattr(document, 'url', f"https://www.legifrance.gouv.fr/loda/id/{doc_id}")
+    url = getattr(document, "url", f"https://www.legifrance.gouv.fr/loda/id/{doc_id}")
 
     return {
         "titre": titre,
         "id": doc_id,
         "contenu_html": contenu_html,
-        "url_legifrance": url
+        "url_legifrance": url,
     }
+
 
 # ==============================================================================
 # === DÉFINITION DES OUTILS MCP                                              ===
 # ==============================================================================
+
 
 # --- Outil 1: Découverte ---
 async def rechercher_textes_juridiques(mots_cles: str) -> List[Dict[str, str]]:
@@ -122,23 +128,23 @@ async def rechercher_textes_juridiques(mots_cles: str) -> List[Dict[str, str]]:
 
             # Détermine le meilleur outil pour la consultation
             outil_suivant = "outil_inconnu"
-            if doc_id.startswith('JURI'):
+            if doc_id.startswith("JURI"):
                 outil_suivant = "consulter_decision_justice"
-            elif doc_id.startswith('LEGIARTI'):
+            elif doc_id.startswith("LEGIARTI"):
                 outil_suivant = "consulter_article_code"
-            elif doc_id.startswith('KALITEXT'):
+            elif doc_id.startswith("KALITEXT"):
                 outil_suivant = "consulter_convention_collective"
-            elif doc_id.startswith('LEGITEXT') or doc_id.startswith('JORFTEXT'):
+            elif doc_id.startswith("LEGITEXT") or doc_id.startswith("JORFTEXT"):
                 outil_suivant = "consulter_texte_loi_decret"
 
-            titre_res = (getattr(res, 'title', '') or
-                         getattr(res, 'titre', '') or
-                         'Titre non disponible')
-            all_candidates.append({
-                "titre": titre_res,
-                "id": doc_id,
-                "outil_recommande": outil_suivant
-            })
+            titre_res = (
+                getattr(res, "title", "")
+                or getattr(res, "titre", "")
+                or "Titre non disponible"
+            )
+            all_candidates.append(
+                {"titre": titre_res, "id": doc_id, "outil_recommande": outil_suivant}
+            )
 
         logger.info("Trouvé %d candidats.", len(all_candidates))
         return all_candidates
@@ -146,7 +152,9 @@ async def rechercher_textes_juridiques(mots_cles: str) -> List[Dict[str, str]]:
         logger.error("Erreur lors de la recherche: %s", e, exc_info=True)
         raise ModelRetry(f"Une erreur est survenue lors de la recherche: {e}") from e
 
+
 # --- Outils 2: Spécialistes de la Consultation ---
+
 
 async def consulter_article_code(id_article: str) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'un ARTICLE DE CODE via son ID (ex: 'LEGIARTI...')."""
@@ -158,9 +166,13 @@ async def consulter_article_code(id_article: str) -> Optional[Dict[str, str]]:
         return _format_full_document_output(document) if document else None
     except (ValueError, AttributeError) as e:
         logger.error(
-            "Erreur sur consulter_article_code (ID: %s): %s", id_article, e, exc_info=True
+            "Erreur sur consulter_article_code (ID: %s): %s",
+            id_article,
+            e,
+            exc_info=True,
         )
         raise ModelRetry(f"Impossible de récupérer l'article {id_article}: {e}") from e
+
 
 async def consulter_texte_loi_decret(id_texte: str) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une LOI ou d'un DÉCRET via son ID (ex: 'LEGITEXT...')."""
@@ -179,9 +191,13 @@ async def consulter_texte_loi_decret(id_texte: str) -> Optional[Dict[str, str]]:
         return _format_full_document_output(document) if document else None
     except (ValueError, AttributeError) as e:
         logger.error(
-            "Erreur sur consulter_texte_loi_decret (ID: %s): %s", id_texte, e, exc_info=True
+            "Erreur sur consulter_texte_loi_decret (ID: %s): %s",
+            id_texte,
+            e,
+            exc_info=True,
         )
         raise ModelRetry(f"Impossible de récupérer le texte {id_texte}: {e}") from e
+
 
 async def consulter_decision_justice(id_decision: str) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une DÉCISION DE JUSTICE via son ID (ex: 'JURI...')."""
@@ -192,11 +208,19 @@ async def consulter_decision_justice(id_decision: str) -> Optional[Dict[str, str
         return _format_full_document_output(document) if document else None
     except (ValueError, AttributeError) as e:
         logger.error(
-            "Erreur sur consulter_decision_justice (ID: %s): %s", id_decision, e, exc_info=True
+            "Erreur sur consulter_decision_justice (ID: %s): %s",
+            id_decision,
+            e,
+            exc_info=True,
         )
-        raise ModelRetry(f"Impossible de récupérer la décision {id_decision}: {e}") from e
+        raise ModelRetry(
+            f"Impossible de récupérer la décision {id_decision}: {e}"
+        ) from e
 
-async def consulter_convention_collective(id_convention: str) -> Optional[Dict[str, str]]:
+
+async def consulter_convention_collective(
+    id_convention: str,
+) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une CONVENTION COLLECTIVE via son ID (ex: 'KALITEXT...')."""
     try:
         logger.info("Consultation de la convention collective ID: %s", id_convention)
@@ -212,13 +236,19 @@ async def consulter_convention_collective(id_convention: str) -> Optional[Dict[s
     except (ValueError, AttributeError) as e:
         logger.error(
             "Erreur sur consulter_convention_collective (ID: %s): %s",
-            id_convention, e, exc_info=True
+            id_convention,
+            e,
+            exc_info=True,
         )
-        raise ModelRetry(f"Impossible de récupérer la convention {id_convention}: {e}") from e
+        raise ModelRetry(
+            f"Impossible de récupérer la convention {id_convention}: {e}"
+        ) from e
+
 
 # ==============================================================================
 # === CONFIGURATION DU SERVEUR MCP                                           ===
 # ==============================================================================
+
 
 def create_legifrance_mcp_server() -> FastMCP:
     """Crée et configure le serveur FastMCP avec tous les outils Légifrance."""

@@ -13,7 +13,7 @@ from src.ui.streaming import process_agent_modern_with_history
 from src.agent.agent import create_agent_from_profile
 from src.agent.ui_tools import display_website
 from src.core.profiles import AGENT_PROFILES
-from src.ui import data_layer
+from src.ui import data_layer # noqa: F401
 
 
 async def _setup_agent():
@@ -148,12 +148,20 @@ async def on_message(message: cl.Message):
             ).send()
             return
 
+        # Récupérer l'ID du profil sélectionné
+        profile_id = cl.user_session.get("selected_profile_id", "social_agent")
+        # Récupérer l'objet profil complet
+        profile = AGENT_PROFILES[profile_id]
+
+        # Extraire la limite d'appels d'outils du profil
+        limit = profile.tool_call_limit
+
         # Récupérer l'historique existant depuis la session
         message_history = cl.user_session.get("message_history", [])
 
         # Traiter le message avec l'agent moderne et streaming parfait
         updated_history = await process_agent_modern_with_history(
-            agent, message.content, message_history
+            agent, message.content, message_history, tool_call_limit=limit
         )
 
         # Sauvegarder l'historique mis à jour dans la session

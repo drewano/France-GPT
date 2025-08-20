@@ -18,12 +18,12 @@ services:
     networks:
       - france-gpt-net
     ports:
-      - "8001:8001"  # Port pour DataInclusion
-      - "8002:8002"  # Port pour Legifrance
-      - "8003:8003"  # Port pour Insee
+      - "8001:8001"  # Port for DataInclusion
+      - "8002:8002"  # Port for Legifrance
+      - "8003:8003"  # Port for La Bonne Alternance
     restart: unless-stopped
     healthcheck:
-      # Vérifie que le serveur MCP est bien démarré et répond
+      # Checks that the MCP server is up and responding
       test: ["CMD-SHELL", "curl -f http://localhost:8001/health && curl -f http://localhost:8002/health && curl -f http://localhost:8003/health"]
       interval: 30s
       timeout: 10s

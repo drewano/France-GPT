@@ -15,25 +15,13 @@ from src.core.config import settings
 from src.core.profiles import AgentProfile
 
 
-def create_agent_from_profile(
-    profile: AgentProfile, ui_toolsets: list[FunctionToolset] | None = None
-) -> Agent:
+def _create_llm_model() -> OpenAIModel:
     """
-    Crée et configure un agent IA à partir d'un profil donné.
-
-    Cette factory utilise un objet `AgentProfile` pour configurer entièrement
-    un agent, y compris son modèle, son prompt système et sa connexion au
-    serveur MCP. Elle est générique et peut créer n'importe quel agent
-    défini dans `src.core.profiles`.
-
-    Args:
-        profile: Le profil d'agent à utiliser pour la configuration.
-        ui_toolsets: Liste optionnelle de toolsets d'interface utilisateur à ajouter à l'agent.
+    Crée et configure un modèle LLM OpenAI avec les paramètres de configuration.
 
     Returns:
-        Un agent PydanticAI configuré et prêt à l'emploi.
+        Un modèle OpenAI configuré.
     """
-
     # Configuration du provider OpenAI avec support des URLs personnalisées
     provider_args = {}
 
@@ -56,6 +44,31 @@ def create_agent_from_profile(
     else:
         # Utiliser le comportement par défaut sans provider personnalisé
         model = OpenAIModel(model_name=settings.agent.AGENT_MODEL_NAME)
+    
+    return model
+
+
+def create_agent_from_profile(
+    profile: AgentProfile, ui_toolsets: list[FunctionToolset] | None = None
+) -> Agent:
+    """
+    Crée et configure un agent IA à partir d'un profil donné.
+
+    Cette factory utilise un objet `AgentProfile` pour configurer entièrement
+    un agent, y compris son modèle, son prompt système et sa connexion au
+    serveur MCP. Elle est générique et peut créer n'importe quel agent
+    défini dans `src.core.profiles`.
+
+    Args:
+        profile: Le profil d'agent à utiliser pour la configuration.
+        ui_toolsets: Liste optionnelle de toolsets d'interface utilisateur à ajouter à l'agent.
+
+    Returns:
+        Un agent PydanticAI configuré et prêt à l'emploi.
+    """
+
+    # Créer le modèle LLM
+    model = _create_llm_model()
 
     # Construire l'URL complète du sous-serveur MCP
     # Recherchez la configuration du service correspondant au profil
@@ -95,5 +108,41 @@ def create_agent_from_profile(
         # Configuration des toolsets (MCP + UI)
         toolsets=all_toolsets,
         # Augmenter le nombre de tentatives de retry pour les outils et la validation de sortie
+        retries=3,
+    )
+
+
+def create_synthesis_agent() -> Agent:
+    """
+    Crée et configure un agent de synthèse dédié, dépourvu de tout outil.
+
+    Cet agent est spécialement conçu pour synthétiser une réponse finale à partir
+    de l'historique de conversation fourni, sans jamais appeler d'outils.
+
+    Returns:
+        Un agent PydanticAI configuré pour la synthèse sans outils.
+    """
+
+    # Créer le modèle LLM
+    model = _create_llm_model()
+
+    # Prompt système spécifique pour l'agent de synthèse
+    system_prompt = (
+        "Tu es un assistant de synthèse. Ta seule mission est de formuler une réponse finale "
+        "et cohérente à la question initiale de l'utilisateur en te basant exclusivement sur "
+        "l'historique de la conversation incluant les résultats d'appels d'outils déjà effectués. "
+        "Ne tente JAMAIS d'appeler un outil. Conclus la conversation en fournissant la "
+        "meilleure réponse possible avec les informations disponibles."
+    )
+
+    # Créer l'agent sans aucun toolset (liste vide)
+    return Agent(
+        # Modèle OpenAI qui supporte mieux les schémas JSON complexes
+        model=model,
+        # Prompt système définissant le rôle et les instructions de l'agent
+        system_prompt=system_prompt,
+        # Aucun toolset pour cet agent de synthèse
+        toolsets=[],
+        # Augmenter le nombre de tentatives de retry pour la validation de sortie
         retries=3,
     )
