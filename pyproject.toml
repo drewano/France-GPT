@@ -30,7 +30,8 @@ dev = [
     "ruff",
     "pylint",
     "pytest",
-    "pytest-asyncio"
+    "pytest-asyncio",
+    "pre-commit"
 ]
 
 [project.urls]

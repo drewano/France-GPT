@@ -5,6 +5,7 @@ from src.app.factory import create_app
 # Crée une instance de l'application pour les tests
 app = create_app()
 
+
 @pytest.mark.asyncio
 async def test_health_check():
     """

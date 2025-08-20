@@ -366,6 +366,3 @@ async def process_agent_modern_with_history(
         await error_msg.send()
 
         return message_history or []
-
-
-

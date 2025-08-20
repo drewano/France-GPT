@@ -1,4 +1,4 @@
-#src\mcp_server\services\labonnealternance\service.py
+# src\mcp_server\services\labonnealternance\service.py
 
 """
 Ce fichier contient les outils et la logique du serveur FastMCP pour interagir
@@ -99,20 +99,27 @@ async def search_emploi(
     target_diploma_level: Optional[str] = None,
 ) -> List[EmploiSummary]:
     """Recherche des offres d'emploi en alternance selon les critères fournis."""
-    
+
     # Normalisation des ROMEs
-    romes_str = ','.join(romes) if isinstance(romes, list) else romes
-    
+    romes_str = ",".join(romes) if isinstance(romes, list) else romes
+
     params = {"romes": romes_str, "radius": radius}
     if latitude is not None and longitude is not None:
         params["latitude"] = latitude
         params["longitude"] = longitude
-    
+
     # Ajout d'une conversion pour la robustesse
     if target_diploma_level:
         diploma_map = {
-            "CAP": "3", "BAC": "4", "BAC+2": "5", "BTS": "5", "DUT": "5",
-            "LICENCE": "6", "BAC+3": "6", "MASTER": "7", "BAC+5": "7"
+            "CAP": "3",
+            "BAC": "4",
+            "BAC+2": "5",
+            "BTS": "5",
+            "DUT": "5",
+            "LICENCE": "6",
+            "BAC+3": "6",
+            "MASTER": "7",
+            "BAC+5": "7",
         }
         # Chercher une clé correspondante en majuscules et sans accents
         normalized_level = target_diploma_level.upper().replace("É", "E")
@@ -127,7 +134,7 @@ async def search_emploi(
     response = await client.get("/job/v1/search", params=params)
     response.raise_for_status()
     jobs = response.json().get("jobs", [])
-    
+
     results = []
     for job in jobs:
         full_offer = JobOfferRead.model_validate(job)
@@ -135,8 +142,10 @@ async def search_emploi(
             id=full_offer.identifier.id,
             title=full_offer.offer.title,
             company_name=full_offer.workplace.name,
-            location=full_offer.workplace.location.get("address") if full_offer.workplace.location else "N/A",
-            contract_type=full_offer.contract.type
+            location=full_offer.workplace.location.get("address")
+            if full_offer.workplace.location
+            else "N/A",
+            contract_type=full_offer.contract.type,
         )
         results.append(summary)
     return results
@@ -152,12 +161,16 @@ async def get_emploi(id: str) -> EmploiDetails:
         id=full_offer.identifier.id,
         title=full_offer.offer.title,
         company_name=full_offer.workplace.name,
-        location=full_offer.workplace.location.get("address") if full_offer.workplace.location else "N/A",
+        location=full_offer.workplace.location.get("address")
+        if full_offer.workplace.location
+        else "N/A",
         contract_type=full_offer.contract.type,
         description=full_offer.offer.description,
         desired_skills=full_offer.offer.desired_skills,
         application_url=full_offer.apply.url,
-        start_date=str(full_offer.contract.start) if full_offer.contract.start else None
+        start_date=str(full_offer.contract.start)
+        if full_offer.contract.start
+        else None,
     )
 
 
@@ -172,9 +185,9 @@ async def search_formations(
     """Recherche des formations en alternance selon les critères fournis. Utilise toujours un seul RNCP et une liste de romes pour élargir la recherche."""
     params = {}
     if romes:
-        params["romes"] = ','.join(romes) if isinstance(romes, list) else romes
+        params["romes"] = ",".join(romes) if isinstance(romes, list) else romes
     if rncp:
-        params["rncp"] = ','.join(rncp) if isinstance(rncp, list) else rncp
+        params["rncp"] = ",".join(rncp) if isinstance(rncp, list) else rncp
     if latitude is not None and longitude is not None:
         params["latitude"] = latitude
         params["longitude"] = longitude
@@ -184,23 +197,28 @@ async def search_formations(
     response = await client.get("/formation/v1/search", params=params)
     response.raise_for_status()
     formations = response.json().get("data", [])
-    
+
     results = []
     for formation_data in formations:
         full_formation = Formation.model_validate(formation_data)
-        
+
         # Helper function to safely get nested attributes
         def safe_get(data, attrs, default=None):
             for attr in attrs:
-                if data is None: return default
+                if data is None:
+                    return default
                 data = getattr(data, attr, None)
             return data
 
         summary = FormationSummary(
             id=full_formation.identifiant.cle_ministere_educatif,
-            title=safe_get(full_formation, ['certification', 'valeur', 'intitule', 'cfd', 'long']),
-            organisme_name=safe_get(full_formation, ['formateur', 'organisme', 'etablissement', 'enseigne']),
-            city=safe_get(full_formation, ['lieu', 'adresse', 'commune', 'nom'])
+            title=safe_get(
+                full_formation, ["certification", "valeur", "intitule", "cfd", "long"]
+            ),
+            organisme_name=safe_get(
+                full_formation, ["formateur", "organisme", "etablissement", "enseigne"]
+            ),
+            city=safe_get(full_formation, ["lieu", "adresse", "commune", "nom"]),
         )
         results.append(summary)
     return results
@@ -212,22 +230,29 @@ async def get_formations(id: str) -> FormationDetails:
     response = await client.get(f"/formation/v1/{id}")
     response.raise_for_status()
     full_formation = Formation.model_validate(response.json())
-    
+
     # Helper function to safely get nested attributes
     def safe_get(data, attrs, default=None):
         for attr in attrs:
-            if data is None: return default
+            if data is None:
+                return default
             data = getattr(data, attr, None)
         return data
 
     return FormationDetails(
         id=full_formation.identifiant.cle_ministere_educatif,
-        title=safe_get(full_formation, ['certification', 'valeur', 'intitule', 'cfd', 'long']),
-        organisme_name=safe_get(full_formation, ['formateur', 'organisme', 'etablissement', 'enseigne']),
-        city=safe_get(full_formation, ['lieu', 'adresse', 'commune', 'nom']),
-        educational_content=safe_get(full_formation, ['contenu_educatif', 'contenu']),
-        objective=safe_get(full_formation, ['contenu_educatif', 'objectif']),
-        sessions=[s.dict() for s in full_formation.sessions] if full_formation.sessions else None
+        title=safe_get(
+            full_formation, ["certification", "valeur", "intitule", "cfd", "long"]
+        ),
+        organisme_name=safe_get(
+            full_formation, ["formateur", "organisme", "etablissement", "enseigne"]
+        ),
+        city=safe_get(full_formation, ["lieu", "adresse", "commune", "nom"]),
+        educational_content=safe_get(full_formation, ["contenu_educatif", "contenu"]),
+        objective=safe_get(full_formation, ["contenu_educatif", "objectif"]),
+        sessions=[s.dict() for s in full_formation.sessions]
+        if full_formation.sessions
+        else None,
     )
 
 
@@ -252,18 +277,18 @@ async def get_romes(mots_cles: str, nb_resultats: int = 10) -> List[RomeCode]:
     """
     # Limite le nombre de résultats à 10
     nb_resultats = min(nb_resultats, 10)
-    
+
     # Chemin vers le fichier de données
     data_file_path = Path(__file__).parent / "data" / "romes.json"
-    
+
     # Vérifie l'existence du fichier
     if not data_file_path.exists():
         logger.warning(f"Fichier de données ROME introuvable: {data_file_path}")
         return []
-    
+
     # Lit et parse le contenu du fichier
     try:
-        with open(data_file_path, 'r', encoding='utf-8') as f:
+        with open(data_file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except (json.JSONDecodeError, IOError) as e:
         logger.error(f"Erreur lors de la lecture du fichier ROME {data_file_path}: {e}")
@@ -273,15 +298,15 @@ async def get_romes(mots_cles: str, nb_resultats: int = 10) -> List[RomeCode]:
     if not isinstance(data, list):
         logger.warning(f"Fichier de données ROME mal formé ou vide: {data_file_path}")
         return []
-        
+
     # Recherche insensible à la casse
     mots_cles_lower = mots_cles.lower()
     results = [
-        RomeCode(code=item['code'], libelle=item['libelle'])
+        RomeCode(code=item["code"], libelle=item["libelle"])
         for item in data
-        if mots_cles_lower in item.get('libelle', '').lower()
+        if mots_cles_lower in item.get("libelle", "").lower()
     ]
-    
+
     # Limite le nombre de résultats
     return results[:nb_resultats]
 
@@ -304,18 +329,18 @@ async def get_rncp(mots_cles: str, nb_resultats: int = 10) -> List[RncpCode]:
     """
     # Limite le nombre de résultats à 10
     nb_resultats = min(nb_resultats, 10)
-    
+
     # Chemin vers le fichier de données
     data_file_path = Path(__file__).parent / "data" / "rncp.json"
-    
+
     # Vérifie l'existence du fichier
     if not data_file_path.exists():
         logger.warning(f"Fichier de données RNCP introuvable: {data_file_path}")
         return []
-    
+
     # Lit et parse le contenu du fichier
     try:
-        with open(data_file_path, 'r', encoding='utf-8') as f:
+        with open(data_file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except (json.JSONDecodeError, IOError) as e:
         logger.error(f"Erreur lors de la lecture du fichier RNCP {data_file_path}: {e}")
@@ -325,15 +350,15 @@ async def get_rncp(mots_cles: str, nb_resultats: int = 10) -> List[RncpCode]:
     if not isinstance(data, list):
         logger.warning(f"Fichier de données RNCP mal formé ou vide: {data_file_path}")
         return []
-        
+
     # Recherche insensible à la casse
     mots_cles_lower = mots_cles.lower()
     results = [
         RncpCode(**item)
         for item in data
-        if mots_cles_lower in item.get('Intitulé de la certification', '').lower()
+        if mots_cles_lower in item.get("Intitulé de la certification", "").lower()
     ]
-    
+
     # Limite le nombre de résultats
     return results[:nb_resultats]
 
@@ -352,8 +377,10 @@ def create_labonnealternance_mcp_server() -> FastMCP:
     mcp.add_tool(Tool.from_function(fn=get_emploi))
     mcp.add_tool(Tool.from_function(fn=search_formations))
     mcp.add_tool(Tool.from_function(fn=get_formations))
-    mcp.add_tool(Tool.from_function(fn=get_romes))  # Enregistrement de l'outil get_romes
-    mcp.add_tool(Tool.from_function(fn=get_rncp))   # Enregistrement du nouvel outil
+    mcp.add_tool(
+        Tool.from_function(fn=get_romes)
+    )  # Enregistrement de l'outil get_romes
+    mcp.add_tool(Tool.from_function(fn=get_rncp))  # Enregistrement du nouvel outil
 
     @mcp.custom_route("/health", methods=["GET"])
     async def health_check(_request: Request) -> PlainTextResponse:
