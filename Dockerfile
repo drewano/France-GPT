@@ -1,6 +1,6 @@
 # Étape 1: Choisir une image de base
 # On utilise une image Python 3.12 "slim" pour qu'elle soit légère mais complète.
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 # Étape 2: Définir les arguments de build
 # Permet de configurer le port au moment du build si nécessaire.
