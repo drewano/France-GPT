@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "id": "structure-1",
+      "source": "dora",
+      "nom": "Maison de quartier",
+      "adresse": "123 Rue de la République",
+      "commune": "Paris",
+      "code_postal": "75001",
+      "thematiques": ["numerique--accompagnement-aux-outils-numeriques"]
+    },
+    {
+      "id": "structure-2",
+      "source": "dora",
+      "nom": "Centre Social",
+      "adresse": "456 Avenue des Champs-Élysées",
+      "commune": "Paris",
+      "code_postal": "75008",
+      "thematiques": ["numerique--accompagnement-aux-outils-numeriques"]
+    }
+  ]
+}

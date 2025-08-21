@@ -250,7 +250,7 @@ async def get_formations(id: str) -> FormationDetails:
         city=safe_get(full_formation, ["lieu", "adresse", "commune", "nom"]),
         educational_content=safe_get(full_formation, ["contenu_educatif", "contenu"]),
         objective=safe_get(full_formation, ["contenu_educatif", "objectif"]),
-        sessions=[s.dict() for s in full_formation.sessions]
+        sessions=[s.model_dump() for s in full_formation.sessions]
         if full_formation.sessions
         else None,
     )

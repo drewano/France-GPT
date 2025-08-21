@@ -1,0 +1,17 @@
+[
+  {
+    "value": "numerique--accompagnement-aux-outils-numeriques",
+    "label": "Accompagnement aux outils numériques",
+    "description": "Apprendre à utiliser les outils numériques"
+  },
+  {
+    "value": "emploi--accompagnement-a-l-emploi",
+    "label": "Accompagnement à l'emploi",
+    "description": "Aide à la recherche d'emploi et à l'insertion professionnelle"
+  },
+  {
+    "value": "formation--formation-professionnelle",
+    "label": "Formation professionnelle",
+    "description": "Formations pour développer des compétences professionnelles"
+  }
+]

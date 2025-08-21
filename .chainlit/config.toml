@@ -30,6 +30,10 @@ auto_tag_thread = true
 # Allow users to edit their own messages
 edit_message = true
 
+[features.slack]
+# Add emoji reaction when message is received (requires reactions:write OAuth scope)
+reaction_on_message_received = false
+
 # Authorize users to spontaneously upload files with messages
 [features.spontaneous_file_upload]
     enabled = true
@@ -53,6 +57,9 @@ edit_message = true
 [features.mcp.sse]
     enabled = true
 
+[features.mcp.streamable-http]
+    enabled = true
+
 [features.mcp.stdio]
     enabled = true
     # Only the executables in the allow list can be used for MCP stdio server.
@@ -63,9 +70,6 @@ edit_message = true
 [UI]
 # Name of the assistant.
 name = "Assistant"
-
-custom_components_path = "public/elements"
-default_avatar_file_url = "public/avatars/data_gouv_fr.png"
 
 # default_theme = "dark"
 
@@ -110,6 +114,8 @@ alert_style = "classic"
 # Load assistant logo directly from URL.
 logo_file_url = ""
 
+# Load assistant avatar image directly from URL.
+default_avatar_file_url = ""
 
 # Specify a custom build directory for the frontend.
 # This can be used to customize the frontend code.
@@ -124,5 +130,4 @@ logo_file_url = ""
 #     url = "https://github.com/Chainlit/chainlit/issues"
 
 [meta]
-generated_by = "2.6.3"
-
+generated_by = "2.6.9"

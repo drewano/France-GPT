@@ -55,7 +55,7 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "Reasoning: high"
         ),
         mcp_service_name="datainclusion",
-        tool_call_limit=10,
+        tool_call_limit=5,
         starters=[
             StarterConfig(
                 label="Aide alimentaire",

@@ -6,7 +6,7 @@ et retournées par les outils du serveur FastMCP.
 """
 # --- Partie 1: Définition des Schémas de Données (schemas.py) ---
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 
 # --- Modèles pour les Structures ---
@@ -37,8 +37,7 @@ class StructureSummary(BaseModel):
         description="Liste des thématiques principales couvertes par la structure.",
     )
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class StructureDetails(StructureSummary):
@@ -67,8 +66,7 @@ class StructureDetails(StructureSummary):
         description="Lien vers la page Acceslibre sur l'accessibilité du lieu.",
     )
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 # --- Modèles pour les Services ---
@@ -89,8 +87,7 @@ class ServiceSummary(BaseModel):
         default=None, description="Identifiant de la structure qui propose ce service."
     )
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ServiceDetails(ServiceSummary):
@@ -118,8 +115,7 @@ class ServiceDetails(ServiceSummary):
         description="Comment mobiliser ou accéder au service.",
     )
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class SearchedService(ServiceDetails):
@@ -136,8 +132,7 @@ class SearchedService(ServiceDetails):
         description="Informations de base sur la structure qui propose le service.",
     )
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 # --- Modèles pour les Référentiels ---

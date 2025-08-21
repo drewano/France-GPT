@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "id": "service-1",
+      "source": "dora",
+      "nom": "Service d'accompagnement numérique",
+      "thematiques": ["numerique--accompagnement-aux-outils-numeriques"],
+      "structure_id": "structure-1"
+    },
+    {
+      "id": "service-2",
+      "source": "dora",
+      "nom": "Atelier de médiation numérique",
+      "thematiques": ["numerique--accompagnement-aux-outils-numeriques"],
+      "structure_id": "structure-2"
+    }
+  ]
+}

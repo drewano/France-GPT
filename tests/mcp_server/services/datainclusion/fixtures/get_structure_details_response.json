@@ -1,0 +1,15 @@
+{
+  "id": "structure-1",
+  "source": "dora",
+  "nom": "Maison de quartier",
+  "adresse": "123 Rue de la République",
+  "commune": "Paris",
+  "code_postal": "75001",
+  "thematiques": ["numerique--accompagnement-aux-outils-numeriques"],
+  "description": "Structure communautaire offrant divers services aux habitants.",
+  "telephone": "0123456789",
+  "courriel": "contact@maison-quartier.fr",
+  "site_web": "https://www.maison-quartier.fr",
+  "horaires_accueil": "Mo-Fr 09:00-17:00",
+  "accessibilite_lieu": "https://acceslibre.beta.gouv.fr/app/29-lampaul-plouarzel/a/mairie/erp/123/"
+}
