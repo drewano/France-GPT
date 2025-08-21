@@ -53,11 +53,28 @@ def _get_lba_client() -> httpx.AsyncClient:
     return client
 
 
-try:
-    client = _get_lba_client()
-except ValueError as e:
-    logger.error("Erreur critique lors de l'initialisation du client: %s", e)
-    raise
+# Initialisation paresseuse du client
+client: Optional[httpx.AsyncClient] = None
+
+
+def _initialize_services() -> None:
+    """
+    Initialise le client API selon le pattern singleton.
+    Cette fonction est appelée de manière paresseuse lorsque le client est nécessaire.
+    """
+    global client
+
+    # Vérifie si le client est déjà initialisé
+    if client is None:
+        logger.info("Initialisation paresseuse du client La Bonne Alternance...")
+        try:
+            client = _get_lba_client()
+            logger.info("Client La Bonne Alternance initialisé avec succès.")
+        except ValueError as e:
+            logger.error("Erreur critique lors de l'initialisation du client: %s", e)
+            # Réinitialise la variable en cas d'erreur
+            client = None
+            raise
 
 
 def api_call_handler(func):
@@ -99,6 +116,7 @@ async def search_emploi(
     target_diploma_level: Optional[str] = None,
 ) -> List[EmploiSummary]:
     """Recherche des offres d'emploi en alternance selon les critères fournis."""
+    _initialize_services()
 
     # Normalisation des ROMEs
     romes_str = ",".join(romes) if isinstance(romes, list) else romes
@@ -154,6 +172,7 @@ async def search_emploi(
 @api_call_handler
 async def get_emploi(id: str) -> EmploiDetails:
     """Récupère les informations détaillées d'une offre d'emploi spécifique. Utilise toujours une liste de romes pour élargir la recherche."""
+    _initialize_services()
     response = await client.get(f"/job/v1/offer/{id}")
     response.raise_for_status()
     full_offer = JobOfferRead.model_validate(response.json())
@@ -183,6 +202,7 @@ async def search_formations(
     radius: Optional[int] = None,
 ) -> List[FormationSummary]:
     """Recherche des formations en alternance selon les critères fournis. Utilise toujours un seul RNCP et une liste de romes pour élargir la recherche."""
+    _initialize_services()
     params = {}
     if romes:
         params["romes"] = ",".join(romes) if isinstance(romes, list) else romes
@@ -227,6 +247,7 @@ async def search_formations(
 @api_call_handler
 async def get_formations(id: str) -> FormationDetails:
     """Récupère les informations détaillées d'une formation spécifique."""
+    _initialize_services()
     response = await client.get(f"/formation/v1/{id}")
     response.raise_for_status()
     full_formation = Formation.model_validate(response.json())

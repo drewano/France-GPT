@@ -92,7 +92,7 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "Reasoning: high"
         ),
         mcp_service_name="legifrance",
-        tool_call_limit=20,
+        tool_call_limit=10,
         starters=[
             StarterConfig(
                 label="Rechercher un article de code",
