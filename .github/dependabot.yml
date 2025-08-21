@@ -1,0 +1,60 @@
+# Pour commencer avec les mises à jour de version de Dependabot, vous devrez spécifier
+# quels écosystèmes de paquets mettre à jour et où se trouvent les manifestes de paquets.
+# Veuillez consulter la documentation pour toutes les options de configuration :
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Maintenir les dépendances Python (pip) à jour
+  - package-ecosystem: "pip"
+    directory: "/" # Emplacement de pyproject.toml
+    schedule:
+      interval: "weekly" # Vérifie les mises à jour chaque semaine
+    reviewers:
+      - "drewano" # Remplacez par votre nom d'utilisateur GitHub
+    assignees:
+      - "drewano" # Remplacez par votre nom d'utilisateur GitHub
+    commit-message:
+      prefix: "chore(deps):" # Préfixe standard pour les commits de dépendances
+    labels:
+      - "dependencies"
+      - "python"
+    # Regroupe les dépendances de développement pour réduire le nombre de PRs
+    groups:
+      python-dev-dependencies:
+        patterns:
+          - "ruff"
+          - "pylint"
+          - "pytest"
+          - "pytest-*"
+          - "pre-commit"
+
+  # Maintenir les dépendances Docker à jour
+  - package-ecosystem: "docker"
+    directory: "/" # Emplacement du Dockerfile et docker-compose.yml
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "drewano"
+    assignees:
+      - "drewano"
+    commit-message:
+      prefix: "chore(deps):"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # Maintenir les GitHub Actions à jour
+  - package-ecosystem: "github-actions"
+    directory: "/" # Recherche les workflows dans .github/workflows
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "drewano"
+    assignees:
+      - "drewano"
+    commit-message:
+      prefix: "chore(deps):"
+    labels:
+      - "dependencies"
+      - "github-actions"
