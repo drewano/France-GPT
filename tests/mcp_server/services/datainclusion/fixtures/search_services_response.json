@@ -1,0 +1,48 @@
+{
+  "items": [
+    {
+      "id": "service-1",
+      "source": "dora",
+      "nom": "Service d'accompagnement numérique",
+      "thematiques": ["numerique--accompagnement-aux-outils-numeriques"],
+      "structure_id": "structure-1",
+      "description": "Accompagnement personnalisé pour maîtriser les outils numériques du quotidien.",
+      "modes_accueil": ["en-presentiel"],
+      "frais": "gratuit",
+      "publics": ["adultes"],
+      "modes_mobilisation": ["se-presenter"],
+      "structure": {
+        "id": "structure-1",
+        "source": "dora",
+        "nom": "Maison de quartier",
+        "adresse": "123 Rue de la République",
+        "commune": "Paris",
+        "code_postal": "75001",
+        "thematiques": ["numerique--accompagnement-aux-outils-numeriques"]
+      },
+      "distance": 500
+    },
+    {
+      "id": "service-2",
+      "source": "dora",
+      "nom": "Atelier de médiation numérique",
+      "thematiques": ["numerique--accompagnement-aux-outils-numeriques"],
+      "structure_id": "structure-2",
+      "description": "Ateliers collectifs pour apprendre à utiliser internet et les outils numériques.",
+      "modes_accueil": ["en-presentiel"],
+      "frais": "gratuit",
+      "publics": ["adultes", "seniors"],
+      "modes_mobilisation": ["se-presenter"],
+      "structure": {
+        "id": "structure-2",
+        "source": "dora",
+        "nom": "Centre Social",
+        "adresse": "456 Avenue des Champs-Élysées",
+        "commune": "Paris",
+        "code_postal": "75008",
+        "thematiques": ["numerique--accompagnement-aux-outils-numeriques"]
+      },
+      "distance": 1200
+    }
+  ]
+}

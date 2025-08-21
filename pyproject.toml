@@ -16,7 +16,7 @@ dependencies = [
     "pydantic-settings",
     "fastapi",
     "uvicorn",
-    "chainlit",
+    "chainlit==2.6.9",
     "asyncpg",
     "SQLAlchemy",
     "greenlet",
@@ -31,7 +31,9 @@ dev = [
     "pylint",
     "pytest",
     "pytest-asyncio",
-    "pre-commit"
+    "pre-commit",
+    "pytest-httpx",
+    "pytest-mock"
 ]
 
 [project.urls]

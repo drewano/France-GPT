@@ -337,12 +337,17 @@ async def process_agent_modern_with_history(
         if parent_tools_step is not None:
             await parent_tools_step.__aexit__(None, None, None)
 
-        if agent_run.result is not None:
+        # Vérifier si agent_run a un attribut 'result' (nouvelle API) ou non (ancienne API)
+        if hasattr(agent_run, "result") and agent_run.result is not None:
             all_messages = agent_run.result.all_messages()
             trimmed_messages = trim_message_history(all_messages)
         else:
-            logger.warning("agent_run.result est None, retour de l'historique original")
-            trimmed_messages = message_history or []
+            # Ancienne API - utiliser ctx.state.message_history
+            all_messages = agent_run.ctx.state.message_history
+            trimmed_messages = trim_message_history(all_messages)
+            logger.warning(
+                "agent_run.result n'est pas disponible, utilisation de ctx.state.message_history"
+            )
 
         logger.info(
             "✅ Streaming terminé - Historique: %s messages", len(trimmed_messages)

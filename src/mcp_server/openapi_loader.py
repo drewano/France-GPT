@@ -9,6 +9,7 @@ import json
 import logging
 import os  # Import os
 import pathlib  # Import pathlib
+import copy
 from typing import List, Dict, Tuple
 import httpx
 from fastmcp.utilities.openapi import parse_openapi_to_http_routes, HTTPRoute
@@ -133,6 +134,9 @@ class OpenAPILoader:
         Returns:
             dict: Le dictionnaire de la spécification modifié avec les limites de page appliquées.
         """
+        # Créer une copie profonde pour éviter les effets de bord
+        spec_copy = copy.deepcopy(spec)
+
         paths_to_modify = [
             "/api/v1/structures",
             "/api/v1/services",
@@ -142,8 +146,8 @@ class OpenAPILoader:
         self.logger.info(f"Applying page size limit (max_size={max_size}) to spec...")
 
         for path in paths_to_modify:
-            if path in spec["paths"] and "get" in spec["paths"][path]:
-                params = spec["paths"][path]["get"].get("parameters", [])
+            if path in spec_copy["paths"] and "get" in spec_copy["paths"][path]:
+                params = spec_copy["paths"][path]["get"].get("parameters", [])
                 for param in params:
                     if param.get("name") == "size":
                         param["schema"]["maximum"] = max_size
@@ -152,4 +156,4 @@ class OpenAPILoader:
                             f"  - Limited 'size' parameter for endpoint: GET {path}"
                         )
 
-        return spec
+        return spec_copy

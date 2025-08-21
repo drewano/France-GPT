@@ -1,0 +1,12 @@
+{
+  "id": "service-1",
+  "source": "dora",
+  "nom": "Service d'accompagnement numérique",
+  "thematiques": ["numerique--accompagnement-aux-outils-numeriques"],
+  "structure_id": "structure-1",
+  "description": "Accompagnement personnalisé pour maîtriser les outils numériques du quotidien.",
+  "modes_accueil": ["en-presentiel"],
+  "frais": "gratuit",
+  "publics": ["adultes"],
+  "modes_mobilisation": ["se-presenter"]
+}

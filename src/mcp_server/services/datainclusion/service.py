@@ -46,11 +46,29 @@ def _get_datainclusion_client() -> httpx.AsyncClient:
     return client
 
 
-try:
-    client = _get_datainclusion_client()
-except ValueError as e:
-    logger.error("Erreur critique lors de l'initialisation du client: %s", e)
-    raise
+# Initialisation paresseuse du client
+client: Optional[httpx.AsyncClient] = None
+
+
+def _initialize_services() -> None:
+    """
+    Initialise le client API selon le pattern singleton.
+    Cette fonction est appelée de manière paresseuse lorsque le client est nécessaire.
+    """
+    global client
+
+    # Vérifie si le client est déjà initialisé
+    if client is None:
+        logger.info("Initialisation paresseuse du client Data Inclusion...")
+        try:
+            client = _get_datainclusion_client()
+            logger.info("Client Data Inclusion initialisé avec succès.")
+        except ValueError as e:
+            logger.error("Erreur critique lors de l'initialisation du client: %s", e)
+            # Réinitialise la variable en cas d'erreur
+            client = None
+            raise
+
 
 _REFERENCE_ENDPOINTS = {
     "themes": "/api/v1/doc/thematiques",
@@ -112,6 +130,7 @@ async def fetch_reference_values(
     Vous indiquez la catégorie souhaitée (themes, costs, target_audience, reception_modes, mobilization_modes, networks ou service_types) et l’API renvoie l’ensemble des entrées autorisées pour cette catégorie.
 
     Cela vous permet de connaître exactement les libellés à passer dans les filtres des autres endpoints (search_services, list_all_services, …) et d’éviter les erreurs de validation."""
+    _initialize_services()
 
     endpoint = _REFERENCE_ENDPOINTS.get(category)
     if not endpoint:
@@ -126,6 +145,7 @@ async def list_all_structures(
     themes: Union[str, List[str]], network: Optional[str] = None
 ) -> List[StructureSummary]:
     """Liste les structures d'inclusion, avec un filtre thématique obligatoire. Limité à 15 résultats."""
+    _initialize_services()
     if isinstance(themes, str):
         themes = [themes]
 
@@ -146,6 +166,7 @@ async def list_all_services(
     target_audience: Optional[List[str]] = None,
 ) -> List[ServiceSummary]:
     """Liste les services d'inclusion. Le filtre par thématiques est obligatoire. Limité à 15 résultats."""
+    _initialize_services()
     # Normalisation de l'input pour accepter une string ou une liste
     if isinstance(themes, str):
         themes = [themes]
@@ -166,6 +187,7 @@ async def list_all_services(
 @api_call_handler
 async def get_structure_details(source: str, structure_id: str) -> StructureDetails:
     """Récupère les informations détaillées d'une structure spécifique à partir de sa source et de son ID."""
+    _initialize_services()
     url = f"/api/v1/structures/{source}/{structure_id}"
     response = await client.get(url)
     response.raise_for_status()
@@ -175,6 +197,7 @@ async def get_structure_details(source: str, structure_id: str) -> StructureDeta
 @api_call_handler
 async def get_service_details(source: str, service_id: str) -> ServiceDetails:
     """Récupère les informations détaillées d'un service spécifique à partir de sa source et de son ID."""
+    _initialize_services()
     url = f"/api/v1/services/{source}/{service_id}"
     response = await client.get(url)
     response.raise_for_status()
@@ -191,6 +214,7 @@ async def search_services(
     Recherche des services d'inclusion à proximité d'un lieu. Les résultats sont triés par distance.
     Le lieu (`location_text`) et la thématique (`themes`) sont obligatoires. La recherche est limitée à 10 résultats. Il faut passer qu'une seule chaîne de référentiel pour les thématiques. location_text doit contenir un seul nom de ville ou de région (ex.: «Paris», «Île-de-France»).
     """
+    _initialize_services()
     if isinstance(themes, str):
         themes = [themes]
     if isinstance(target_audience, str):

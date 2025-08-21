@@ -1,0 +1,294 @@
+{
+  "data": [
+    {
+      "identifiant": {
+        "cle_ministere_educatif": "formation-1"
+      },
+      "statut": {
+        "catalogue": "publié"
+      },
+      "formateur": {
+        "organisme": {
+          "identifiant": {
+            "uai": "1234567A",
+            "siret": "12345678901234"
+          },
+          "etablissement": {
+            "siret": "12345678901234",
+            "ouvert": true,
+            "enseigne": "Organisme Exemple",
+            "adresse": {
+              "label": "123 Rue Exemple",
+              "code_postal": "75001",
+              "commune": {
+                "nom": "Paris"
+              },
+              "departement": {
+                "nom": "Paris"
+              },
+              "region": {
+                "nom": "Île-de-France"
+              },
+              "academie": {
+                "nom": "Paris"
+              }
+            },
+            "geopoint": {
+              "type": "Point",
+              "coordinates": [2.3522, 48.8566]
+            },
+            "creation": "2020-01-01T00:00:00Z",
+            "fermeture": null
+          },
+          "unite_legale": {
+            "siren": "123456789",
+            "actif": true,
+            "raison_sociale": "Organisme Exemple SAS",
+            "creation": "2020-01-01T00:00:00Z",
+            "cessation": null
+          },
+          "renseignements_specifiques": {
+            "qualiopi": true,
+            "numero_activite": "1234567890"
+          },
+          "statut": {
+            "referentiel": "certifie"
+          },
+          "contacts": []
+        },
+        "connu": true
+      },
+      "responsable": {
+        "organisme": null,
+        "connu": false
+      },
+      "certification": {
+        "valeur": {
+          "identifiant": {
+            "cfd": "12345678",
+            "rncp": "RNCP123",
+            "rncp_anterieur_2019": false
+          },
+          "intitule": {
+            "cfd": {
+              "long": "Formation en alternance",
+              "court": "Formation alternance"
+            },
+            "niveau": {
+              "europeen": "6",
+              "francais": "Licence"
+            },
+            "rncp": "Formation en alternance"
+          },
+          "base_legale": null,
+          "blocs_competences": null,
+          "convention_collectives": null,
+          "domaines": null,
+          "periode_validite": null,
+          "type": null,
+          "continuite": null
+        },
+        "connue": true
+      },
+      "lieu": {
+        "adresse": {
+          "label": "123 Rue Exemple",
+          "code_postal": "75001",
+          "commune": {
+            "nom": "Paris"
+          },
+          "departement": {
+            "nom": "Paris"
+          },
+          "region": {
+            "nom": "Île-de-France"
+          },
+          "academie": {
+            "nom": "Paris"
+          }
+        },
+        "geolocalisation": {
+          "type": "Point",
+          "coordinates": [2.3522, 48.8566]
+        },
+        "precision": 10.5,
+        "siret": "12345678901234",
+        "uai": "1234567A"
+      },
+      "contact": {
+        "email": "contact@organisme-exemple.com",
+        "telephone": "+33123456789"
+      },
+      "onisep": {
+        "url": "https://onisep.fr/formation-1",
+        "intitule": "Formation en alternance",
+        "libelle_poursuite": "Poursuite d'études",
+        "lien_site_onisepfr": "https://onisep.fr/formation-1",
+        "discipline": "Informatique",
+        "domaine_sousdomaine": "Sciences et technologies"
+      },
+      "modalite": {
+        "entierement_a_distance": false,
+        "duree_indicative": 12,
+        "annee_cycle": 2023,
+        "mef_10": "1234567890"
+      },
+      "contenu_educatif": {
+        "contenu": "Contenu pédagogique",
+        "objectif": "Objectif de la formation"
+      },
+      "sessions": [
+        {
+          "debut": "2023-09-01T00:00:00Z",
+          "fin": "2024-08-31T00:00:00Z",
+          "capacite": 20
+        }
+      ]
+    },
+    {
+      "identifiant": {
+        "cle_ministere_educatif": "formation-2"
+      },
+      "statut": {
+        "catalogue": "publié"
+      },
+      "formateur": {
+        "organisme": {
+          "identifiant": {
+            "uai": "7654321B",
+            "siret": "12345678901235"
+          },
+          "etablissement": {
+            "siret": "12345678901235",
+            "ouvert": true,
+            "enseigne": "Organisme Exemple 2",
+            "adresse": {
+              "label": "456 Rue Exemple",
+              "code_postal": "75002",
+              "commune": {
+                "nom": "Paris"
+              },
+              "departement": {
+                "nom": "Paris"
+              },
+              "region": {
+                "nom": "Île-de-France"
+              },
+              "academie": {
+                "nom": "Paris"
+              }
+            },
+            "geopoint": {
+              "type": "Point",
+              "coordinates": [2.3532, 48.8576]
+            },
+            "creation": "2020-01-01T00:00:00Z",
+            "fermeture": null
+          },
+          "unite_legale": {
+            "siren": "987654321",
+            "actif": true,
+            "raison_sociale": "Organisme Exemple 2 SAS",
+            "creation": "2020-01-01T00:00:00Z",
+            "cessation": null
+          },
+          "renseignements_specifiques": {
+            "qualiopi": true,
+            "numero_activite": "0987654321"
+          },
+          "statut": {
+            "referentiel": "certifie"
+          },
+          "contacts": []
+        },
+        "connu": true
+      },
+      "responsable": {
+        "organisme": null,
+        "connu": false
+      },
+      "certification": {
+        "valeur": {
+          "identifiant": {
+            "cfd": "87654321",
+            "rncp": "RNCP124",
+            "rncp_anterieur_2019": false
+          },
+          "intitule": {
+            "cfd": {
+              "long": "Formation en alternance 2",
+              "court": "Formation alternance 2"
+            },
+            "niveau": {
+              "europeen": "7",
+              "francais": "Master"
+            },
+            "rncp": "Formation en alternance 2"
+          },
+          "base_legale": null,
+          "blocs_competences": null,
+          "convention_collectives": null,
+          "domaines": null,
+          "periode_validite": null,
+          "type": null,
+          "continuite": null
+        },
+        "connue": true
+      },
+      "lieu": {
+        "adresse": {
+          "label": "456 Rue Exemple",
+          "code_postal": "75002",
+          "commune": {
+            "nom": "Paris"
+          },
+          "departement": {
+            "nom": "Paris"
+          },
+          "region": {
+            "nom": "Île-de-France"
+          },
+          "academie": {
+            "nom": "Paris"
+          }
+        },
+        "geolocalisation": {
+          "type": "Point",
+          "coordinates": [2.3532, 48.8576]
+        },
+        "precision": 15.2,
+        "siret": "12345678901235",
+        "uai": "7654321B"
+      },
+      "contact": {
+        "email": "contact@organisme-exemple2.com",
+        "telephone": "+33123456790"
+      },
+      "onisep": {
+        "url": "https://onisep.fr/formation-2",
+        "intitule": "Formation en alternance 2",
+        "libelle_poursuite": "Poursuite d'études",
+        "lien_site_onisepfr": "https://onisep.fr/formation-2",
+        "discipline": "Marketing",
+        "domaine_sousdomaine": "Sciences humaines et sociales"
+      },
+      "modalite": {
+        "entierement_a_distance": false,
+        "duree_indicative": 24,
+        "annee_cycle": 2023,
+        "mef_10": "0987654321"
+      },
+      "contenu_educatif": {
+        "contenu": "Contenu pédagogique 2",
+        "objectif": "Objectif de la formation 2"
+      },
+      "sessions": [
+        {
+          "debut": "2023-09-01T00:00:00Z",
+          "fin": "2025-08-31T00:00:00Z",
+          "capacite": 15
+        }
+      ]
+    }
+  ]
+}

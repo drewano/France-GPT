@@ -140,8 +140,8 @@ class AppSettings(BaseSettings):
     """
 
     # Configurations des composants
-    agent: AgentSettings = AgentSettings()
-    mcp_server: MCPServerSettings = MCPServerSettings()
+    agent: AgentSettings = Field(default_factory=AgentSettings)
+    mcp_server: MCPServerSettings = Field(default_factory=MCPServerSettings)
 
     # Configuration Pydantic Settings
     model_config = SettingsConfigDict(

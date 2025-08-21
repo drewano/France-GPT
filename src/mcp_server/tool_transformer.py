@@ -150,7 +150,9 @@ class ToolTransformer:
                 )
 
                 # Remplacer l'outil original par le transformé
-                self._replace_tool(original_tool, transformed_tool, mangled_tool_name)
+                await self._replace_tool(
+                    original_tool, transformed_tool, mangled_tool_name
+                )
 
                 # Logging de succès
                 successful_renames += 1
@@ -354,7 +356,7 @@ class ToolTransformer:
 
         return tool_tags
 
-    def _replace_tool(
+    async def _replace_tool(
         self, original_tool: Tool, transformed_tool: Tool, mangled_tool_name: str
     ) -> None:
         """
@@ -365,13 +367,10 @@ class ToolTransformer:
             transformed_tool: L'outil transformé à ajouter
             mangled_tool_name: Le nom de l'outil original généré par FastMCP
         """
-        # Ajouter le nouvel outil au serveur
-        self.mcp_server.add_tool(transformed_tool)
-
         # IMPORTANT: Supprimer l'outil original pour éviter les doublons
         # et la confusion pour le LLM
         try:
-            self.mcp_server.remove_tool(mangled_tool_name)
+            await self.mcp_server.remove_tool(mangled_tool_name)
             self.logger.debug(f"    - Removed original tool: '{mangled_tool_name}'")
         except Exception as remove_error:
             # En cas d'échec de suppression, désactiver au moins l'outil
@@ -379,6 +378,9 @@ class ToolTransformer:
                 f"    - Could not remove '{mangled_tool_name}', disabling instead: {remove_error}"
             )
             original_tool.disable()
+
+        # Ajouter le nouvel outil au serveur
+        self.mcp_server.add_tool(transformed_tool)
 
     async def _log_transformation_stats(
         self, successful_renames: int, total_tools: int

@@ -1,0 +1,112 @@
+{
+  "jobs": [
+    {
+      "identifier": {
+        "partner_job_id": "partner-job-1",
+        "id": "job-1",
+        "partner_label": "partner-label-1"
+      },
+      "workplace": {
+        "name": "Entreprise Exemple",
+        "description": "Description de l'entreprise",
+        "website": "https://entreprise-exemple.com",
+        "siret": "12345678901234",
+        "location": {
+          "address": "123 Rue Exemple, 75001 Paris"
+        },
+        "brand": "Marque Exemple",
+        "legal_name": "Nom Légal Exemple",
+        "size": "100-249",
+        "domain": {
+          "idcc": 1234,
+          "opco": "OPCO Exemple",
+          "naf": {
+            "code": "4711F",
+            "libelle": "Commerce de détail alimentaire"
+          }
+        }
+      },
+      "apply": {
+        "phone": "+33123456789",
+        "url": "https://entreprise-exemple.com/apply/job-1",
+        "recipient_id": "recipient-1"
+      },
+      "contract": {
+        "start": "2023-09-01",
+        "duration": 12,
+        "type": ["apprentissage"],
+        "remote": "hybride"
+      },
+      "offer": {
+        "title": "Commercial en alternance",
+        "desired_skills": ["Communication", "Vente"],
+        "to_be_acquired_skills": ["Prospection", "Négociation"],
+        "access_conditions": ["Bac+2 minimum"],
+        "opening_count": 1,
+        "publication": {
+          "date": "2023-08-01"
+        },
+        "rome_codes": ["D1405"],
+        "description": "Poste de commercial en alternance",
+        "target_diploma": {
+          "level": "6"
+        },
+        "status": "published"
+      }
+    },
+    {
+      "identifier": {
+        "partner_job_id": "partner-job-2",
+        "id": "job-2",
+        "partner_label": "partner-label-2"
+      },
+      "workplace": {
+        "name": "Entreprise Exemple 2",
+        "description": "Description de l'entreprise 2",
+        "website": "https://entreprise-exemple2.com",
+        "siret": "12345678901235",
+        "location": {
+          "address": "456 Rue Exemple, 75002 Paris"
+        },
+        "brand": "Marque Exemple 2",
+        "legal_name": "Nom Légal Exemple 2",
+        "size": "250-499",
+        "domain": {
+          "idcc": 5678,
+          "opco": "OPCO Exemple 2",
+          "naf": {
+            "code": "4711G",
+            "libelle": "Commerce de détail non alimentaire"
+          }
+        }
+      },
+      "apply": {
+        "phone": "+33123456790",
+        "url": "https://entreprise-exemple2.com/apply/job-2",
+        "recipient_id": "recipient-2"
+      },
+      "contract": {
+        "start": "2023-10-01",
+        "duration": 24,
+        "type": ["professionnalisation"],
+        "remote": "sur_site"
+      },
+      "offer": {
+        "title": "Technico-commercial en alternance",
+        "desired_skills": ["Technique", "Commercial"],
+        "to_be_acquired_skills": ["Maintenance", "Service client"],
+        "access_conditions": ["Bac+3 minimum"],
+        "opening_count": 2,
+        "publication": {
+          "date": "2023-08-02"
+        },
+        "rome_codes": ["D1406"],
+        "description": "Poste de technico-commercial en alternance",
+        "target_diploma": {
+          "level": "7"
+        },
+        "status": "published"
+      }
+    }
+  ]
+}

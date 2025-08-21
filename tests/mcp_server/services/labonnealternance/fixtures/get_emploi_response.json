@@ -1,0 +1,54 @@
+{
+  "identifier": {
+    "partner_job_id": "partner-job-1",
+    "id": "job-1",
+    "partner_label": "partner-label-1"
+  },
+  "workplace": {
+    "name": "Entreprise Exemple",
+    "description": "Description de l'entreprise",
+    "website": "https://entreprise-exemple.com",
+    "siret": "12345678901234",
+    "location": {
+      "address": "123 Rue Exemple, 75001 Paris"
+    },
+    "brand": "Marque Exemple",
+    "legal_name": "Nom Légal Exemple",
+    "size": "100-249",
+    "domain": {
+      "idcc": 1234,
+      "opco": "OPCO Exemple",
+      "naf": {
+        "code": "4711F",
+        "libelle": "Commerce de détail alimentaire"
+      }
+    }
+  },
+  "apply": {
+    "phone": "+33123456789",
+    "url": "https://entreprise-exemple.com/apply/job-1",
+    "recipient_id": "recipient-1"
+  },
+  "contract": {
+    "start": "2023-09-01",
+    "duration": 12,
+    "type": ["apprentissage"],
+    "remote": "hybride"
+  },
+  "offer": {
+    "title": "Commercial en alternance",
+    "desired_skills": ["Communication", "Vente"],
+    "to_be_acquired_skills": ["Prospection", "Négociation"],
+    "access_conditions": ["Bac+2 minimum"],
+    "opening_count": 1,
+    "publication": {
+      "date": "2023-08-01"
+    },
+    "rome_codes": ["D1405"],
+    "description": "Description du poste",
+    "target_diploma": {
+      "level": "6"
+    },
+    "status": "published"
+  }
+}
