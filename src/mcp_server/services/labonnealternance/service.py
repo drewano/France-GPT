@@ -12,6 +12,7 @@ import logging
 import httpx
 import functools
 import json
+import aioboto3
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -20,6 +21,7 @@ from fastmcp.tools import Tool
 from pydantic_ai import ModelRetry
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
+from src.core.config import settings
 from .schemas import (
     EmploiSummary,
     EmploiDetails,
@@ -190,7 +192,65 @@ async def get_emploi(id: str) -> EmploiDetails:
         start_date=str(full_offer.contract.start)
         if full_offer.contract.start
         else None,
+        recipient_id=full_offer.apply.recipient_id,
     )
+
+
+@api_call_handler
+async def apply_for_job(
+    applicant_first_name: str,
+    applicant_last_name: str,
+    applicant_email: str,
+    applicant_phone: str,
+    applicant_attachment_name: str,
+    cv_s3_object_key: str,
+    recipient_id: str,
+) -> dict:
+    """Soumet une candidature à une offre d'emploi à l'API La Bonne Alternance."""
+    _initialize_services()
+
+    # Import pour l'encodage base64
+    import base64
+
+    # Créer une session aioboto3
+    session = aioboto3.Session(
+        aws_access_key_id=settings.agent.APP_AWS_ACCESS_KEY,
+        aws_secret_access_key=settings.agent.APP_AWS_SECRET_KEY,
+        region_name=settings.agent.APP_AWS_REGION,
+    )
+
+    # Créer un client S3 asynchrone
+    endpoint_url = settings.agent.DEV_AWS_ENDPOINT
+    async with session.client("s3", endpoint_url=endpoint_url) as s3_client:
+        # Télécharger le contenu du CV depuis S3
+        response = await s3_client.get_object(
+            Bucket=settings.agent.BUCKET_NAME, Key=cv_s3_object_key
+        )
+
+        # Lire le contenu du fichier de manière asynchrone
+        async with response["Body"] as stream:
+            file_content = await stream.read()
+
+    # Encoder le contenu en base64
+    encoded_content = base64.b64encode(file_content).decode("utf-8")
+
+    # Construire le payload avec les données de la candidature
+    payload = {
+        "applicant_first_name": applicant_first_name,
+        "applicant_last_name": applicant_last_name,
+        "applicant_email": applicant_email,
+        "applicant_phone": applicant_phone,
+        "applicant_attachment_name": applicant_attachment_name,
+        "applicant_attachment_content": encoded_content,
+        "recipient_id": recipient_id,
+    }
+
+    # Faire un appel POST à l'endpoint /job/v1/apply
+    response = await client.post("/job/v1/apply", json=payload)
+    response.raise_for_status()
+
+    # Retourner le JSON de la réponse
+    return response.json()
 
 
 @api_call_handler
@@ -396,6 +456,7 @@ def create_labonnealternance_mcp_server() -> FastMCP:
     logger.info("Enregistrement des outils dans le serveur MCP...")
     mcp.add_tool(Tool.from_function(fn=search_emploi))
     mcp.add_tool(Tool.from_function(fn=get_emploi))
+    mcp.add_tool(Tool.from_function(fn=apply_for_job))  # Enregistrement du nouvel outil
     mcp.add_tool(Tool.from_function(fn=search_formations))
     mcp.add_tool(Tool.from_function(fn=get_formations))
     mcp.add_tool(

@@ -11,6 +11,8 @@
       "frais": "gratuit",
       "publics": ["adultes"],
       "modes_mobilisation": ["se-presenter"],
+      "telephone": "0123456789",
+      "courriel": "contact@service-numerique.fr",
       "structure": {
         "id": "structure-1",
         "source": "dora",
@@ -18,7 +20,10 @@
         "adresse": "123 Rue de la République",
         "commune": "Paris",
         "code_postal": "75001",
-        "thematiques": ["numerique--accompagnement-aux-outils-numeriques"]
+        "thematiques": ["numerique--accompagnement-aux-outils-numeriques"],
+        "telephone": "0123456789",
+        "courriel": "contact@maison-quartier.fr",
+        "site_web": "http://maison-quartier.fr"
       },
       "distance": 500
     },
@@ -33,6 +38,8 @@
       "frais": "gratuit",
       "publics": ["adultes", "seniors"],
       "modes_mobilisation": ["se-presenter"],
+      "telephone": "0198765432",
+      "courriel": "info@atelier-mediation.fr",
       "structure": {
         "id": "structure-2",
         "source": "dora",
@@ -40,7 +47,10 @@
         "adresse": "456 Avenue des Champs-Élysées",
         "commune": "Paris",
         "code_postal": "75008",
-        "thematiques": ["numerique--accompagnement-aux-outils-numeriques"]
+        "thematiques": ["numerique--accompagnement-aux-outils-numeriques"],
+        "telephone": "0198765432",
+        "courriel": "contact@centresocial.paris.fr",
+        "site_web": "http://centresocial.paris.fr"
       },
       "distance": 1200
     }

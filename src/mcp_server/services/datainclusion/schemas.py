@@ -36,6 +36,15 @@ class StructureSummary(BaseModel):
         alias="thematiques",
         description="Liste des thématiques principales couvertes par la structure.",
     )
+    phone: Optional[str] = Field(
+        default=None, alias="telephone", description="Numéro de téléphone de contact."
+    )
+    email: Optional[str] = Field(
+        default=None, alias="courriel", description="Adresse e-mail de contact."
+    )
+    website: Optional[str] = Field(
+        default=None, alias="site_web", description="URL du site web de la structure."
+    )
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -113,6 +122,12 @@ class ServiceDetails(ServiceSummary):
         default=None,
         alias="modes_mobilisation",
         description="Comment mobiliser ou accéder au service.",
+    )
+    phone: Optional[str] = Field(
+        default=None, alias="telephone", description="Numéro de téléphone de contact."
+    )
+    email: Optional[str] = Field(
+        default=None, alias="courriel", description="Adresse e-mail de contact."
     )
 
     model_config = ConfigDict(populate_by_name=True)

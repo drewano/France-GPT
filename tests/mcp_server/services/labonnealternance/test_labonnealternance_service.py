@@ -9,6 +9,7 @@ from src.mcp_server.services.labonnealternance.service import (
     get_formations,
     get_romes,
     get_rncp,
+    apply_for_job,
 )
 from src.mcp_server.services.labonnealternance.schemas import (
     EmploiSummary,
@@ -404,3 +405,70 @@ class TestGetRncp:
         # Vérifications
         assert isinstance(result, list)
         assert len(result) == 0
+
+
+@pytest.mark.asyncio
+class TestApplyForJob:
+    """Tests pour la fonction apply_for_job."""
+
+    @pytest.mark.asyncio
+    async def test_apply_for_job_success(self, httpx_mock, mocker):
+        """Test de apply_for_job avec une réponse réussie."""
+        # Configuration du mock HTTP
+        httpx_mock.add_response(
+            url="https://api.apprentissage.beta.gouv.fr/api/job/v1/apply",
+            method="POST",
+            json={"id": "application-123"},
+            status_code=202,
+        )
+
+        # Mock du client S3 asynchrone avec aioboto3
+        mock_body = mocker.AsyncMock()
+        mock_body.__aenter__ = mocker.AsyncMock(return_value=mocker.AsyncMock())
+        mock_body.__aenter__.return_value.read = mocker.AsyncMock(
+            return_value=b"contenu-cv-test"
+        )
+
+        mock_s3_client = mocker.AsyncMock()
+        mock_s3_client.get_object = mocker.AsyncMock(return_value={"Body": mock_body})
+
+        # Mock de la session aioboto3
+        mock_session = mocker.patch(
+            "src.mcp_server.services.labonnealternance.service.aioboto3.Session"
+        )
+        mock_session.return_value.client.return_value.__aenter__ = mocker.AsyncMock(
+            return_value=mock_s3_client
+        )
+        mock_session.return_value.client.return_value.__aexit__ = mocker.AsyncMock()
+
+        # Appel de la fonction avec des données de test
+        result = await apply_for_job(
+            applicant_first_name="Jean",
+            applicant_last_name="Dupont",
+            applicant_email="jean.dupont@example.com",
+            applicant_phone="0123456789",
+            applicant_attachment_name="cv_jean_dupont.pdf",
+            cv_s3_object_key="cvs/test-cv.pdf",
+            recipient_id="recipient-123",
+        )
+
+        # Vérifications
+        assert isinstance(result, dict)
+        assert result["id"] == "application-123"
+
+        # Vérifier que get_object a été appelé avec les bons paramètres
+        mock_s3_client.get_object.assert_called_once_with(
+            Bucket="datainclusion-elements", Key="cvs/test-cv.pdf"
+        )
+
+        # Vérifier que le contenu encodé en base64 est correct dans la requête
+        import base64
+
+        expected_base64_content = base64.b64encode(b"contenu-cv-test").decode("utf-8")
+
+        # Vérifier que la requête envoyée contient le contenu encodé en base64
+        requests = httpx_mock.get_requests()
+        assert len(requests) == 1
+        request = requests[0]
+        request_data = await request.aread()
+        assert expected_base64_content.encode() in request_data

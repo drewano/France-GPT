@@ -350,6 +350,8 @@ class TestSearchServices:
         self, httpx_mock, search_services_response, geocoding_response
     ):
         """Test de search_services avec une réponse réussie."""
+        from src.mcp_server.services.datainclusion.schemas import SearchedService
+
         # Configuration des mocks HTTP
         httpx_mock.add_response(
             url="https://api-adresse.data.gouv.fr/search/?q=Paris&limit=1",
@@ -370,12 +372,23 @@ class TestSearchServices:
         # Vérifications
         assert isinstance(result, list)
         assert len(result) == 2
-        # Vérifier la structure des résultats transformés
-        assert "id" in result[0]
-        assert "nom" in result[0]
-        assert "structure" in result[0]
-        assert "nom" in result[0]["structure"]
-        assert "adresse" in result[0]["structure"]
+        # Vérifier que les objets retournés sont des instances de SearchedService
+        assert isinstance(result[0], SearchedService)
+        assert isinstance(result[1], SearchedService)
+
+        # Vérifier les champs de contact du service
+        assert result[0].phone == "0123456789"
+        assert result[0].email == "contact@service-numerique.fr"
+        assert result[1].phone == "0198765432"
+        assert result[1].email == "info@atelier-mediation.fr"
+
+        # Vérifier les champs de contact de la structure
+        assert result[0].structure_details.phone == "0123456789"
+        assert result[0].structure_details.email == "contact@maison-quartier.fr"
+        assert result[0].structure_details.website == "http://maison-quartier.fr"
+        assert result[1].structure_details.phone == "0198765432"
+        assert result[1].structure_details.email == "contact@centresocial.paris.fr"
+        assert result[1].structure_details.website == "http://centresocial.paris.fr"
 
     async def test_search_services_with_target_audience(
         self, httpx_mock, search_services_response, geocoding_response

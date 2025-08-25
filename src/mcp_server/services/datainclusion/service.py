@@ -9,7 +9,7 @@ import os
 import logging
 import httpx
 import functools
-from typing import List, Optional, Union, Literal, Dict, Any
+from typing import List, Optional, Union, Literal
 
 from fastmcp import FastMCP
 from fastmcp.tools import Tool
@@ -22,6 +22,7 @@ from .schemas import (
     ServiceSummary,
     StructureDetails,
     ServiceDetails,
+    SearchedService,
 )
 
 
@@ -209,7 +210,7 @@ async def search_services(
     location_text: str,
     themes: Union[str, List[str]],
     target_audience: Optional[Union[str, List[str]]] = None,
-) -> List[Dict[str, Any]]:
+) -> List[SearchedService]:
     """
     Recherche des services d'inclusion à proximité d'un lieu. Les résultats sont triés par distance.
     Le lieu (`location_text`) et la thématique (`themes`) sont obligatoires. La recherche est limitée à 10 résultats. Il faut passer qu'une seule chaîne de référentiel pour les thématiques. location_text doit contenir un seul nom de ville ou de région (ex.: «Paris», «Île-de-France»).
@@ -251,37 +252,7 @@ async def search_services(
     items = response.json().get("items", [])
 
     # Transformation de la sortie pour être concise et utile à l'LLM
-    results = []
-    for item in items:
-        service = item.get("service", {})
-        structure = service.get("structure", {})
-
-        # Concaténation de l'adresse pour la lisibilité
-        address_parts = [
-            structure.get("adresse"),
-            structure.get("code_postal"),
-            structure.get("commune"),
-        ]
-        full_address = " ".join(filter(None, address_parts))
-
-        results.append(
-            {
-                "id": service.get("id"),
-                "source": service.get("source"),
-                "structure_id": service.get("structure_id"),
-                "nom": service.get("nom"),
-                "description": service.get("description"),
-                "frais": service.get("frais"),
-                "modes_accueil": service.get("modes_accueil"),
-                "modes_mobilisation": service.get("modes_mobilisation"),
-                "structure": {
-                    "nom": structure.get("nom"),
-                    "adresse": full_address or None,
-                },
-            }
-        )
-
-    return results
+    return [SearchedService.model_validate(item) for item in items]
 
 
 # --- Création du serveur MCP ---

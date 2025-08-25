@@ -117,7 +117,7 @@ services:
       - SERVICES=s3
       - AWS_DEFAULT_REGION=eu-central-1 # Optionnel: Définir la région par défaut si nécessaire
     volumes:
-      - ./localstack-script.sh:/etc/localstack/init/ready.d/script.sh
+      - ./localstack-script.sh:/docker-entrypoint-initaws.d/init-s3.sh
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
       - france-gpt-net

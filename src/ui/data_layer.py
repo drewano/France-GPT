@@ -19,8 +19,8 @@ Fonctionnalités:
 
 import chainlit as cl
 from chainlit.data.sql_alchemy import SQLAlchemyDataLayer
-from chainlit.data.storage_clients.s3 import S3StorageClient
 from src.core.config import settings
+from src.core.s3_client import get_s3_client
 
 
 @cl.data_layer
@@ -37,7 +37,7 @@ def get_data_layer():
     """
     storage_client = None
     if settings.agent.DEV_AWS_ENDPOINT:
-        storage_client = S3StorageClient(bucket=settings.agent.BUCKET_NAME)
+        storage_client = get_s3_client()
 
     return SQLAlchemyDataLayer(
         conninfo=settings.agent.DATABASE_URL, storage_provider=storage_client

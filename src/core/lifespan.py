@@ -14,6 +14,7 @@ import httpx  # Import httpx
 # Imports locaux
 from .config import settings
 from ..db.session import initialize_database
+from .s3_client import ensure_bucket_exists
 
 # Configuration du logging
 logger = logging.getLogger("datainclusion.agent")
@@ -71,6 +72,24 @@ async def lifespan(_app: FastAPI):
         logger.critical("❌ Échec de l'initialisation de la base de données: %s", e)
         raise RuntimeError(
             f"L'application ne peut pas démarrer sans base de données: {e}"
+        ) from e
+
+    # Vérification et création du bucket S3 si nécessaire
+    try:
+        if settings.agent.DEV_AWS_ENDPOINT:
+            bucket_exists = await ensure_bucket_exists()
+            if bucket_exists:
+                logger.info("✅ Bucket S3 vérifié/créé avec succès")
+            else:
+                logger.warning("⚠️ Impossible de vérifier/créer le bucket S3")
+        else:
+            logger.info(
+                "ℹ️  Pas de configuration S3 détectée, passage de la vérification du bucket"
+            )
+    except Exception as e:
+        logger.critical("❌ Échec de la configuration du bucket S3: %s", e)
+        raise RuntimeError(
+            f"L'application ne peut pas démarrer sans bucket S3: {e}"
         ) from e
 
     # Logique de connexion aux serveurs MCP avec retry et backoff exponentiel

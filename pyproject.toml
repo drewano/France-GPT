@@ -22,7 +22,9 @@ dependencies = [
     "greenlet",
     "aiohttp",
     "boto3",
-    "pylegifrance"
+    "aioboto3",
+    "pylegifrance",
+    "PyPDF2"
 ]
 
 [project.optional-dependencies]
@@ -33,7 +35,8 @@ dev = [
     "pytest-asyncio",
     "pre-commit",
     "pytest-httpx",
-    "pytest-mock"
+    "pytest-mock",
+    "pytest-cov"
 ]
 
 [project.urls]

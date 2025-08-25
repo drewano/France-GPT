@@ -159,6 +159,7 @@ france-GPT/
     ├── core/              # Configuration centrale, profils, etc.
     │   ├── config.py      # Gestion de la configuration (Pydantic Settings)
     │   ├── lifespan.py    # Logique de démarrage/arrêt de l'app
+    │   ├── s3_client.py   # Gestion centralisée du client S3 et vérification du bucket
     │   └── profiles.py    # Définition des profils d'agents (Agent Social, etc.)
     ├── db/                # Configuration de la base de données SQLAlchemy
     │   ├── models.py      # Modèles de tables pour Chainlit
@@ -202,6 +203,10 @@ Quand un utilisateur interagit, `ui/chat.py` sélectionne un profil d'agent déf
 - **`@cl.on_message`** intercepte le message de l'utilisateur.
 - La fonction `process_agent_modern_with_history` est appelée. Elle utilise la méthode `agent.iter()` de Pydantic AI, qui est la manière la plus moderne et robuste de gérer une conversation.
 - Elle parcourt le graphe d'exécution de l'agent nœud par nœud (`ModelRequestNode`, `CallToolsNode`, etc.), ce qui permet d'afficher en temps réel les appels d'outils dans des `cl.Step` et de streamer la réponse finale token par token.
+
+### 4. Gestion du Stockage S3
+
+L'application utilise un bucket S3 (via Localstack en développement) pour stocker les éléments multimédias et fichiers. Au démarrage, l'application vérifie automatiquement l'existence du bucket configuré et le crée si nécessaire grâce à la fonction `ensure_bucket_exists` dans `src/core/s3_client.py`.
 
 ## 🤝 Contribuer
 

@@ -122,6 +122,10 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
             "Utilise l'outil `search_emploi` pour trouver des offres par codes ROME et localisation. "
             "Utilise `search_formations` pour les formations. "
             "Si un utilisateur demande plus de détails, utilise `get_emploi` ou `get_formations` avec l'ID obtenu lors de la recherche initiale. "
+            "Lorsqu'un utilisateur veut postuler à une offre, tu dois suivre une séquence précise : "
+            "1. D'abord, collecte les informations personnelles de l'utilisateur (nom, prénom, email, téléphone). "
+            "2. Ensuite, utilise obligatoirement l'outil `ask_for_cv()` pour que l'utilisateur téléverse son CV au format PDF. Cet outil retournera une clé de référence du fichier. "
+            "3. Enfin, appelle l'outil `apply_for_job` en utilisant toutes les informations collectées, en passant la clé de référence du CV dans le paramètre `cv_s3_object_key`. "
             "Sois concis et présente les résultats de manière claire."
         ),
         mcp_service_name="labonnealternance",
@@ -136,6 +140,11 @@ AGENT_PROFILES: dict[str, AgentProfile] = {
                 label="Chercher une formation",
                 message="Je cherche une formation en boulangerie en alternance près de Lyon.",
                 icon="/public/icons/house.png",
+            ),
+            StarterConfig(
+                label="Postuler à une offre",
+                message="Je souhaite postuler à une offre, peux-tu m'aider ?",
+                icon="/public/icons/apply.png",
             ),
         ],
     ),
