@@ -128,7 +128,9 @@ def _process_juri_result(res: Any) -> Optional[Dict[str, str]]:
 
 # --- Outil 1: Découverte ---
 @api_call_handler
-async def rechercher_textes_juridiques(mots_cles: str, loda_service: Loda, juri_api: JuriAPI) -> List[Dict[str, str]]:
+async def rechercher_textes_juridiques(
+    mots_cles: str, loda_service: Loda, juri_api: JuriAPI
+) -> List[Dict[str, str]]:
     """
     Outil de recherche initial. Cherche des documents par mots-clés et retourne des candidats.
     Pour chaque candidat, utilisez l'ID avec l'outil spécialisé recommandé.
@@ -176,7 +178,9 @@ async def rechercher_textes_juridiques(mots_cles: str, loda_service: Loda, juri_
 
 
 @api_call_handler
-async def consulter_article_code(id_article: str, code_service: Code) -> Optional[Dict[str, str]]:
+async def consulter_article_code(
+    id_article: str, code_service: Code
+) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'un ARTICLE DE CODE via son ID (ex: 'LEGIARTI...')."""
     logger.info("Consultation de l'article de code ID: %s", id_article)
     # Pour les articles, la consultation à la date du jour est la plus sûre
@@ -186,7 +190,9 @@ async def consulter_article_code(id_article: str, code_service: Code) -> Optiona
 
 
 @api_call_handler
-async def consulter_texte_loi_decret(id_texte: str, loda_service: Loda) -> Optional[Dict[str, str]]:
+async def consulter_texte_loi_decret(
+    id_texte: str, loda_service: Loda
+) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une LOI ou d'un DÉCRET via son ID (ex: 'LEGITEXT...')."""
     logger.info("Consultation du texte/loi/décret ID: %s", id_texte)
 
@@ -196,7 +202,9 @@ async def consulter_texte_loi_decret(id_texte: str, loda_service: Loda) -> Optio
 
 
 @api_call_handler
-async def consulter_decision_justice(id_decision: str, juri_api: JuriAPI) -> Optional[Dict[str, str]]:
+async def consulter_decision_justice(
+    id_decision: str, juri_api: JuriAPI
+) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une DÉCISION DE JUSTICE via son ID (ex: 'JURI...')."""
     logger.info("Consultation de la décision de justice ID: %s", id_decision)
     # Pour la jurisprudence, un fetch simple est généralement suffisant

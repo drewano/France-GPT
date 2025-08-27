@@ -71,7 +71,8 @@ async def fetch_reference_values(
 @api_call_handler
 async def list_all_structures(
     client: httpx.AsyncClient,
-    themes: Union[str, List[str]], network: Optional[str] = None
+    themes: Union[str, List[str]],
+    network: Optional[str] = None,
 ) -> List[StructureSummary]:
     """Liste les structures d'inclusion, avec un filtre thématique obligatoire. Limité à 15 résultats."""
     if isinstance(themes, str):
@@ -113,7 +114,9 @@ async def list_all_services(
 
 
 @api_call_handler
-async def get_structure_details(client: httpx.AsyncClient, source: str, structure_id: str) -> StructureDetails:
+async def get_structure_details(
+    client: httpx.AsyncClient, source: str, structure_id: str
+) -> StructureDetails:
     """Récupère les informations détaillées d'une structure spécifique à partir de sa source et de son ID."""
     url = f"/api/v1/structures/{source}/{structure_id}"
     response = await client.get(url)
@@ -122,7 +125,9 @@ async def get_structure_details(client: httpx.AsyncClient, source: str, structur
 
 
 @api_call_handler
-async def get_service_details(client: httpx.AsyncClient, source: str, service_id: str) -> ServiceDetails:
+async def get_service_details(
+    client: httpx.AsyncClient, source: str, service_id: str
+) -> ServiceDetails:
     """Récupère les informations détaillées d'un service spécifique à partir de sa source et de son ID."""
     url = f"/api/v1/services/{source}/{service_id}"
     response = await client.get(url)

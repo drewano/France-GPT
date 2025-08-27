@@ -278,11 +278,8 @@ class TestMCPServiceFactory:
         mock_module = mocker.MagicMock()
         mock_module.__all__ = ["fake_tool"]
         mock_module.fake_tool = fake_tool
-        
-        mocker.patch(
-            "importlib.import_module",
-            return_value=mock_module
-        )
+
+        mocker.patch("importlib.import_module", return_value=mock_module)
 
         # Création de la factory
         factory = MCPServiceFactory(config=service_config, logger=logger)

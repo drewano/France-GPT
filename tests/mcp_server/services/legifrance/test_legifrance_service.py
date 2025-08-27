@@ -19,26 +19,24 @@ class TestRechercherTextesJuridiques:
         # Configuration des mocks
         mock_loda = MagicMock()
         mock_juri = MagicMock()
-        
+
         # Configuration des résultats LODA
         mock_loda_result = MagicMock()
         mock_loda_result.id = "LEGITEXT000000000001"
         mock_loda_result.title = "Loi Test"
-        
+
         # Configuration des résultats JURI
         mock_juri_result = MagicMock()
         mock_juri_result.id = "JURI000000000001"
         mock_juri_result.title = "Décision Test"
-        
+
         # Configuration des comportements des mocks
         mock_loda.search.return_value = [mock_loda_result]
         mock_juri.search.return_value = [mock_juri_result]
 
         # Appel de la fonction
         result = await rechercher_textes_juridiques(
-            "test", 
-            loda_service=mock_loda, 
-            juri_api=mock_juri
+            "test", loda_service=mock_loda, juri_api=mock_juri
         )
 
         # Vérifications
@@ -54,16 +52,14 @@ class TestRechercherTextesJuridiques:
         # Configuration des mocks
         mock_loda = MagicMock()
         mock_juri = MagicMock()
-        
+
         # Configuration du mock pour lever une exception
         mock_loda.search.side_effect = ValueError("Erreur de recherche")
 
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
             await rechercher_textes_juridiques(
-                "test", 
-                loda_service=mock_loda, 
-                juri_api=mock_juri
+                "test", loda_service=mock_loda, juri_api=mock_juri
             )
 
     async def test_rechercher_textes_juridiques_with_juri_error(self):
@@ -71,7 +67,7 @@ class TestRechercherTextesJuridiques:
         # Configuration des mocks
         mock_loda = MagicMock()
         mock_juri = MagicMock()
-        
+
         # Configuration des résultats LODA
         mock_loda_result = MagicMock()
         mock_loda_result.id = "LEGITEXT000000000001"
@@ -84,9 +80,7 @@ class TestRechercherTextesJuridiques:
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
             await rechercher_textes_juridiques(
-                "test", 
-                loda_service=mock_loda, 
-                juri_api=mock_juri
+                "test", loda_service=mock_loda, juri_api=mock_juri
             )
 
 
@@ -110,8 +104,7 @@ class TestConsulterArticleCode:
 
         # Appel de la fonction
         result = await consulter_article_code(
-            "LEGIARTI000000000001", 
-            code_service=mock_code_service
+            "LEGIARTI000000000001", code_service=mock_code_service
         )
 
         # Vérifications
@@ -130,8 +123,7 @@ class TestConsulterArticleCode:
 
         # Appel de la fonction
         result = await consulter_article_code(
-            "LEGIARTI000000000001", 
-            code_service=mock_code_service
+            "LEGIARTI000000000001", code_service=mock_code_service
         )
 
         # Vérifications
@@ -146,8 +138,7 @@ class TestConsulterArticleCode:
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
             await consulter_article_code(
-                "LEGIARTI000000000001", 
-                code_service=mock_code_service
+                "LEGIARTI000000000001", code_service=mock_code_service
             )
 
 
@@ -169,8 +160,7 @@ class TestConsulterTexteLoiDecret:
 
         # Appel de la fonction
         result = await consulter_texte_loi_decret(
-            "LEGITEXT000000000001", 
-            loda_service=mock_loda_service
+            "LEGITEXT000000000001", loda_service=mock_loda_service
         )
 
         # Vérifications
@@ -187,8 +177,7 @@ class TestConsulterTexteLoiDecret:
 
         # Appel de la fonction
         result = await consulter_texte_loi_decret(
-            "LEGITEXT000000000001", 
-            loda_service=mock_loda_service
+            "LEGITEXT000000000001", loda_service=mock_loda_service
         )
 
         # Vérifications
@@ -203,8 +192,7 @@ class TestConsulterTexteLoiDecret:
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
             await consulter_texte_loi_decret(
-                "LEGITEXT000000000001", 
-                loda_service=mock_loda_service
+                "LEGITEXT000000000001", loda_service=mock_loda_service
             )
 
 
@@ -226,8 +214,7 @@ class TestConsulterDecisionJustice:
 
         # Appel de la fonction
         result = await consulter_decision_justice(
-            "JURI000000000001", 
-            juri_api=mock_juri_api
+            "JURI000000000001", juri_api=mock_juri_api
         )
 
         # Vérifications
@@ -244,8 +231,7 @@ class TestConsulterDecisionJustice:
 
         # Appel de la fonction
         result = await consulter_decision_justice(
-            "JURI000000000001", 
-            juri_api=mock_juri_api
+            "JURI000000000001", juri_api=mock_juri_api
         )
 
         # Vérifications
@@ -259,10 +245,7 @@ class TestConsulterDecisionJustice:
 
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
-            await consulter_decision_justice(
-                "JURI000000000001", 
-                juri_api=mock_juri_api
-            )
+            await consulter_decision_justice("JURI000000000001", juri_api=mock_juri_api)
 
 
 @pytest.mark.asyncio
@@ -283,8 +266,7 @@ class TestConsulterConventionCollective:
 
         # Appel de la fonction
         result = await consulter_convention_collective(
-            "KALITEXT000000000001", 
-            loda_service=mock_loda_service
+            "KALITEXT000000000001", loda_service=mock_loda_service
         )
 
         # Vérifications
@@ -301,8 +283,7 @@ class TestConsulterConventionCollective:
 
         # Appel de la fonction
         result = await consulter_convention_collective(
-            "KALITEXT000000000001", 
-            loda_service=mock_loda_service
+            "KALITEXT000000000001", loda_service=mock_loda_service
         )
 
         # Vérifications
@@ -317,6 +298,5 @@ class TestConsulterConventionCollective:
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
             await consulter_convention_collective(
-                "KALITEXT000000000001", 
-                loda_service=mock_loda_service
+                "KALITEXT000000000001", loda_service=mock_loda_service
             )

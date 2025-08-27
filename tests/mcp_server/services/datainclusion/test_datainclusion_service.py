@@ -46,7 +46,9 @@ class TestReferenceValues:
     ):
         """Test de fetch_reference_values avec une réponse réussie."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=reference_themes_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=reference_themes_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -63,9 +65,12 @@ class TestReferenceValues:
         """Test de fetch_reference_values avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 500
         from httpx import HTTPStatusError
-        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
-            "Internal Server Error", request=MagicMock(), response=MagicMock()
-        ))
+
+        mock_client.get.return_value.raise_for_status = MagicMock(
+            side_effect=HTTPStatusError(
+                "Internal Server Error", request=MagicMock(), response=MagicMock()
+            )
+        )
         # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
         mock_client.get.return_value.json = MagicMock()
 
@@ -99,7 +104,9 @@ class TestListAllStructures:
     ):
         """Test de list_all_structures avec une réponse réussie."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=list_structures_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=list_structures_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -119,7 +126,9 @@ class TestListAllStructures:
     ):
         """Test de list_all_structures avec un filtre réseau."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=list_structures_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=list_structures_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -135,15 +144,20 @@ class TestListAllStructures:
         """Test de list_all_structures avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 400
         from httpx import HTTPStatusError
-        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
-            "Bad Request", request=MagicMock(), response=MagicMock()
-        ))
+
+        mock_client.get.return_value.raise_for_status = MagicMock(
+            side_effect=HTTPStatusError(
+                "Bad Request", request=MagicMock(), response=MagicMock()
+            )
+        )
         # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
         mock_client.get.return_value.json = MagicMock()
 
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
-            await list_all_structures(mock_client, "numerique--accompagnement-aux-outils-numeriques")
+            await list_all_structures(
+                mock_client, "numerique--accompagnement-aux-outils-numeriques"
+            )
 
 
 @pytest.mark.asyncio
@@ -169,7 +183,9 @@ class TestListAllServices:
     async def test_list_all_services_success(self, mock_client, list_services_response):
         """Test de list_all_services avec une réponse réussie."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=list_services_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=list_services_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -189,7 +205,9 @@ class TestListAllServices:
     ):
         """Test de list_all_services avec des filtres supplémentaires."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=list_services_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=list_services_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -208,15 +226,20 @@ class TestListAllServices:
         """Test de list_all_services avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 500
         from httpx import HTTPStatusError
-        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
-            "Internal Server Error", request=MagicMock(), response=MagicMock()
-        ))
+
+        mock_client.get.return_value.raise_for_status = MagicMock(
+            side_effect=HTTPStatusError(
+                "Internal Server Error", request=MagicMock(), response=MagicMock()
+            )
+        )
         # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
         mock_client.get.return_value.json = MagicMock()
 
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
-            await list_all_services(mock_client, "numerique--accompagnement-aux-outils-numeriques")
+            await list_all_services(
+                mock_client, "numerique--accompagnement-aux-outils-numeriques"
+            )
 
 
 @pytest.mark.asyncio
@@ -246,7 +269,9 @@ class TestGetStructureDetails:
     ):
         """Test de get_structure_details avec une réponse réussie."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=get_structure_details_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=get_structure_details_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -267,9 +292,12 @@ class TestGetStructureDetails:
         """Test de get_structure_details avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 404
         from httpx import HTTPStatusError
-        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
-            "Not Found", request=MagicMock(), response=MagicMock()
-        ))
+
+        mock_client.get.return_value.raise_for_status = MagicMock(
+            side_effect=HTTPStatusError(
+                "Not Found", request=MagicMock(), response=MagicMock()
+            )
+        )
         # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
         mock_client.get.return_value.json = MagicMock()
 
@@ -305,7 +333,9 @@ class TestGetServiceDetails:
     ):
         """Test de get_service_details avec une réponse réussie."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=get_service_details_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=get_service_details_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -327,9 +357,12 @@ class TestGetServiceDetails:
         """Test de get_service_details avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 404
         from httpx import HTTPStatusError
-        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
-            "Not Found", request=MagicMock(), response=MagicMock()
-        ))
+
+        mock_client.get.return_value.raise_for_status = MagicMock(
+            side_effect=HTTPStatusError(
+                "Not Found", request=MagicMock(), response=MagicMock()
+            )
+        )
         # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
         mock_client.get.return_value.json = MagicMock()
 
@@ -375,9 +408,11 @@ class TestSearchServices:
             json=geocoding_response,
             status_code=200,
         )
-        
+
         # Configuration du mock HTTP pour le client principal
-        mock_client.get.return_value.json = MagicMock(return_value=search_services_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=search_services_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -416,14 +451,19 @@ class TestSearchServices:
             json=geocoding_response,
             status_code=200,
         )
-        
+
         # Configuration du mock HTTP pour le client principal
-        mock_client.get.return_value.json = MagicMock(return_value=search_services_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=search_services_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
         result = await search_services(
-            mock_client, "Paris", "numerique--accompagnement-aux-outils-numeriques", "adultes"
+            mock_client,
+            "Paris",
+            "numerique--accompagnement-aux-outils-numeriques",
+            "adultes",
         )
 
         # Vérifications
@@ -443,13 +483,20 @@ class TestSearchServices:
         # Note: Le décorateur api_call_handler attrape les ValueError et les relance comme ModelRetry
         with pytest.raises(ModelRetry) as exc_info:
             await search_services(
-                AsyncMock(), "InvalidLocation", "numerique--accompagnement-aux-outils-numeriques"
+                AsyncMock(),
+                "InvalidLocation",
+                "numerique--accompagnement-aux-outils-numeriques",
             )
-        
-        # Vérifier que le message d'erreur contient la raison attendue
-        assert "Le géocodage pour 'InvalidLocation' n'a pas retourné de code INSEE valide." in str(exc_info.value)
 
-    async def test_search_services_http_error(self, httpx_mock, mock_client, geocoding_response):
+        # Vérifier que le message d'erreur contient la raison attendue
+        assert (
+            "Le géocodage pour 'InvalidLocation' n'a pas retourné de code INSEE valide."
+            in str(exc_info.value)
+        )
+
+    async def test_search_services_http_error(
+        self, httpx_mock, mock_client, geocoding_response
+    ):
         """Test de search_services avec une erreur HTTP de l'API Data Inclusion."""
         # Configuration des mocks HTTP
         httpx_mock.add_response(
@@ -457,12 +504,15 @@ class TestSearchServices:
             json=geocoding_response,
             status_code=200,
         )
-        
+
         # Configuration du mock HTTP pour le client principal
         from httpx import HTTPStatusError
-        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
-            "Internal Server Error", request=MagicMock(), response=MagicMock()
-        ))
+
+        mock_client.get.return_value.raise_for_status = MagicMock(
+            side_effect=HTTPStatusError(
+                "Internal Server Error", request=MagicMock(), response=MagicMock()
+            )
+        )
         # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
         mock_client.get.return_value.json = MagicMock()
 

@@ -239,8 +239,6 @@ class MCPServiceFactory:
 
         return mcp_server
 
-    
-
     async def build(self) -> FastMCP:
         """
         Orchestrates the complete construction of the MCP server.
@@ -304,7 +302,9 @@ class MCPServiceFactory:
         Raises:
             Exception: If any step in the build process fails.
         """
-        self.logger.info(f"Creating FastMCP server '{self.config.name}' from programmatic tools...")
+        self.logger.info(
+            f"Creating FastMCP server '{self.config.name}' from programmatic tools..."
+        )
 
         # Create a base FastMCP instance
         mcp_server = FastMCP(name=self.config.name)
@@ -314,38 +314,49 @@ class MCPServiceFactory:
         try:
             tool_module = importlib.import_module(self.config.programmatic_tools_module)
         except ImportError as e:
-            self.logger.error(f"Failed to import module '{self.config.programmatic_tools_module}': {e}")
+            self.logger.error(
+                f"Failed to import module '{self.config.programmatic_tools_module}': {e}"
+            )
             raise
 
         # Determine which tools to import
         tool_names = []
-        if hasattr(tool_module, '__all__'):
+        if hasattr(tool_module, "__all__"):
             # Use __all__ if defined
             tool_names = tool_module.__all__
-            self.logger.info(f"Found __all__ with {len(tool_names)} tools: {tool_names}")
+            self.logger.info(
+                f"Found __all__ with {len(tool_names)} tools: {tool_names}"
+            )
         else:
             # Otherwise, inspect all members of the module
             self.logger.info("No __all__ found, inspecting all module members...")
             for name, member in inspect.getmembers(tool_module):
                 # Check if it's an async function and not private (doesn't start with _)
-                if (inspect.iscoroutinefunction(member) and 
-                    not name.startswith('_') and 
-                    not name.startswith('async')):
+                if (
+                    inspect.iscoroutinefunction(member)
+                    and not name.startswith("_")
+                    and not name.startswith("async")
+                ):
                     tool_names.append(name)
-            
+
             self.logger.info(f"Found {len(tool_names)} async functions: {tool_names}")
 
         # Instanciation des clients et services nécessaires
         dependencies = {}
-        
+
         # Si self.config.auth est de type BearerAuthConfig, créez un httpx.AsyncClient
-        if self.config.auth and hasattr(self.config.auth, 'method') and self.config.auth.method == "bearer":
+        if (
+            self.config.auth
+            and hasattr(self.config.auth, "method")
+            and self.config.auth.method == "bearer"
+        ):
             import os
+
             api_key = os.getenv(self.config.auth.api_key_env_var)
             if api_key:
-                dependencies['client'] = httpx.AsyncClient(
+                dependencies["client"] = httpx.AsyncClient(
                     base_url=self.config.base_url,
-                    headers={"Authorization": f"Bearer {api_key}"}
+                    headers={"Authorization": f"Bearer {api_key}"},
                 )
                 self.logger.info("Created HTTP client with Bearer authentication")
 
@@ -353,9 +364,9 @@ class MCPServiceFactory:
         if self.config.name == "legifrance":
             try:
                 legifrance_client = LegifranceClient()
-                dependencies['loda_service'] = Loda(legifrance_client)
-                dependencies['juri_api'] = JuriAPI(legifrance_client)
-                dependencies['code_service'] = Code(legifrance_client)
+                dependencies["loda_service"] = Loda(legifrance_client)
+                dependencies["juri_api"] = JuriAPI(legifrance_client)
+                dependencies["code_service"] = Code(legifrance_client)
                 self.logger.info("Created Legifrance services")
             except Exception as e:
                 self.logger.error(f"Failed to create Legifrance services: {e}")
@@ -365,32 +376,38 @@ class MCPServiceFactory:
         added_tools = 0
         for tool_name in tool_names:
             tool_func = getattr(tool_module, tool_name)
-            
+
             # Verify it's an async function
             if not inspect.iscoroutinefunction(tool_func):
-                self.logger.warning(f"Skipping '{tool_name}' as it's not an async function")
+                self.logger.warning(
+                    f"Skipping '{tool_name}' as it's not an async function"
+                )
                 continue
-                
+
             # Add the tool to the server with dependency injection using functools.partial
             try:
                 # Inspect the function signature to determine which dependencies to inject
                 sig = inspect.signature(tool_func)
                 dependencies_to_inject = {}
-                
+
                 for param_name, param in sig.parameters.items():
                     if param_name in dependencies:
                         dependencies_to_inject[param_name] = dependencies[param_name]
-                
+
                 # Create a wrapper function with proper signature for Pydantic
                 if dependencies_to_inject:
-                    wrapped_func = self._create_tool_wrapper(tool_func, dependencies_to_inject)
+                    wrapped_func = self._create_tool_wrapper(
+                        tool_func, dependencies_to_inject
+                    )
                     mcp_server.add_tool(Tool.from_function(fn=wrapped_func))
-                    self.logger.info(f"Added tool with dependency injection: {tool_name}")
+                    self.logger.info(
+                        f"Added tool with dependency injection: {tool_name}"
+                    )
                 else:
                     # No dependencies to inject, add the function directly
                     mcp_server.add_tool(Tool.from_function(fn=tool_func))
                     self.logger.info(f"Added tool: {tool_name}")
-                
+
                 added_tools += 1
             except Exception as e:
                 self.logger.error(f"Failed to add tool '{tool_name}': {e}")
@@ -404,7 +421,9 @@ class MCPServiceFactory:
             """A simple health check endpoint."""
             return PlainTextResponse("OK", status_code=200)
 
-        self.logger.info(f"FastMCP server '{mcp_server.name}' created successfully from programmatic tools!")
+        self.logger.info(
+            f"FastMCP server '{mcp_server.name}' created successfully from programmatic tools!"
+        )
         self.logger.info(f"   - {added_tools} programmatic tools added")
         self.logger.info("   - Health check endpoint (/health) added successfully")
 
@@ -413,42 +432,43 @@ class MCPServiceFactory:
     def _create_tool_wrapper(self, tool_func, dependencies_to_inject):
         """
         Creates a wrapper function with a proper signature for Pydantic schema generation.
-        
+
         Args:
             tool_func: The original tool function
             dependencies_to_inject: Dictionary of dependencies to inject
-            
+
         Returns:
             A wrapped function with proper signature
         """
         # Inspect the function signature
         sig = inspect.signature(tool_func)
-        
+
         # Create new parameters excluding injected dependencies
         new_params = [
-            param for name, param in sig.parameters.items() 
+            param
+            for name, param in sig.parameters.items()
             if name not in dependencies_to_inject
         ]
-        
+
         # Create new signature without injected dependencies
         new_sig = sig.replace(parameters=new_params)
-        
+
         # Define the async wrapper function
         async def wrapper(*args, **kwargs):
             # Bind the provided arguments to the new signature
             bound_args = new_sig.bind(*args, **kwargs)
             bound_args.apply_defaults()
-            
+
             # Merge with injected dependencies
             all_args = {**bound_args.arguments, **dependencies_to_inject}
-            
+
             # Call the original function with all arguments
             return await tool_func(**all_args)
-        
+
         # Set the new signature and copy metadata
         wrapper.__signature__ = new_sig
         functools.update_wrapper(wrapper, tool_func)
-        
+
         return wrapper
 
     async def cleanup(self) -> None:

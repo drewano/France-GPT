@@ -47,7 +47,9 @@ class TestSearchEmploi:
     async def test_search_emploi_success(self, mock_client, search_emploi_response):
         """Test de search_emploi avec une réponse réussie."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=search_emploi_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=search_emploi_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -66,11 +68,15 @@ class TestSearchEmploi:
     ):
         """Test de search_emploi avec des coordonnées géographiques."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=search_emploi_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=search_emploi_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
-        result = await search_emploi(mock_client, "D1405", latitude=48.8566, longitude=2.3522)
+        result = await search_emploi(
+            mock_client, "D1405", latitude=48.8566, longitude=2.3522
+        )
 
         # Vérifications
         assert isinstance(result, list)
@@ -82,11 +88,15 @@ class TestSearchEmploi:
     ):
         """Test de search_emploi avec un niveau de diplôme."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=search_emploi_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=search_emploi_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
-        result = await search_emploi(mock_client, "D1405", target_diploma_level="LICENCE")
+        result = await search_emploi(
+            mock_client, "D1405", target_diploma_level="LICENCE"
+        )
 
         # Vérifications
         assert isinstance(result, list)
@@ -97,9 +107,12 @@ class TestSearchEmploi:
         """Test de search_emploi avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 500
         from httpx import HTTPStatusError
-        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
-            "Internal Server Error", request=MagicMock(), response=MagicMock()
-        ))
+
+        mock_client.get.return_value.raise_for_status = MagicMock(
+            side_effect=HTTPStatusError(
+                "Internal Server Error", request=MagicMock(), response=MagicMock()
+            )
+        )
         # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
         mock_client.get.return_value.json = MagicMock()
 
@@ -150,9 +163,12 @@ class TestGetEmploi:
         """Test de get_emploi avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 404
         from httpx import HTTPStatusError
-        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
-            "Not Found", request=MagicMock(), response=MagicMock()
-        ))
+
+        mock_client.get.return_value.raise_for_status = MagicMock(
+            side_effect=HTTPStatusError(
+                "Not Found", request=MagicMock(), response=MagicMock()
+            )
+        )
         # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
         mock_client.get.return_value.json = MagicMock()
 
@@ -187,7 +203,9 @@ class TestSearchFormations:
     ):
         """Test de search_formations avec une réponse réussie."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=search_formations_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=search_formations_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -206,7 +224,9 @@ class TestSearchFormations:
     ):
         """Test de search_formations avec des coordonnées géographiques."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=search_formations_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=search_formations_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -223,9 +243,12 @@ class TestSearchFormations:
         """Test de search_formations avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 500
         from httpx import HTTPStatusError
-        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
-            "Internal Server Error", request=MagicMock(), response=MagicMock()
-        ))
+
+        mock_client.get.return_value.raise_for_status = MagicMock(
+            side_effect=HTTPStatusError(
+                "Internal Server Error", request=MagicMock(), response=MagicMock()
+            )
+        )
         # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
         mock_client.get.return_value.json = MagicMock()
 
@@ -258,7 +281,9 @@ class TestGetFormations:
     async def test_get_formations_success(self, mock_client, get_formations_response):
         """Test de get_formations avec une réponse réussie."""
         # Configuration du mock HTTP
-        mock_client.get.return_value.json = MagicMock(return_value=get_formations_response)
+        mock_client.get.return_value.json = MagicMock(
+            return_value=get_formations_response
+        )
         mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
@@ -276,9 +301,12 @@ class TestGetFormations:
         """Test de get_formations avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 404
         from httpx import HTTPStatusError
-        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
-            "Not Found", request=MagicMock(), response=MagicMock()
-        ))
+
+        mock_client.get.return_value.raise_for_status = MagicMock(
+            side_effect=HTTPStatusError(
+                "Not Found", request=MagicMock(), response=MagicMock()
+            )
+        )
         # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
         mock_client.get.return_value.json = MagicMock()
 
@@ -439,7 +467,9 @@ class TestApplyForJob:
 
         # Création d'un client HTTP mocké
         mock_client = AsyncMock(spec=httpx.AsyncClient)
-        mock_client.post.return_value.json = MagicMock(return_value={"id": "application-123"})
+        mock_client.post.return_value.json = MagicMock(
+            return_value={"id": "application-123"}
+        )
         mock_client.post.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction avec des données de test
@@ -472,7 +502,7 @@ class TestApplyForJob:
         mock_client.post.assert_called_once()
         call_args = mock_client.post.call_args
         assert call_args[0][0] == "/job/v1/apply"
-        
+
         # Vérifier que le payload contient le contenu encodé en base64
         payload = call_args[1]["json"]
         assert payload["applicant_attachment_content"] == expected_base64_content
