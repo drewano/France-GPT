@@ -24,7 +24,7 @@ dependencies = [
     "boto3",
     "aioboto3",
     "pylegifrance",
-    "PyPDF2"
+    "pypdf"
 ]
 
 [project.optional-dependencies]

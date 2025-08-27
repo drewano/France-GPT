@@ -5,7 +5,7 @@ Module for handling chat interactions and agent management in the Chainlit UI.
 import io
 import base64
 from typing import Optional, Dict, List, Tuple, Any
-import PyPDF2
+import pypdf
 import chainlit as cl
 
 from chainlit.types import ThreadDict
@@ -50,7 +50,7 @@ async def _process_files(
         # Si c'est un PDF, extraire le texte
         if file.mime == "application/pdf":
             try:
-                pdf_reader = PyPDF2.PdfReader(io.BytesIO(content_bytes))
+                pdf_reader = pypdf.PdfReader(io.BytesIO(content_bytes))
                 full_text = ""
                 for page in pdf_reader.pages:
                     full_text += page.extract_text() + "\n"

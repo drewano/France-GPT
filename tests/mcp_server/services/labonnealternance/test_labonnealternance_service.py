@@ -1,7 +1,8 @@
 import pytest
 import json
 import os
-from unittest.mock import mock_open
+import httpx
+from unittest.mock import mock_open, AsyncMock, MagicMock
 from src.mcp_server.services.labonnealternance.service import (
     search_emploi,
     get_emploi,
@@ -27,6 +28,11 @@ class TestSearchEmploi:
     """Tests pour la fonction search_emploi."""
 
     @pytest.fixture
+    def mock_client(self):
+        """Crée un client HTTP mocké."""
+        return AsyncMock(spec=httpx.AsyncClient)
+
+    @pytest.fixture
     def search_emploi_response(self):
         """Charge la réponse de search_emploi."""
         with open(
@@ -38,17 +44,14 @@ class TestSearchEmploi:
             return json.load(f)
 
     @pytest.mark.asyncio
-    async def test_search_emploi_success(self, httpx_mock, search_emploi_response):
+    async def test_search_emploi_success(self, mock_client, search_emploi_response):
         """Test de search_emploi avec une réponse réussie."""
         # Configuration du mock HTTP
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/job/v1/search?romes=D1405%2CD1406&radius=30",
-            json=search_emploi_response,
-            status_code=200,
-        )
+        mock_client.get.return_value.json = MagicMock(return_value=search_emploi_response)
+        mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
-        result = await search_emploi(["D1405", "D1406"])
+        result = await search_emploi(mock_client, ["D1405", "D1406"])
 
         # Vérifications
         assert isinstance(result, list)
@@ -59,18 +62,15 @@ class TestSearchEmploi:
 
     @pytest.mark.asyncio
     async def test_search_emploi_with_location(
-        self, httpx_mock, search_emploi_response
+        self, mock_client, search_emploi_response
     ):
         """Test de search_emploi avec des coordonnées géographiques."""
         # Configuration du mock HTTP
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/job/v1/search?romes=D1405&latitude=48.8566&longitude=2.3522&radius=30",
-            json=search_emploi_response,
-            status_code=200,
-        )
+        mock_client.get.return_value.json = MagicMock(return_value=search_emploi_response)
+        mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
-        result = await search_emploi("D1405", latitude=48.8566, longitude=2.3522)
+        result = await search_emploi(mock_client, "D1405", latitude=48.8566, longitude=2.3522)
 
         # Vérifications
         assert isinstance(result, list)
@@ -78,41 +78,44 @@ class TestSearchEmploi:
 
     @pytest.mark.asyncio
     async def test_search_emploi_with_diploma_level(
-        self, httpx_mock, search_emploi_response
+        self, mock_client, search_emploi_response
     ):
         """Test de search_emploi avec un niveau de diplôme."""
         # Configuration du mock HTTP
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/job/v1/search?romes=D1405&radius=30&target_diploma_level=6",
-            json=search_emploi_response,
-            status_code=200,
-        )
+        mock_client.get.return_value.json = MagicMock(return_value=search_emploi_response)
+        mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
-        result = await search_emploi("D1405", target_diploma_level="LICENCE")
+        result = await search_emploi(mock_client, "D1405", target_diploma_level="LICENCE")
 
         # Vérifications
         assert isinstance(result, list)
         assert len(result) == 2
 
     @pytest.mark.asyncio
-    async def test_search_emploi_http_error(self, httpx_mock):
+    async def test_search_emploi_http_error(self, mock_client):
         """Test de search_emploi avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 500
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/job/v1/search?romes=D1405&radius=30",
-            status_code=500,
-            text="Internal Server Error",
-        )
+        from httpx import HTTPStatusError
+        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
+            "Internal Server Error", request=MagicMock(), response=MagicMock()
+        ))
+        # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
+        mock_client.get.return_value.json = MagicMock()
 
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
-            await search_emploi("D1405")
+            await search_emploi(mock_client, "D1405")
 
 
 @pytest.mark.asyncio
 class TestGetEmploi:
     """Tests pour la fonction get_emploi."""
+
+    @pytest.fixture
+    def mock_client(self):
+        """Crée un client HTTP mocké."""
+        return AsyncMock(spec=httpx.AsyncClient)
 
     @pytest.fixture
     def get_emploi_response(self):
@@ -126,17 +129,14 @@ class TestGetEmploi:
             return json.load(f)
 
     @pytest.mark.asyncio
-    async def test_get_emploi_success(self, httpx_mock, get_emploi_response):
+    async def test_get_emploi_success(self, mock_client, get_emploi_response):
         """Test de get_emploi avec une réponse réussie."""
         # Configuration du mock HTTP
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/job/v1/offer/job-1",
-            json=get_emploi_response,
-            status_code=200,
-        )
+        mock_client.get.return_value.json = MagicMock(return_value=get_emploi_response)
+        mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
-        result = await get_emploi("job-1")
+        result = await get_emploi(mock_client, "job-1")
 
         # Vérifications
         assert isinstance(result, EmploiDetails)
@@ -146,23 +146,29 @@ class TestGetEmploi:
         assert result.description == "Description du poste"
 
     @pytest.mark.asyncio
-    async def test_get_emploi_http_error(self, httpx_mock):
+    async def test_get_emploi_http_error(self, mock_client):
         """Test de get_emploi avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 404
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/job/v1/offer/job-1",
-            status_code=404,
-            text="Not Found",
-        )
+        from httpx import HTTPStatusError
+        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
+            "Not Found", request=MagicMock(), response=MagicMock()
+        ))
+        # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
+        mock_client.get.return_value.json = MagicMock()
 
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
-            await get_emploi("job-1")
+            await get_emploi(mock_client, "job-1")
 
 
 @pytest.mark.asyncio
 class TestSearchFormations:
     """Tests pour la fonction search_formations."""
+
+    @pytest.fixture
+    def mock_client(self):
+        """Crée un client HTTP mocké."""
+        return AsyncMock(spec=httpx.AsyncClient)
 
     @pytest.fixture
     def search_formations_response(self):
@@ -177,18 +183,15 @@ class TestSearchFormations:
 
     @pytest.mark.asyncio
     async def test_search_formations_success(
-        self, httpx_mock, search_formations_response
+        self, mock_client, search_formations_response
     ):
         """Test de search_formations avec une réponse réussie."""
         # Configuration du mock HTTP
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/formation/v1/search?romes=D1405%2CD1406",
-            json=search_formations_response,
-            status_code=200,
-        )
+        mock_client.get.return_value.json = MagicMock(return_value=search_formations_response)
+        mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
-        result = await search_formations(["D1405", "D1406"])
+        result = await search_formations(mock_client, ["D1405", "D1406"])
 
         # Vérifications
         assert isinstance(result, list)
@@ -199,19 +202,16 @@ class TestSearchFormations:
 
     @pytest.mark.asyncio
     async def test_search_formations_with_location(
-        self, httpx_mock, search_formations_response
+        self, mock_client, search_formations_response
     ):
         """Test de search_formations avec des coordonnées géographiques."""
         # Configuration du mock HTTP
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/formation/v1/search?romes=D1405&latitude=48.8566&longitude=2.3522&radius=30",
-            json=search_formations_response,
-            status_code=200,
-        )
+        mock_client.get.return_value.json = MagicMock(return_value=search_formations_response)
+        mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
         result = await search_formations(
-            "D1405", latitude=48.8566, longitude=2.3522, radius=30
+            mock_client, "D1405", latitude=48.8566, longitude=2.3522, radius=30
         )
 
         # Vérifications
@@ -219,23 +219,29 @@ class TestSearchFormations:
         assert len(result) == 2
 
     @pytest.mark.asyncio
-    async def test_search_formations_http_error(self, httpx_mock):
+    async def test_search_formations_http_error(self, mock_client):
         """Test de search_formations avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 500
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/formation/v1/search?romes=D1405",
-            status_code=500,
-            text="Internal Server Error",
-        )
+        from httpx import HTTPStatusError
+        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
+            "Internal Server Error", request=MagicMock(), response=MagicMock()
+        ))
+        # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
+        mock_client.get.return_value.json = MagicMock()
 
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
-            await search_formations("D1405")
+            await search_formations(mock_client, "D1405")
 
 
 @pytest.mark.asyncio
 class TestGetFormations:
     """Tests pour la fonction get_formations."""
+
+    @pytest.fixture
+    def mock_client(self):
+        """Crée un client HTTP mocké."""
+        return AsyncMock(spec=httpx.AsyncClient)
 
     @pytest.fixture
     def get_formations_response(self):
@@ -249,17 +255,14 @@ class TestGetFormations:
             return json.load(f)
 
     @pytest.mark.asyncio
-    async def test_get_formations_success(self, httpx_mock, get_formations_response):
+    async def test_get_formations_success(self, mock_client, get_formations_response):
         """Test de get_formations avec une réponse réussie."""
         # Configuration du mock HTTP
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/formation/v1/formation-1",
-            json=get_formations_response,
-            status_code=200,
-        )
+        mock_client.get.return_value.json = MagicMock(return_value=get_formations_response)
+        mock_client.get.return_value.raise_for_status = MagicMock()
 
         # Appel de la fonction
-        result = await get_formations("formation-1")
+        result = await get_formations(mock_client, "formation-1")
 
         # Vérifications
         assert isinstance(result, FormationDetails)
@@ -269,18 +272,19 @@ class TestGetFormations:
         assert result.educational_content == "Contenu pédagogique"
 
     @pytest.mark.asyncio
-    async def test_get_formations_http_error(self, httpx_mock):
+    async def test_get_formations_http_error(self, mock_client):
         """Test de get_formations avec une erreur HTTP."""
         # Configuration du mock HTTP pour simuler une erreur 404
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/formation/v1/formation-1",
-            status_code=404,
-            text="Not Found",
-        )
+        from httpx import HTTPStatusError
+        mock_client.get.return_value.raise_for_status = MagicMock(side_effect=HTTPStatusError(
+            "Not Found", request=MagicMock(), response=MagicMock()
+        ))
+        # Ajout d'un mock pour json() même si elle n'est pas appelée dans le chemin d'erreur
+        mock_client.get.return_value.json = MagicMock()
 
         # Vérification que l'exception est levée
         with pytest.raises(ModelRetry):
-            await get_formations("formation-1")
+            await get_formations(mock_client, "formation-1")
 
 
 @pytest.mark.asyncio
@@ -412,16 +416,8 @@ class TestApplyForJob:
     """Tests pour la fonction apply_for_job."""
 
     @pytest.mark.asyncio
-    async def test_apply_for_job_success(self, httpx_mock, mocker):
+    async def test_apply_for_job_success(self, mocker):
         """Test de apply_for_job avec une réponse réussie."""
-        # Configuration du mock HTTP
-        httpx_mock.add_response(
-            url="https://api.apprentissage.beta.gouv.fr/api/job/v1/apply",
-            method="POST",
-            json={"id": "application-123"},
-            status_code=202,
-        )
-
         # Mock du client S3 asynchrone avec aioboto3
         mock_body = mocker.AsyncMock()
         mock_body.__aenter__ = mocker.AsyncMock(return_value=mocker.AsyncMock())
@@ -441,8 +437,14 @@ class TestApplyForJob:
         )
         mock_session.return_value.client.return_value.__aexit__ = mocker.AsyncMock()
 
+        # Création d'un client HTTP mocké
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.post.return_value.json = MagicMock(return_value={"id": "application-123"})
+        mock_client.post.return_value.raise_for_status = MagicMock()
+
         # Appel de la fonction avec des données de test
         result = await apply_for_job(
+            mock_client,
             applicant_first_name="Jean",
             applicant_last_name="Dupont",
             applicant_email="jean.dupont@example.com",
@@ -466,9 +468,11 @@ class TestApplyForJob:
 
         expected_base64_content = base64.b64encode(b"contenu-cv-test").decode("utf-8")
 
-        # Vérifier que la requête envoyée contient le contenu encodé en base64
-        requests = httpx_mock.get_requests()
-        assert len(requests) == 1
-        request = requests[0]
-        request_data = await request.aread()
-        assert expected_base64_content.encode() in request_data
+        # Vérifier que post a été appelé avec les bons arguments
+        mock_client.post.assert_called_once()
+        call_args = mock_client.post.call_args
+        assert call_args[0][0] == "/job/v1/apply"
+        
+        # Vérifier que le payload contient le contenu encodé en base64
+        payload = call_args[1]["json"]
+        assert payload["applicant_attachment_content"] == expected_base64_content

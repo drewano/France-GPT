@@ -10,10 +10,6 @@ import logging
 import httpx
 from typing import List, Optional, Union, Literal
 
-from fastmcp import FastMCP
-from fastmcp.tools import Tool
-from starlette.requests import Request
-from starlette.responses import PlainTextResponse
 from src.mcp_server.utils import api_call_handler
 from .schemas import (
     ReferenceItem,
@@ -28,46 +24,6 @@ from .schemas import (
 # --- Configuration du logging et du client API ---
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def _get_datainclusion_client() -> httpx.AsyncClient:
-    """Initialise et retourne un client HTTP pour l'API Data Inclusion."""
-    api_key = os.getenv("DATAINCLUSION_API_KEY")
-    if not api_key:
-        raise ValueError(
-            "La variable d'environnement DATAINCLUSION_API_KEY est requise."
-        )
-    logger.info("Initialisation du client Data Inclusion...")
-    client = httpx.AsyncClient(
-        base_url="https://api-staging.data.inclusion.gouv.fr",
-        headers={"Authorization": f"Bearer {api_key}"},
-    )
-    logger.info("Client Data Inclusion initialisé.")
-    return client
-
-
-# Initialisation paresseuse du client
-client: Optional[httpx.AsyncClient] = None
-
-
-def _initialize_services() -> None:
-    """
-    Initialise le client API selon le pattern singleton.
-    Cette fonction est appelée de manière paresseuse lorsque le client est nécessaire.
-    """
-    global client
-
-    # Vérifie si le client est déjà initialisé
-    if client is None:
-        logger.info("Initialisation paresseuse du client Data Inclusion...")
-        try:
-            client = _get_datainclusion_client()
-            logger.info("Client Data Inclusion initialisé avec succès.")
-        except ValueError as e:
-            logger.error("Erreur critique lors de l'initialisation du client: %s", e)
-            # Réinitialise la variable en cas d'erreur
-            client = None
-            raise
 
 
 _REFERENCE_ENDPOINTS = {
@@ -87,6 +43,7 @@ _REFERENCE_ENDPOINTS = {
 
 @api_call_handler
 async def fetch_reference_values(
+    client: httpx.AsyncClient,
     category: Literal[
         "themes",
         "costs",
@@ -103,8 +60,6 @@ async def fetch_reference_values(
     Vous indiquez la catégorie souhaitée (themes, costs, target_audience, reception_modes, mobilization_modes, networks ou service_types) et l’API renvoie l’ensemble des entrées autorisées pour cette catégorie.
 
     Cela vous permet de connaître exactement les libellés à passer dans les filtres des autres endpoints (search_services, list_all_services, …) et d’éviter les erreurs de validation."""
-    _initialize_services()
-
     endpoint = _REFERENCE_ENDPOINTS.get(category)
     if not endpoint:
         raise ValueError(f"Catégorie de référence inconnue : {category}")
@@ -115,10 +70,10 @@ async def fetch_reference_values(
 
 @api_call_handler
 async def list_all_structures(
+    client: httpx.AsyncClient,
     themes: Union[str, List[str]], network: Optional[str] = None
 ) -> List[StructureSummary]:
     """Liste les structures d'inclusion, avec un filtre thématique obligatoire. Limité à 15 résultats."""
-    _initialize_services()
     if isinstance(themes, str):
         themes = [themes]
 
@@ -134,12 +89,12 @@ async def list_all_structures(
 
 @api_call_handler
 async def list_all_services(
+    client: httpx.AsyncClient,
     themes: Union[str, List[str]],
     costs: Optional[List[str]] = None,
     target_audience: Optional[List[str]] = None,
 ) -> List[ServiceSummary]:
     """Liste les services d'inclusion. Le filtre par thématiques est obligatoire. Limité à 15 résultats."""
-    _initialize_services()
     # Normalisation de l'input pour accepter une string ou une liste
     if isinstance(themes, str):
         themes = [themes]
@@ -158,9 +113,8 @@ async def list_all_services(
 
 
 @api_call_handler
-async def get_structure_details(source: str, structure_id: str) -> StructureDetails:
+async def get_structure_details(client: httpx.AsyncClient, source: str, structure_id: str) -> StructureDetails:
     """Récupère les informations détaillées d'une structure spécifique à partir de sa source et de son ID."""
-    _initialize_services()
     url = f"/api/v1/structures/{source}/{structure_id}"
     response = await client.get(url)
     response.raise_for_status()
@@ -168,9 +122,8 @@ async def get_structure_details(source: str, structure_id: str) -> StructureDeta
 
 
 @api_call_handler
-async def get_service_details(source: str, service_id: str) -> ServiceDetails:
+async def get_service_details(client: httpx.AsyncClient, source: str, service_id: str) -> ServiceDetails:
     """Récupère les informations détaillées d'un service spécifique à partir de sa source et de son ID."""
-    _initialize_services()
     url = f"/api/v1/services/{source}/{service_id}"
     response = await client.get(url)
     response.raise_for_status()
@@ -179,6 +132,7 @@ async def get_service_details(source: str, service_id: str) -> ServiceDetails:
 
 @api_call_handler
 async def search_services(
+    client: httpx.AsyncClient,
     location_text: str,
     themes: Union[str, List[str]],
     target_audience: Optional[Union[str, List[str]]] = None,
@@ -187,7 +141,6 @@ async def search_services(
     Recherche des services d'inclusion à proximité d'un lieu. Les résultats sont triés par distance.
     Le lieu (`location_text`) et la thématique (`themes`) sont obligatoires. La recherche est limitée à 10 résultats. Il faut passer qu'une seule chaîne de référentiel pour les thématiques. location_text doit contenir un seul nom de ville ou de région (ex.: «Paris», «Île-de-France»).
     """
-    _initialize_services()
     if isinstance(themes, str):
         themes = [themes]
     if isinstance(target_audience, str):
@@ -227,27 +180,11 @@ async def search_services(
     return [SearchedService.model_validate(item) for item in items]
 
 
-# --- Création du serveur MCP ---
-
-
-def create_datainclusion_mcp_server() -> FastMCP:
-    """Crée et configure une instance du serveur FastMCP avec tous les outils Data Inclusion."""
-    mcp = FastMCP(
-        name="datainclusion_service",
-        instructions="Ce serveur fournit des outils pour rechercher et consulter des données sur les structures et services d'inclusion en France. Utilisez `search_services` pour des recherches géolocalisées et `list_*` pour des listes générales. La recherche de services (`search_services`) et la liste de services (`list_all_services`) requièrent obligatoirement un ou plusieurs thèmes.",
-    )
-    logger.info("Enregistrement des outils dans le serveur MCP...")
-    mcp.add_tool(Tool.from_function(fn=search_services))
-    mcp.add_tool(Tool.from_function(fn=list_all_services))
-    mcp.add_tool(Tool.from_function(fn=get_service_details))
-    mcp.add_tool(Tool.from_function(fn=list_all_structures))
-    mcp.add_tool(Tool.from_function(fn=get_structure_details))
-    mcp.add_tool(Tool.from_function(fn=fetch_reference_values))
-
-    @mcp.custom_route("/health", methods=["GET"])
-    async def health_check(_request: Request) -> PlainTextResponse:
-        """Endpoint de health check pour la surveillance."""
-        return PlainTextResponse("OK")
-
-    logger.info("Serveur MCP configuré avec succès.")
-    return mcp
+__all__ = [
+    "fetch_reference_values",
+    "list_all_structures",
+    "list_all_services",
+    "get_structure_details",
+    "get_service_details",
+    "search_services",
+]

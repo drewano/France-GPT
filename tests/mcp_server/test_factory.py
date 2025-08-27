@@ -1,14 +1,14 @@
 import pytest
 import json
 from unittest.mock import Mock
-from src.mcp_server.factory import MCPFactory
+from src.mcp_server.factory import MCPServiceFactory
 from src.core.config import MCPServiceConfig, BearerAuthConfig
 from fastmcp import FastMCP
 
 
 @pytest.mark.asyncio
-class TestMCPFactory:
-    """Tests pour la classe MCPFactory."""
+class TestMCPServiceFactory:
+    """Tests pour la classe MCPServiceFactory."""
 
     @pytest.fixture
     def logger(self):
@@ -64,8 +64,13 @@ class TestMCPFactory:
             url=service_config.openapi_path_or_url, json=openapi_spec, status_code=200
         )
 
+        # Mock pour espionner ToolTransformer.transform_tools
+        mock_transform_tools = mocker.patch(
+            "src.mcp_server.tool_transformer.ToolTransformer.transform_tools"
+        )
+
         # Création de la factory
-        factory = MCPFactory(config=service_config, logger=logger)
+        factory = MCPServiceFactory(config=service_config, logger=logger)
 
         # Appel de la méthode build
         mcp_server = await factory.build()
@@ -86,6 +91,9 @@ class TestMCPFactory:
 
         # Vérifier que le logger a été appelé avec les bons messages
         logger.info.assert_any_call("Loading OpenAPI specification...")
+
+        # Vérifier que ToolTransformer.transform_tools a été appelé une fois
+        mock_transform_tools.assert_awaited_once()
 
         # Nettoyage
         await factory.cleanup()
@@ -114,7 +122,7 @@ class TestMCPFactory:
         mocker.patch("os.path.exists", return_value=True)
 
         # Création de la factory
-        factory = MCPFactory(config=service_config, logger=logger)
+        factory = MCPServiceFactory(config=service_config, logger=logger)
 
         # Appel de la méthode build
         mcp_server = await factory.build()
@@ -149,7 +157,7 @@ class TestMCPFactory:
         )
 
         # Création de la factory
-        factory = MCPFactory(config=service_config, logger=logger)
+        factory = MCPServiceFactory(config=service_config, logger=logger)
 
         # Appel de la méthode build
         mcp_server = await factory.build()
@@ -181,7 +189,7 @@ class TestMCPFactory:
         )
 
         # Création de la factory
-        factory = MCPFactory(config=service_config, logger=logger)
+        factory = MCPServiceFactory(config=service_config, logger=logger)
 
         # Appel de la méthode build
         mcp_server = await factory.build()
@@ -209,7 +217,7 @@ class TestMCPFactory:
         )
 
         # Création de la factory
-        factory = MCPFactory(config=service_config, logger=logger)
+        factory = MCPServiceFactory(config=service_config, logger=logger)
 
         # Vérification que l'exception est levée
         with pytest.raises(Exception, match="Network error"):
@@ -231,7 +239,7 @@ class TestMCPFactory:
         )
 
         # Création de la factory
-        factory = MCPFactory(config=service_config, logger=logger)
+        factory = MCPServiceFactory(config=service_config, logger=logger)
 
         # Construire le serveur
         await factory.build()
@@ -245,3 +253,51 @@ class TestMCPFactory:
         # Vérifier que le logger a enregistré les bons messages
         logger.info.assert_any_call("Closing HTTP client...")
         logger.info.assert_any_call("HTTP client closed successfully")
+
+    async def test_build_programmatic_service_without_transformation(
+        self, logger, mocker
+    ):
+        """Test de la méthode build pour un service programmatique sans transformation."""
+        # Configuration du service programmatique
+        service_config = MCPServiceConfig(
+            name="test_programmatic_service",
+            programmatic_tools_module="fake_module",
+        )
+
+        # Mock pour espionner ToolTransformer.transform_tools
+        mock_transform_tools = mocker.patch(
+            "src.mcp_server.tool_transformer.ToolTransformer.transform_tools"
+        )
+
+        # Création d'une fonction asynchrone factice compatible avec FastMCP
+        async def fake_tool(param1: str, param2: int = 10) -> str:
+            """Fonction d'outil factice pour les tests."""
+            return f"Result: {param1}, {param2}"
+
+        # Mock pour simuler importlib.import_module
+        mock_module = mocker.MagicMock()
+        mock_module.__all__ = ["fake_tool"]
+        mock_module.fake_tool = fake_tool
+        
+        mocker.patch(
+            "importlib.import_module",
+            return_value=mock_module
+        )
+
+        # Création de la factory
+        factory = MCPServiceFactory(config=service_config, logger=logger)
+
+        # Appel de la méthode build
+        mcp_server = await factory.build()
+
+        # Vérifications
+        assert isinstance(mcp_server, FastMCP)
+        assert mcp_server.name == "test_programmatic_service"
+
+        # Vérifier que les outils ont été ajoutés au serveur
+        # On vérifie que le serveur a au moins un outil
+        tools = await mcp_server.get_tools()
+        assert len(tools) > 0
+
+        # Vérifier que ToolTransformer.transform_tools n'a PAS été appelé
+        mock_transform_tools.assert_not_awaited()
