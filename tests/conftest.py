@@ -26,7 +26,9 @@ def mock_env_vars(monkeypatch):
     monkeypatch.setenv("LEGIFRANCE_CLIENT_SECRET", "dummy-client-secret-for-testing")
     monkeypatch.setenv("CHAINLIT_AUTH_SECRET", "a-dummy-secret-for-testing-purposes")
     monkeypatch.setenv("OAUTH_GOOGLE_CLIENT_ID", "dummy-google-client-id-for-testing")
-    monkeypatch.setenv("OAUTH_GOOGLE_CLIENT_SECRET", "dummy-google-client-secret-for-testing")
+    monkeypatch.setenv(
+        "OAUTH_GOOGLE_CLIENT_SECRET", "dummy-google-client-secret-for-testing"
+    )
     monkeypatch.setenv(
         "OPENAI_API_KEY", "dummy-openai-key-for-testing"
     )  # C'est aussi une bonne pratique
