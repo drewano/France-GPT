@@ -10,7 +10,6 @@ avec l'API La Bonne Alternance, en intégrant les schémas de données.
 import os
 import logging
 import httpx
-import functools
 import json
 import aioboto3
 from pathlib import Path
@@ -18,10 +17,10 @@ from typing import List, Optional, Union
 
 from fastmcp import FastMCP
 from fastmcp.tools import Tool
-from pydantic_ai import ModelRetry
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 from src.core.config import settings
+from ..utils import api_call_handler
 from .schemas import (
     EmploiSummary,
     EmploiDetails,
@@ -77,33 +76,6 @@ def _initialize_services() -> None:
             # Réinitialise la variable en cas d'erreur
             client = None
             raise
-
-
-def api_call_handler(func):
-    """Décorateur pour la gestion centralisée des appels API, du logging et des erreurs."""
-
-    @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
-        tool_name = func.__name__
-        try:
-            return await func(*args, **kwargs)
-        except httpx.HTTPStatusError as e:
-            logger.error(
-                f"Erreur HTTP dans '{tool_name}': {e.response.status_code} - {e.response.text}"
-            )
-            raise ModelRetry(
-                f"Erreur de communication avec l'API La Bonne Alternance ({e.response.status_code}): {e.response.text}"
-            ) from e
-        except httpx.HTTPError as e:
-            logger.error(f"Erreur de communication dans '{tool_name}': {e}")
-            raise ModelRetry(
-                f"Erreur de communication avec l'API La Bonne Alternance: {e}"
-            ) from e
-        except Exception as e:
-            logger.error(f"Erreur inattendue dans '{tool_name}': {e}", exc_info=True)
-            raise ModelRetry(f"Une erreur inattendue s'est produite: {e}") from e
-
-    return wrapper
 
 
 # --- Définition des Outils ---

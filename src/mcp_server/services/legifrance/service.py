@@ -7,7 +7,6 @@ textes juridiques (lois, décrets, jurisprudence, etc.).
 
 import os
 import logging
-import functools
 import asyncio
 from typing import List, Dict, Any, Optional
 from datetime import datetime
@@ -26,28 +25,11 @@ from pydantic_ai import ModelRetry
 from fastmcp.tools import Tool
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
+from ..utils import api_call_handler
 
 # --- Configuration du logging ---
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def api_call_handler(func):
-    """
-    Décorateur pour centraliser la gestion des erreurs des appels API.
-    """
-
-    @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
-        try:
-            return await func(*args, **kwargs)
-        except Exception as e:
-            logger.error(f"Erreur dans l'appel API {func.__name__}: {e}", exc_info=True)
-            raise ModelRetry(
-                f"Erreur lors de l'appel à l'API {func.__name__}: {e}"
-            ) from e
-
-    return wrapper
 
 
 # --- Initialisation du Client Légifrance ---

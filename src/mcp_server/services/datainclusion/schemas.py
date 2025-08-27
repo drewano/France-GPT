@@ -6,7 +6,7 @@ et retournées par les outils du serveur FastMCP.
 """
 # --- Partie 1: Définition des Schémas de Données (schemas.py) ---
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from typing import Optional, List
 
 # --- Modèles pour les Structures ---
@@ -148,6 +148,35 @@ class SearchedService(ServiceDetails):
     )
 
     model_config = ConfigDict(populate_by_name=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def flatten_api_response(cls, data):
+        """
+        Aplatit la structure de données imbriquée renvoyée par l'API.
+
+        L'API renvoie parfois une structure comme:
+        {
+            'service': {...tous les champs du service...},
+            'distance': 1234
+        }
+
+        Cette méthode transforme cette structure en un dictionnaire plat
+        compatible avec le modèle Pydantic.
+        """
+        # Vérifier si les données sont un dictionnaire et contiennent la clé 'service'
+        if isinstance(data, dict) and "service" in data:
+            # Créer un nouveau dictionnaire avec le contenu de data['service']
+            flattened_data = data["service"].copy()
+
+            # Ajouter la distance si elle existe
+            if "distance" in data:
+                flattened_data["distance"] = data["distance"]
+
+            return flattened_data
+
+        # Retourner les données telles quelles si elles ne correspondent pas au format imbriqué
+        return data
 
 
 # --- Modèles pour les Référentiels ---
