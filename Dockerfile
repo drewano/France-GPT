@@ -1,53 +1,81 @@
-# Étape 1: Choisir une image de base
-# On utilise une image Python 3.12 "slim" pour qu'elle soit légère mais complète.
-FROM python:3.13-slim
+# ==============================================================================
+# Étape 1: "Builder" - Environnement de construction
+# ==============================================================================
+# On utilise une image complète pour la construction, mais on la nomme "builder".
+# Son contenu ne sera pas dans l'image finale.
+FROM python:3.12-slim as builder
 
-# Étape 2: Définir les arguments de build
-# Permet de configurer le port au moment du build si nécessaire.
-ARG PORT=8000
-
-# Étape 3: Définir le répertoire de travail dans le conteneur
-# C'est ici que les fichiers de notre application seront copiés.
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Étape 4: Installer les dépendances système comme curl pour le healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
-# Étape 5: Installer un gestionnaire de paquets plus rapide (optionnel mais recommandé)
-# uv est une alternative très rapide à pip.
+# Installer les dépendances système nécessaires pour la construction (si besoin) et uv.
+# curl n'est plus nécessaire ici, il sera dans l'image finale.
 RUN pip install uv
 
-# Étape 6: Copier les fichiers du projet
-# On copie d'abord le fichier des dépendances pour profiter du cache de Docker.
+# Créer un environnement virtuel. C'est la meilleure pratique pour isoler les dépendances.
+# Cela nous permettra de copier l'intégralité du venv dans l'image finale.
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copier uniquement le fichier de dépendances pour optimiser le cache Docker.
+# Si pyproject.toml ne change pas, cette couche ne sera pas reconstruite.
 COPY pyproject.toml ./
 
-# Étape 7: Installer les dépendances
-# uv va lire pyproject.toml et installer les paquets listés.
-# L'option --system installe les paquets globalement dans l'environnement Python du conteneur.
-RUN uv pip install --system -r pyproject.toml
+# Installer UNIQUEMENT les dépendances de production dans le venv.
+# On utilise `uv pip install .` qui lit `pyproject.toml` mais ignore les `optional-dependencies` (comme 'dev').
+# C'est beaucoup plus propre et léger que d'installer tout le projet.
+RUN uv pip install --no-cache-dir .
 
-# Étape 8: Copier le reste du code de l'application
+# ==============================================================================
+# Étape 2: "Final" - Environnement d'exécution
+# ==============================================================================
+# On repart d'une image "slim" propre et légère.
+FROM python:3.12-slim
+
+# Définir les arguments
+ARG PORT=8000
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Installer uniquement les dépendances système STRICTEMENT nécessaires à l'exécution.
+# Dans votre cas, c'est `curl` pour le healthcheck.
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Créer un utilisateur non-root pour des raisons de sécurité.
+# Exécuter des conteneurs en tant que root est une mauvaise pratique.
+# `--system` crée un utilisateur sans home directory, `--group` crée un groupe correspondant.
+RUN adduser --system --group appuser
+
+# Copier l'environnement virtuel avec les dépendances depuis l'étape "builder".
+# C'est la magie du multi-stage : on ne récupère que les paquets installés, pas les outils de build.
+COPY --from=builder /opt/venv /opt/venv
+
+# Copier le code source de l'application.
 COPY src/ ./src/
 COPY public/ ./public/
 COPY main.py ./
 
-# Étape 8.5: Configurer le PYTHONPATH pour que Python trouve les modules src
+# S'approprier les fichiers de l'application par l'utilisateur non-root.
+RUN chown -R appuser:appuser /app
+
+# Activer l'environnement virtuel pour toutes les commandes suivantes.
+ENV PATH="/opt/venv/bin:$PATH"
+# Configurer le PYTHONPATH pour que Python trouve les modules dans /app/src.
 ENV PYTHONPATH="/app:$PYTHONPATH"
 
-# Étape 9: Exposer le port sur lequel l'application va écouter
-# Le conteneur rendra ce port disponible pour être mappé sur l'hôte.
+# Passer à l'utilisateur non-root. Toutes les commandes suivantes s'exécuteront avec cet utilisateur.
+USER appuser
+
+# Exposer le port sur lequel l'application va écouter.
 EXPOSE ${PORT}
 
-# Étape 10: Définir les variables d'environnement par défaut
-# MCP_HOST est mis à 0.0.0.0 pour être accessible depuis l'extérieur du conteneur.
-# Les autres valeurs sont reprises de votre env.example.
-# La clé API (DATA_INCLUSION_API_KEY) sera fournie au lancement, pas ici.
+# Définir les variables d'environnement.
+# Celles-ci peuvent toujours être surchargées par docker-compose.yml.
 ENV TRANSPORT=http
 ENV MCP_HOST=0.0.0.0
 ENV MCP_PORT=${PORT}
 ENV MCP_API_PATH=/mcp/
 
-# Étape 11: Définir la commande pour lancer le serveur
-# C'est la commande qui sera exécutée au démarrage du conteneur.
-# Cette commande sera surchargée par docker-compose.yml pour chaque service
+# Définir la commande pour lancer le serveur.
 CMD ["python", "main.py"]

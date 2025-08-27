@@ -7,19 +7,15 @@ avec l'API La Bonne Alternance, en intégrant les schémas de données.
 
 # --- Partie 2: Logique du Serveur FastMCP ---
 
-import os
 import logging
 import httpx
-import functools
 import json
+import aioboto3
 from pathlib import Path
 from typing import List, Optional, Union
 
-from fastmcp import FastMCP
-from fastmcp.tools import Tool
-from pydantic_ai import ModelRetry
-from starlette.requests import Request
-from starlette.responses import PlainTextResponse
+from src.core.config import settings
+from src.mcp_server.utils import api_call_handler
 from .schemas import (
     EmploiSummary,
     EmploiDetails,
@@ -37,78 +33,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def _get_lba_client() -> httpx.AsyncClient:
-    """Initialise et retourne un client HTTP pour l'API La Bonne Alternance."""
-    api_key = os.getenv("LABONNEALTERNANCE_API_KEY")
-    if not api_key:
-        raise ValueError(
-            "La variable d'environnement LABONNEALTERNANCE_API_KEY est requise."
-        )
-    logger.info("Initialisation du client La Bonne Alternance...")
-    client = httpx.AsyncClient(
-        base_url="https://api.apprentissage.beta.gouv.fr/api",
-        headers={"Authorization": f"Bearer {api_key}"},
-    )
-    logger.info("Client La Bonne Alternance initialisé.")
-    return client
-
-
-# Initialisation paresseuse du client
-client: Optional[httpx.AsyncClient] = None
-
-
-def _initialize_services() -> None:
-    """
-    Initialise le client API selon le pattern singleton.
-    Cette fonction est appelée de manière paresseuse lorsque le client est nécessaire.
-    """
-    global client
-
-    # Vérifie si le client est déjà initialisé
-    if client is None:
-        logger.info("Initialisation paresseuse du client La Bonne Alternance...")
-        try:
-            client = _get_lba_client()
-            logger.info("Client La Bonne Alternance initialisé avec succès.")
-        except ValueError as e:
-            logger.error("Erreur critique lors de l'initialisation du client: %s", e)
-            # Réinitialise la variable en cas d'erreur
-            client = None
-            raise
-
-
-def api_call_handler(func):
-    """Décorateur pour la gestion centralisée des appels API, du logging et des erreurs."""
-
-    @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
-        tool_name = func.__name__
-        try:
-            return await func(*args, **kwargs)
-        except httpx.HTTPStatusError as e:
-            logger.error(
-                f"Erreur HTTP dans '{tool_name}': {e.response.status_code} - {e.response.text}"
-            )
-            raise ModelRetry(
-                f"Erreur de communication avec l'API La Bonne Alternance ({e.response.status_code}): {e.response.text}"
-            ) from e
-        except httpx.HTTPError as e:
-            logger.error(f"Erreur de communication dans '{tool_name}': {e}")
-            raise ModelRetry(
-                f"Erreur de communication avec l'API La Bonne Alternance: {e}"
-            ) from e
-        except Exception as e:
-            logger.error(f"Erreur inattendue dans '{tool_name}': {e}", exc_info=True)
-            raise ModelRetry(f"Une erreur inattendue s'est produite: {e}") from e
-
-    return wrapper
-
-
 # --- Définition des Outils ---
 
 
 @api_call_handler
 async def search_emploi(
+    client: httpx.AsyncClient,
     romes: Union[str, List[str]],
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
@@ -116,7 +46,6 @@ async def search_emploi(
     target_diploma_level: Optional[str] = None,
 ) -> List[EmploiSummary]:
     """Recherche des offres d'emploi en alternance selon les critères fournis."""
-    _initialize_services()
 
     # Normalisation des ROMEs
     romes_str = ",".join(romes) if isinstance(romes, list) else romes
@@ -170,9 +99,8 @@ async def search_emploi(
 
 
 @api_call_handler
-async def get_emploi(id: str) -> EmploiDetails:
+async def get_emploi(client: httpx.AsyncClient, id: str) -> EmploiDetails:
     """Récupère les informations détaillées d'une offre d'emploi spécifique. Utilise toujours une liste de romes pour élargir la recherche."""
-    _initialize_services()
     response = await client.get(f"/job/v1/offer/{id}")
     response.raise_for_status()
     full_offer = JobOfferRead.model_validate(response.json())
@@ -190,11 +118,70 @@ async def get_emploi(id: str) -> EmploiDetails:
         start_date=str(full_offer.contract.start)
         if full_offer.contract.start
         else None,
+        recipient_id=full_offer.apply.recipient_id,
     )
 
 
 @api_call_handler
+async def apply_for_job(
+    client: httpx.AsyncClient,
+    applicant_first_name: str,
+    applicant_last_name: str,
+    applicant_email: str,
+    applicant_phone: str,
+    applicant_attachment_name: str,
+    cv_s3_object_key: str,
+    recipient_id: str,
+) -> dict:
+    """Soumet une candidature à une offre d'emploi à l'API La Bonne Alternance."""
+
+    # Import pour l'encodage base64
+    import base64
+
+    # Créer une session aioboto3
+    session = aioboto3.Session(
+        aws_access_key_id=settings.agent.APP_AWS_ACCESS_KEY,
+        aws_secret_access_key=settings.agent.APP_AWS_SECRET_KEY,
+        region_name=settings.agent.APP_AWS_REGION,
+    )
+
+    # Créer un client S3 asynchrone
+    endpoint_url = settings.agent.DEV_AWS_ENDPOINT
+    async with session.client("s3", endpoint_url=endpoint_url) as s3_client:
+        # Télécharger le contenu du CV depuis S3
+        response = await s3_client.get_object(
+            Bucket=settings.agent.BUCKET_NAME, Key=cv_s3_object_key
+        )
+
+        # Lire le contenu du fichier de manière asynchrone
+        async with response["Body"] as stream:
+            file_content = await stream.read()
+
+    # Encoder le contenu en base64
+    encoded_content = base64.b64encode(file_content).decode("utf-8")
+
+    # Construire le payload avec les données de la candidature
+    payload = {
+        "applicant_first_name": applicant_first_name,
+        "applicant_last_name": applicant_last_name,
+        "applicant_email": applicant_email,
+        "applicant_phone": applicant_phone,
+        "applicant_attachment_name": applicant_attachment_name,
+        "applicant_attachment_content": encoded_content,
+        "recipient_id": recipient_id,
+    }
+
+    # Faire un appel POST à l'endpoint /job/v1/apply
+    response = await client.post("/job/v1/apply", json=payload)
+    response.raise_for_status()
+
+    # Retourner le JSON de la réponse
+    return response.json()
+
+
+@api_call_handler
 async def search_formations(
+    client: httpx.AsyncClient,
     romes: Optional[Union[str, List[str]]] = None,
     rncp: Optional[Union[str, List[str]]] = None,
     latitude: Optional[float] = None,
@@ -202,7 +189,6 @@ async def search_formations(
     radius: Optional[int] = None,
 ) -> List[FormationSummary]:
     """Recherche des formations en alternance selon les critères fournis. Utilise toujours un seul RNCP et une liste de romes pour élargir la recherche."""
-    _initialize_services()
     params = {}
     if romes:
         params["romes"] = ",".join(romes) if isinstance(romes, list) else romes
@@ -245,9 +231,8 @@ async def search_formations(
 
 
 @api_call_handler
-async def get_formations(id: str) -> FormationDetails:
+async def get_formations(client: httpx.AsyncClient, id: str) -> FormationDetails:
     """Récupère les informations détaillées d'une formation spécifique."""
-    _initialize_services()
     response = await client.get(f"/formation/v1/{id}")
     response.raise_for_status()
     full_formation = Formation.model_validate(response.json())
@@ -384,29 +369,12 @@ async def get_rncp(mots_cles: str, nb_resultats: int = 10) -> List[RncpCode]:
     return results[:nb_resultats]
 
 
-# --- Création du serveur MCP ---
-
-
-def create_labonnealternance_mcp_server() -> FastMCP:
-    """Crée et configure une instance du serveur FastMCP avec tous les outils La Bonne Alternance."""
-    mcp = FastMCP(
-        name="labonnealternance_service",
-        instructions="Ce serveur fournit des outils pour rechercher et consulter des offres d'emploi et des formations en alternance en France. Utilisez `search_emploi` pour rechercher des offres d'emploi et `search_formations` pour rechercher des formations. Vous pouvez ensuite utiliser `get_emploi` et `get_formations` pour obtenir les détails.",
-    )
-    logger.info("Enregistrement des outils dans le serveur MCP...")
-    mcp.add_tool(Tool.from_function(fn=search_emploi))
-    mcp.add_tool(Tool.from_function(fn=get_emploi))
-    mcp.add_tool(Tool.from_function(fn=search_formations))
-    mcp.add_tool(Tool.from_function(fn=get_formations))
-    mcp.add_tool(
-        Tool.from_function(fn=get_romes)
-    )  # Enregistrement de l'outil get_romes
-    mcp.add_tool(Tool.from_function(fn=get_rncp))  # Enregistrement du nouvel outil
-
-    @mcp.custom_route("/health", methods=["GET"])
-    async def health_check(_request: Request) -> PlainTextResponse:
-        """Endpoint de health check pour la surveillance."""
-        return PlainTextResponse("OK")
-
-    logger.info("Serveur MCP configuré avec succès.")
-    return mcp
+__all__ = [
+    "search_emploi",
+    "get_emploi",
+    "apply_for_job",
+    "search_formations",
+    "get_formations",
+    "get_romes",
+    "get_rncp",
+]

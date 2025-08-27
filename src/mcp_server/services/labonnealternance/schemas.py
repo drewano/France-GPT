@@ -198,6 +198,23 @@ class EmploiDetails(EmploiSummary):
     start_date: Optional[str] = Field(
         default=None, description="Date de début du contrat."
     )
+    recipient_id: Optional[str] = Field(
+        default=None, description="Identifiant du destinataire pour postuler à l'offre."
+    )
+
+
+class JobApplicationWrite(BaseModel):
+    """Informations pour soumettre une candidature à une offre d'emploi."""
+
+    applicant_first_name: str = Field(description="Prénom du candidat.")
+    applicant_last_name: str = Field(description="Nom du candidat.")
+    applicant_email: str = Field(description="Email du candidat.")
+    applicant_phone: str = Field(description="Téléphone du candidat.")
+    applicant_attachment_name: str = Field(
+        description="Nom du fichier CV (ex: 'cv_jean_dupont.pdf')."
+    )
+    cv_s3_object_key: str = Field(description="La clé de l'objet S3 du CV téléversé.")
+    recipient_id: str = Field(description="Identifiant du destinataire de l'offre.")
 
 
 # --- Modèles pour les Formations ---

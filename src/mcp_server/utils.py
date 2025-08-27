@@ -3,7 +3,9 @@ Utility functions for the MCP server.
 """
 
 import logging
+import functools
 from fastmcp.utilities.openapi import HTTPRoute
+from pydantic_ai import ModelRetry
 
 
 def deep_clean_schema(schema: dict) -> None:
@@ -64,6 +66,22 @@ async def find_route_by_id(
         if hasattr(route, "operation_id") and route.operation_id == operation_id:
             return route
     return None
+
+
+def api_call_handler(func):
+    """Décorateur pour la gestion centralisée des appels API, du logging et des erreurs."""
+
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        tool_name = func.__name__
+        try:
+            return await func(*args, **kwargs)
+        except Exception as e:
+            # Note: Specific exception handling should be done in the service modules
+            # This is a generic fallback
+            raise ModelRetry(f"Erreur lors de l'appel à l'API {tool_name}: {e}") from e
+
+    return wrapper
 
 
 def clean_json_schema(component, logger: logging.Logger):

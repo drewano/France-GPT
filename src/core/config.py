@@ -109,6 +109,8 @@ class MCPServiceConfig(BaseModel):
     openapi_path_or_url: Optional[str] = (
         None  # Changed from openapi_url to support local paths or URLs
     )
+    programmatic_tools_module: Optional[str] = None
+    base_url: Optional[str] = None
     auth: Optional[Union[BearerAuthConfig, OAuth2ClientCredentialsConfig]] = Field(
         None, discriminator="method"
     )

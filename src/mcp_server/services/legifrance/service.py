@@ -5,105 +5,23 @@ Ce module expose plusieurs outils via FastMCP pour rechercher et consulter des
 textes juridiques (lois, décrets, jurisprudence, etc.).
 """
 
-import os
 import logging
-import functools
 import asyncio
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 # --- Dépendances Pylegifrance ---
 # Assurez-vous que pylegifrance est installé : uv add pylegifrance
-from pylegifrance import LegifranceClient
 from pylegifrance.fonds.loda import Loda
 from pylegifrance.fonds.juri import JuriAPI
 from pylegifrance.fonds.code import Code
 
-# --- Dépendances FastMCP ---
-# Assurez-vous que fastmcp est installé : uv add fastmcp
-from fastmcp import FastMCP
-from pydantic_ai import ModelRetry
-from fastmcp.tools import Tool
-from starlette.requests import Request
-from starlette.responses import PlainTextResponse
+from src.mcp_server.utils import api_call_handler
+from pydantic_ai.exceptions import ModelRetry
 
 # --- Configuration du logging ---
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def api_call_handler(func):
-    """
-    Décorateur pour centraliser la gestion des erreurs des appels API.
-    """
-
-    @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
-        try:
-            return await func(*args, **kwargs)
-        except Exception as e:
-            logger.error(f"Erreur dans l'appel API {func.__name__}: {e}", exc_info=True)
-            raise ModelRetry(
-                f"Erreur lors de l'appel à l'API {func.__name__}: {e}"
-            ) from e
-
-    return wrapper
-
-
-# --- Initialisation du Client Légifrance ---
-def _get_legifrance_client() -> LegifranceClient:
-    """
-    Initialise et retourne une instance du client Legifrance.
-    Charge les identifiants depuis les variables d'environnement.
-    """
-    client_id = os.getenv("LEGIFRANCE_CLIENT_ID")
-    client_secret = os.getenv("LEGIFRANCE_CLIENT_SECRET")
-
-    if not client_id or not client_secret:
-        raise ValueError(
-            "Les variables d'environnement LEGIFRANCE_CLIENT_ID et "
-            "LEGIFRANCE_CLIENT_SECRET sont requises."
-        )
-
-    logger.info("Initialisation du client Legifrance...")
-    # La documentation montre l'init avec les clés, mais le client les charge
-    # automatiquement depuis les variables d'environnement si elles existent.
-    new_client = LegifranceClient()
-    logger.info("Client Legifrance initialisé.")
-    return new_client
-
-
-# --- Instanciation des services API (Lazy Initialization) ---
-client: Optional[LegifranceClient] = None
-loda_service: Optional[Loda] = None
-juri_api: Optional[JuriAPI] = None
-code_service: Optional[Code] = None
-
-
-def _initialize_services() -> None:
-    """
-    Initialise les services Légifrance selon le pattern singleton.
-    Cette fonction est appelée de manière paresseuse lorsque les services sont nécessaires.
-    """
-    global client, loda_service, juri_api, code_service
-
-    # Vérifie si les services sont déjà initialisés
-    if client is None:
-        logger.info("Initialisation paresseuse des services Légifrance...")
-        try:
-            client = _get_legifrance_client()
-            loda_service = Loda(client)
-            juri_api = JuriAPI(client)
-            code_service = Code(client)
-            logger.info("Services Légifrance initialisés avec succès.")
-        except ValueError as e:
-            logger.error("Erreur critique lors de l'initialisation des services: %s", e)
-            # Réinitialise les variables en cas d'erreur
-            client = None
-            loda_service = None
-            juri_api = None
-            code_service = None
-            raise
 
 
 # --- Fonction de formatage partagée pour les documents complets ---
@@ -208,12 +126,13 @@ def _process_juri_result(res: Any) -> Optional[Dict[str, str]]:
 
 # --- Outil 1: Découverte ---
 @api_call_handler
-async def rechercher_textes_juridiques(mots_cles: str) -> List[Dict[str, str]]:
+async def rechercher_textes_juridiques(
+    mots_cles: str, loda_service: Loda, juri_api: JuriAPI
+) -> List[Dict[str, str]]:
     """
     Outil de recherche initial. Cherche des documents par mots-clés et retourne des candidats.
     Pour chaque candidat, utilisez l'ID avec l'outil spécialisé recommandé.
     """
-    _initialize_services()
     logger.info("Recherche de textes pour les mots-clés : '%s'", mots_cles)
 
     # Effectuer les recherches LODA et JURI de manière concurrente
@@ -257,9 +176,10 @@ async def rechercher_textes_juridiques(mots_cles: str) -> List[Dict[str, str]]:
 
 
 @api_call_handler
-async def consulter_article_code(id_article: str) -> Optional[Dict[str, str]]:
+async def consulter_article_code(
+    id_article: str, code_service: Code
+) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'un ARTICLE DE CODE via son ID (ex: 'LEGIARTI...')."""
-    _initialize_services()
     logger.info("Consultation de l'article de code ID: %s", id_article)
     # Pour les articles, la consultation à la date du jour est la plus sûre
     todays_date_iso = datetime.now().strftime("%Y-%m-%d")
@@ -268,9 +188,10 @@ async def consulter_article_code(id_article: str) -> Optional[Dict[str, str]]:
 
 
 @api_call_handler
-async def consulter_texte_loi_decret(id_texte: str) -> Optional[Dict[str, str]]:
+async def consulter_texte_loi_decret(
+    id_texte: str, loda_service: Loda
+) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une LOI ou d'un DÉCRET via son ID (ex: 'LEGITEXT...')."""
-    _initialize_services()
     logger.info("Consultation du texte/loi/décret ID: %s", id_texte)
 
     # La librairie pylegifrance gère implicitement la date du jour si elle n'est pas spécifiée dans l'ID
@@ -279,9 +200,10 @@ async def consulter_texte_loi_decret(id_texte: str) -> Optional[Dict[str, str]]:
 
 
 @api_call_handler
-async def consulter_decision_justice(id_decision: str) -> Optional[Dict[str, str]]:
+async def consulter_decision_justice(
+    id_decision: str, juri_api: JuriAPI
+) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une DÉCISION DE JUSTICE via son ID (ex: 'JURI...')."""
-    _initialize_services()
     logger.info("Consultation de la décision de justice ID: %s", id_decision)
     # Pour la jurisprudence, un fetch simple est généralement suffisant
     document = juri_api.fetch(id_decision)
@@ -290,10 +212,9 @@ async def consulter_decision_justice(id_decision: str) -> Optional[Dict[str, str
 
 @api_call_handler
 async def consulter_convention_collective(
-    id_convention: str,
+    id_convention: str, loda_service: Loda
 ) -> Optional[Dict[str, str]]:
     """Récupère le contenu d'une CONVENTION COLLECTIVE via son ID (ex: 'KALITEXT...')."""
-    _initialize_services()
     logger.info("Consultation de la convention collective ID: %s", id_convention)
 
     # La librairie pylegifrance gère implicitement la date du jour si elle n'est pas spécifiée dans l'ID
@@ -301,35 +222,10 @@ async def consulter_convention_collective(
     return _format_full_document_output(document) if document else None
 
 
-# ==============================================================================
-# === CONFIGURATION DU SERVEUR MCP                                           ===
-# ==============================================================================
-
-
-def create_legifrance_mcp_server() -> FastMCP:
-    """Crée et configure le serveur FastMCP avec tous les outils Légifrance."""
-    mcp = FastMCP(name="legifrance_service_pylegifrance")
-
-    logger.info("Enregistrement des outils dans le serveur MCP...")
-
-    # Création des outils à partir des fonctions
-    tool_recherche = Tool.from_function(fn=rechercher_textes_juridiques)
-    tool_article = Tool.from_function(fn=consulter_article_code)
-    tool_loi = Tool.from_function(fn=consulter_texte_loi_decret)
-    tool_juri = Tool.from_function(fn=consulter_decision_justice)
-    tool_kali = Tool.from_function(fn=consulter_convention_collective)
-
-    # Ajout des outils au serveur MCP
-    mcp.add_tool(tool_recherche)
-    mcp.add_tool(tool_article)
-    mcp.add_tool(tool_loi)
-    mcp.add_tool(tool_juri)
-    mcp.add_tool(tool_kali)
-
-    # Ajout d'un endpoint de santé
-    @mcp.custom_route("/health", methods=["GET"])
-    async def health_check(_request: Request) -> PlainTextResponse:
-        return PlainTextResponse("OK")
-
-    # Retourne l'instance FastMCP configurée
-    return mcp
+__all__ = [
+    "rechercher_textes_juridiques",
+    "consulter_article_code",
+    "consulter_texte_loi_decret",
+    "consulter_decision_justice",
+    "consulter_convention_collective",
+]
