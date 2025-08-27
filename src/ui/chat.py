@@ -10,11 +10,9 @@ import chainlit as cl
 
 from chainlit.types import ThreadDict
 from pydantic_ai.messages import ModelRequest, ModelResponse, UserPromptPart, TextPart
-from pydantic_ai.toolsets import FunctionToolset
 
 from src.ui.streaming import process_agent_modern_with_history
-from src.agent.agent import create_agent_from_profile
-from src.agent.ui_tools import display_website, ask_for_cv
+from src.ui.agent_setup import setup_agent
 from src.core.profiles import AGENT_PROFILES
 from src.ui import data_layer  # noqa: F401
 
@@ -75,32 +73,6 @@ async def _process_files(
     return extracted_texts, file_data_list
 
 
-async def _setup_agent():
-    """
-    Fonction d'assistance pour configurer l'agent basé sur le profil sélectionné.
-    Déplace la logique de sélection de profil et de création d'agent ici.
-    """
-    profile_name = cl.user_session.get("chat_profile")
-
-    if profile_name:
-        profile = next(
-            (p for p in AGENT_PROFILES.values() if p.name == profile_name), None
-        )
-    else:
-        profile = AGENT_PROFILES.get("social_agent")
-
-    if not profile:
-        raise ValueError(f"Profil de chat '{profile_name}' non trouvé.")
-
-    # Créer le toolset d'interface utilisateur
-    ui_toolset = FunctionToolset(tools=[display_website, ask_for_cv])
-
-    # Créer l'agent avec le toolset d'interface utilisateur
-    agent = create_agent_from_profile(profile, ui_toolsets=[ui_toolset])
-    cl.user_session.set("agent", agent)
-    cl.user_session.set("selected_profile_id", profile.id)
-
-
 @cl.set_chat_profiles
 async def chat_profile(user: Optional[cl.User]):
     """
@@ -155,7 +127,7 @@ async def on_chat_start():
     """
     Initialise la session de chat en créant un agent basé sur le profil sélectionné.
     """
-    await _setup_agent()
+    await setup_agent()
     # Initialise un historique de messages vide pour cette nouvelle session.
     cl.user_session.set("message_history", [])
 
@@ -170,7 +142,7 @@ async def on_chat_resume(thread: ThreadDict):
     print(f"Reprise du fil de discussion (thread) : {thread['id']}")
 
     try:
-        await _setup_agent()  # Call the new setup function
+        await setup_agent()  # Call the new setup function
         reconstructed_history = []
         for step in thread["steps"]:
             step_type = step.get("type")
