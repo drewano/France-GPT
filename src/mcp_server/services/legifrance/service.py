@@ -25,7 +25,7 @@ from pydantic_ai import ModelRetry
 from fastmcp.tools import Tool
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
-from ..utils import api_call_handler
+from src.mcp_server.utils import api_call_handler
 
 # --- Configuration du logging ---
 logging.basicConfig(level=logging.INFO)
