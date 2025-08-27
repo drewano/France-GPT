@@ -5,7 +5,6 @@ demandées pour rendre certains paramètres de recherche obligatoires.
 """
 # --- Partie 2: Logique du Serveur FastMCP ---
 
-import os
 import logging
 import httpx
 from typing import List, Optional, Union, Literal

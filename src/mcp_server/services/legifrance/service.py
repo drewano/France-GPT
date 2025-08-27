@@ -5,7 +5,6 @@ Ce module expose plusieurs outils via FastMCP pour rechercher et consulter des
 textes juridiques (lois, décrets, jurisprudence, etc.).
 """
 
-import os
 import logging
 import asyncio
 from typing import List, Dict, Any, Optional
@@ -13,7 +12,6 @@ from datetime import datetime
 
 # --- Dépendances Pylegifrance ---
 # Assurez-vous que pylegifrance est installé : uv add pylegifrance
-from pylegifrance import LegifranceClient
 from pylegifrance.fonds.loda import Loda
 from pylegifrance.fonds.juri import JuriAPI
 from pylegifrance.fonds.code import Code

@@ -12,7 +12,6 @@ import functools
 
 from fastmcp import FastMCP
 from fastmcp.tools import Tool
-from fastmcp.tools.tool import FunctionTool
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 import httpx  # Add this import for httpx.AsyncClient
@@ -24,7 +23,7 @@ from pylegifrance.fonds.juri import JuriAPI
 from pylegifrance.fonds.code import Code
 
 # Import pour l'authentification Bearer
-from .auth import create_auth_handler, BearerAuth  # Import the new auth handler
+from .auth import create_auth_handler  # Import the new auth handler
 
 from ..core.config import MCPServiceConfig
 from .openapi_loader import OpenAPILoader

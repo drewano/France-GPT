@@ -7,7 +7,6 @@ avec l'API La Bonne Alternance, en intégrant les schémas de données.
 
 # --- Partie 2: Logique du Serveur FastMCP ---
 
-import os
 import logging
 import httpx
 import json

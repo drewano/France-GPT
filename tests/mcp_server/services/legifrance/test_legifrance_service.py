@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock
 from src.mcp_server.services.legifrance.service import (
     rechercher_textes_juridiques,
     consulter_article_code,
