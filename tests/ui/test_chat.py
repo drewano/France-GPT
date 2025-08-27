@@ -4,8 +4,14 @@ from src.ui.chat import _setup_agent
 from src.core.profiles import AgentProfile
 
 
+@pytest.fixture
+def mock_oauth_callback(mocker):
+    """Mock the @cl.oauth_callback decorator to prevent collection errors."""
+    return mocker.patch('chainlit.callbacks.oauth_callback', lambda func: func)
+
+
 @pytest.mark.asyncio
-async def test_setup_agent(mocker):
+async def test_setup_agent(mocker, mock_oauth_callback):
     """Test the _setup_agent function."""
     # Mock cl.user_session.get to return a specific profile name
     mock_get = mocker.patch("src.ui.chat.cl.user_session.get")
