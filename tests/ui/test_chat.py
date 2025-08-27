@@ -7,7 +7,7 @@ from src.core.profiles import AgentProfile
 @pytest.fixture
 def mock_oauth_callback(mocker):
     """Mock the @cl.oauth_callback decorator to prevent collection errors."""
-    return mocker.patch('chainlit.callbacks.oauth_callback', lambda func: func)
+    return mocker.patch("chainlit.callbacks.oauth_callback", lambda func: func)
 
 
 @pytest.mark.asyncio
