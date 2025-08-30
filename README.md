@@ -8,6 +8,8 @@
 
 L'application est construite avec une architecture moderne incluant **FastAPI**, **Chainlit** pour l'interface de chat, et **Pydantic-AI** pour la logique des agents.
 
+![screenshot_placeholder](https://github.com/drewano/France-GPT/blob/c3f4eba1d8527ec2583aaaf36bfe03e7aee644e6/public/screen.png)
+
 ## ✨ Fonctionnalités Principales
 
 -   🤖 **Agents Spécialisés** : Des profils d'agents distincts pour différents domaines (social, juridique, emploi) avec des instructions et des outils dédiés.
