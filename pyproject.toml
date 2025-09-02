@@ -16,7 +16,7 @@ dependencies = [
     "pydantic-settings",
     "fastapi",
     "uvicorn",
-    "chainlit==2.7.1.1",
+    "chainlit==2.7.2",
     "asyncpg",
     "SQLAlchemy",
     "greenlet",
