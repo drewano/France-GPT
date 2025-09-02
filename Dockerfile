@@ -3,7 +3,7 @@
 # ==============================================================================
 # On utilise une image complète pour la construction, mais on la nomme "builder".
 # Son contenu ne sera pas dans l'image finale.
-FROM python:3.12-slim as builder
+FROM python:3.13-slim as builder
 
 # Définir le répertoire de travail
 WORKDIR /app
@@ -30,7 +30,7 @@ RUN uv pip install --no-cache-dir .
 # Étape 2: "Final" - Environnement d'exécution
 # ==============================================================================
 # On repart d'une image "slim" propre et légère.
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 # Définir les arguments
 ARG PORT=8000
